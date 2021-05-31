@@ -1,0 +1,21 @@
+FROM prestashop/prestashop:1.6-7.1-apache
+
+# Use development php.ini
+RUN cp "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
+
+# XDebug extension
+RUN pecl install xdebug-2.5.5 \
+    && docker-php-ext-enable xdebug
+
+# Enable XDebug
+RUN echo '[XDebug] \n\
+xdebug.remote_enable=1 \n\
+xdebug.remote_connect_back=1' >> /usr/local/etc/php/php.ini
+
+# Install mhsendmail and enable Mailhog
+RUN curl -LkSso /usr/bin/mhsendmail 'https://github.com/mailhog/mhsendmail/releases/download/v0.2.0/mhsendmail_linux_amd64'&& \
+chmod 0755 /usr/bin/mhsendmail && \
+echo 'sendmail_path = "/usr/bin/mhsendmail --smtp-addr=mailhog:1025"' >> /usr/local/etc/php/php.ini;
+
+# Install composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

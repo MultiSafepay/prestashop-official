@@ -1,0 +1,85 @@
+/**
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
+ * to newer versions in the future. If you wish to customize the plugin for your
+ * needs please document your changes and make backups before you update.
+ *
+ * @category    MultiSafepay
+ * @package     Connect
+ * @author      TechSupport <integration@multisafepay.com>
+ * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ */
+
+#content .tab-pane:first-child .panel {
+    border-top-left-radius: 0;
+}
+
+.multisafepay-header .text-branded,
+.multisafepay-content .text-branded {
+    color: #00aff0;
+}
+
+.multisafepay-header h4,
+.multisafepay-content h4,
+.multisafepay-content h5 {
+    margin: 2px 0;
+    color: #00aff0;
+    font-size: 1.8em;
+}
+
+.multisafepay-header h4 {
+    margin-top: 5px;
+}
+
+.multisafepay-header .col-md-6 {
+    margin-top: 18px;
+}
+
+.multisafepay-content h4 {
+    margin-bottom: 10px;
+}
+
+.multisafepay-content h5 {
+    font-size: 1.4em;
+    margin-bottom: 10px;
+}
+
+.multisafepay-content h6 {
+    font-size: 1.3em;
+    margin: 1px 0 4px 0;
+}
+
+.multisafepay-header > .col-md-4 {
+    height: 65px;
+    vertical-align: middle;
+    border-left: 1px solid #ddd;
+}
+
+.multisafepay-header > .col-md-4:first-child {
+    border-left: none;
+}
+
+.multisafepay-header #create-account-btn {
+    margin-top: 14px;
+}
+
+.multisafepay-content dd + dt {
+    margin-top: 5px;
+}
+
+.multisafepay-content ul {
+    padding-left: 15px;
+}
+
+.multisafepay-content .ul-spaced li {
+    margin-bottom: 5px;
+}

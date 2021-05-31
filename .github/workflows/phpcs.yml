@@ -1,0 +1,29 @@
+name: Code sniffer
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  code_sniffer:
+    name: Code sniffer
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version:
+          - '7.2'
+          - '7.3'
+          - '7.4'
+    steps:
+      - name: Install php
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run docker compose
+        run:  docker-compose up -d
+      - name: Install Composer dependencies PrestaShop 1.7
+        run:  docker exec --workdir /var/www/html/modules/multisafepay prestashop-1.7-7.3 composer install
+      - name: Run PHPCS PrestaShop 1.7
+        run:  docker exec --workdir /var/www/html/modules/multisafepay prestashop-1.7-7.3 composer run-script phpcs
+

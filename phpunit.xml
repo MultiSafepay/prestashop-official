@@ -1,0 +1,32 @@
+<phpunit bootstrap="./tests/Unit/bootstrap.php"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         stopOnError="false"
+         stopOnFailure="false"
+         stopOnRisky="false"
+         cacheResult="false">
+    <php>
+        <env name="KERNEL_CLASS" value="AppKernel"/>
+        <env name="SYMFONY_DEPRECATIONS_HELPER" value="weak"/>
+    </php>
+    <testsuites>
+        <testsuite name="prestashop-unit-tests">
+            <directory suffix="_test.php">./tests/Unit/</directory>
+        </testsuite>
+    </testsuites>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="false" addUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">.</directory>
+            <exclude>
+                <directory>./.docker</directory>
+                <directory>./.github</directory>
+                <directory>./bin</directory>
+                <directory>./tests</directory>
+                <directory>./translations</directory>
+                <directory>./vendor</directory>
+                <file>*/index.php</file>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>

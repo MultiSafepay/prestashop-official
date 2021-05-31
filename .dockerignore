@@ -1,0 +1,9 @@
+# syntax: https://codefresh.io/docker-tutorial/not-ignore-dockerignore-2/
+**/.*
+**/*.md
+**/vendor
+**/composer.lock
+**/bin
+**/docker-compose.yml
+
+

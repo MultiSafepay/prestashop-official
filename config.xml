@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+	<name>multisafepay</name>
+	<displayName><![CDATA[MultiSafepay]]></displayName>
+	<version><![CDATA[1.0.0]]></version>
+	<description><![CDATA[MultiSafepay payment plugin for PrestaShop]]></description>
+	<author><![CDATA[MultiSafepay]]></author>
+	<tab><![CDATA[payments_gateways]]></tab>
+	<confirmUninstall><![CDATA[]]></confirmUninstall>
+	<is_configurable>1</is_configurable>
+	<need_instance>1</need_instance>
+	<limited_countries>GB</limited_countries>
+</module>
