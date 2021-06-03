@@ -49,10 +49,6 @@ class Multisafepay extends PaymentModule
 
         $this->confirmUninstall = $this->l('');
 
-        $this->limited_countries = array('GB');
-
-        $this->limited_currencies = array('EUR');
-
         $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
     }
 
@@ -67,14 +63,7 @@ class Multisafepay extends PaymentModule
             return false;
         }
 
-        $iso_code = Country::getIsoById(Configuration::get('PS_COUNTRY_DEFAULT'));
-
-        if (in_array($iso_code, $this->limited_countries) == false) {
-            $this->_errors[] = $this->l('This module is not available in your country');
-            return false;
-        }
-
-        Configuration::updateValue('MULTISAFEPAY_LIVE_MODE', false);
+        Configuration::updateValue('MULTISAFEPAY_TEST_MODE', false);
 
         include(dirname(__FILE__).'/sql/install.php');
 
@@ -88,7 +77,9 @@ class Multisafepay extends PaymentModule
 
     public function uninstall()
     {
-        Configuration::deleteByName('MULTISAFEPAY_LIVE_MODE');
+        Configuration::deleteByName('MULTISAFEPAY_TEST_MODE');
+        Configuration::deleteByName('MULTISAFEPAY_API_KEY');
+        Configuration::deleteByName('MULTISAFEPAY_TEST_API_KEY');
 
         include(dirname(__FILE__).'/sql/uninstall.php');
 
@@ -107,11 +98,7 @@ class Multisafepay extends PaymentModule
             $this->postProcess();
         }
 
-        $this->context->smarty->assign('module_dir', $this->_path);
-
-        $output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');
-
-        return $output.$this->renderForm();
+        return $this->renderForm();
     }
 
     /**
@@ -134,7 +121,7 @@ class Multisafepay extends PaymentModule
         $helper->token = Tools::getAdminTokenLite('AdminModules');
 
         $helper->tpl_vars = array(
-            'fields_value' => $this->getConfigFormValues(), /* Add values for your inputs */
+            'fields_value' => $this->getConfigFormValues(),
             'languages' => $this->context->controller->getLanguages(),
             'id_language' => $this->context->language->id,
         );
@@ -156,10 +143,10 @@ class Multisafepay extends PaymentModule
                 'input' => array(
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('Live mode'),
-                        'name' => 'MULTISAFEPAY_LIVE_MODE',
+                        'label' => $this->l('Test mode'),
+                        'name' => 'MULTISAFEPAY_TEST_MODE',
                         'is_bool' => true,
-                        'desc' => $this->l('Use this module in live mode'),
+                        'desc' => $this->l('Use this module in test mode'),
                         'values' => array(
                             array(
                                 'id' => 'active_on',
@@ -176,15 +163,16 @@ class Multisafepay extends PaymentModule
                     array(
                         'col' => 3,
                         'type' => 'text',
-                        'prefix' => '<i class="icon icon-envelope"></i>',
-                        'desc' => $this->l('Enter a valid email address'),
-                        'name' => 'MULTISAFEPAY_ACCOUNT_EMAIL',
-                        'label' => $this->l('Email'),
+                        'desc' => $this->l('Enter a valid live API key'),
+                        'name' => 'MULTISAFEPAY_API_KEY',
+                        'label' => $this->l('Live API key'),
                     ),
                     array(
-                        'type' => 'password',
-                        'name' => 'MULTISAFEPAY_ACCOUNT_PASSWORD',
-                        'label' => $this->l('Password'),
+                        'col' => 3,
+                        'type' => 'text',
+                        'desc' => $this->l('Enter a valid test API key'),
+                        'name' => 'MULTISAFEPAY_TEST_API_KEY',
+                        'label' => $this->l('Test API key'),
                     ),
                 ),
                 'submit' => array(
@@ -200,9 +188,9 @@ class Multisafepay extends PaymentModule
     protected function getConfigFormValues()
     {
         return array(
-            'MULTISAFEPAY_LIVE_MODE' => Configuration::get('MULTISAFEPAY_LIVE_MODE', true),
-            'MULTISAFEPAY_ACCOUNT_EMAIL' => Configuration::get('MULTISAFEPAY_ACCOUNT_EMAIL', 'contact@prestashop.com'),
-            'MULTISAFEPAY_ACCOUNT_PASSWORD' => Configuration::get('MULTISAFEPAY_ACCOUNT_PASSWORD', null),
+            'MULTISAFEPAY_TEST_MODE' => Configuration::get('MULTISAFEPAY_TEST_MODE'),
+            'MULTISAFEPAY_API_KEY' => Configuration::get('MULTISAFEPAY_API_KEY'),
+            'MULTISAFEPAY_TEST_API_KEY' => Configuration::get('MULTISAFEPAY_TEST_API_KEY'),
         );
     }
 
