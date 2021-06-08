@@ -25,36 +25,43 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+require __DIR__ . '/vendor/autoload.php';
+
 class Multisafepay extends PaymentModule
 {
+
+    const MULTISAFEPAY_MODULE_VERSION = '5.0.0';
+
     protected $config_form = false;
 
+    /**
+     * Multisafepay plugin constructor.
+     * @todo Check if we need an instance on load admin. Until now, we don`t
+     */
     public function __construct()
     {
-        $this->name = 'multisafepay';
-        $this->tab = 'payments_gateways';
-        $this->version = '1.0.0';
-        $this->author = 'MultiSafepay';
+        $this->name          = 'multisafepay';
+        $this->tab           = 'payments_gateways';
+        $this->version       = self::MULTISAFEPAY_MODULE_VERSION;
+        $this->author        = 'MultiSafepay';
         $this->need_instance = 1;
-
-        /**
-         * Set $this->bootstrap to true if your module is compliant with bootstrap (PrestaShop 1.6)
-         */
-        $this->bootstrap = true;
-
+        $this->bootstrap     = true;
         parent::__construct();
 
-        $this->displayName = $this->l('MultiSafepay');
-        $this->description = $this->l('MultiSafepay payment plugin for PrestaShop');
+        $this->displayName            = $this->l('MultiSafepay');
+        $this->description            = $this->l('MultiSafepay payment plugin for PrestaShop');
+        $this->confirmUninstall       = $this->l('Are you sure you want to uninstall MultiSafepay?');
+        $this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
+    }
 
-        $this->confirmUninstall = $this->l('');
-
-        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+    public static function getVersion() {
+        return self::MULTISAFEPAY_MODULE_VERSION;
     }
 
     /**
-     * Don't forget to create update methods if needed:
-     * http://doc.prestashop.com/display/PS16/Enabling+the+Auto-Update
+     * Install method
+     * @see http://doc.prestashop.com/display/PS16/Enabling+the+Auto-Update
+     * @todo Don't forget to create update methods if needed:
      */
     public function install()
     {
@@ -62,11 +69,8 @@ class Multisafepay extends PaymentModule
             $this->_errors[] = $this->l('You have to enable the cURL extension on your server to install this module');
             return false;
         }
-
         Configuration::updateValue('MULTISAFEPAY_TEST_MODE', false);
-
-        include(dirname(__FILE__).'/sql/install.php');
-
+        include(__DIR__.'/sql/install.php');
         return parent::install() &&
             $this->registerHook('header') &&
             $this->registerHook('backOfficeHeader') &&
@@ -75,34 +79,32 @@ class Multisafepay extends PaymentModule
             $this->registerHook('paymentOptions');
     }
 
+    /**
+     * Uninstall method
+     * @return bool
+     */
     public function uninstall()
     {
         Configuration::deleteByName('MULTISAFEPAY_TEST_MODE');
         Configuration::deleteByName('MULTISAFEPAY_API_KEY');
         Configuration::deleteByName('MULTISAFEPAY_TEST_API_KEY');
-
-        include(dirname(__FILE__).'/sql/uninstall.php');
-
+        include(__DIR__ .'/sql/uninstall.php');
         return parent::uninstall();
     }
 
     /**
-     * Load the configuration form
+     * Load the configuration form or process the submitted data
      */
     public function getContent()
     {
-        /**
-         * If values have been submitted in the form, process.
-         */
         if (((bool)Tools::isSubmit('submitMultisafepayModule')) == true) {
             $this->postProcess();
         }
-
         return $this->renderForm();
     }
 
     /**
-     * Create the form that will be displayed in the configuration of your module.
+     * Create the form that will be displayed in the configuration
      */
     protected function renderForm()
     {
@@ -253,18 +255,11 @@ class Multisafepay extends PaymentModule
             return;
         }
 
-        $order = $params['objOrder'];
+        $order = $params['order'];
 
         if ($order->getCurrentOrderState()->id != Configuration::get('PS_OS_ERROR')) {
             $this->smarty->assign('status', 'ok');
         }
-
-        $this->smarty->assign(array(
-            'id_order' => $order->id,
-            'reference' => $order->reference,
-            'params' => $params,
-            'total' => Tools::displayPrice($params['total_to_pay'], $params['currencyObj'], false),
-        ));
 
         return $this->display(__FILE__, 'views/templates/hook/confirmation.tpl');
     }
@@ -281,12 +276,14 @@ class Multisafepay extends PaymentModule
         if (!$this->active) {
             return;
         }
+
         if (!$this->checkCurrency($params['cart'])) {
             return;
         }
-        $option = new \PrestaShop\PrestaShop\Core\Payment\PaymentOption();
-        $option->setCallToActionText($this->l('Pay offline'))
-            ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true));
+
+        $option = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
+        $option->setCallToActionText($this->l($this->name))
+            ->setAction($this->context->link->getModuleLink($this->name, 'payment', array(), true));
 
         return [
             $option

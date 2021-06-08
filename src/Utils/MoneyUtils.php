@@ -1,4 +1,6 @@
-{*
+<?php declare(strict_types=1);
+/**
+ *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
@@ -17,18 +19,36 @@
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
-*}
+ */
 
-{if (isset($status) == true) && ($status == 'ok')}
-<h3>Your order has been registered.</h3>
-<p>
-	<br />{l s='An email has been sent with this information.' mod='multisafepay'}
-	<br /><br />{l s='If you have questions, comments or concerns, please contact our' mod='multisafepay'} <a href="{$link->getPageLink('contact', true)|escape:'html':'UTF-8'}">{l s='expert customer support team.' mod='multisafepay'}</a>
-</p>
-{else}
-<h3>Your order has not been accepted.</h3>
-<p>
-	<br />{l s='Please, try to order again.' mod='multisafepay'}
-	<br /><br />{l s='If you have questions, comments or concerns, please contact our' mod='multisafepay'} <a href="{$link->getPageLink('contact', true)|escape:'html':'UTF-8'}">{l s='expert customer support team.' mod='multisafepay'}</a>
-</p>
-{/if}
+namespace MultiSafepay\PrestaShop\Utils;
+
+use MultiSafepay\ValueObject\Money;
+
+
+/**
+ * Class MoneyUtil
+ *
+ * @package MultiSafepay\PrestaShop\Utils
+ * @since    4.0.0
+ */
+class MoneyUtils {
+    public const DEFAULT_CURRENCY_CODE = 'EUR';
+
+    /**
+     * @param float  $amount
+     * @param string $currency_code
+     * @return Money
+     */
+    public static function create_money( float $amount, string $currency_code = self::DEFAULT_CURRENCY_CODE ): Money {
+        return new Money( self::price_to_cents( $amount ), $currency_code );
+    }
+
+    /**
+     * @param float $price
+     * @return float|integer
+     */
+    private static function price_to_cents( float $price ) {
+        return $price * 100;
+    }
+}

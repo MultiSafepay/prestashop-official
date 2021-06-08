@@ -1,4 +1,6 @@
-{*
+<?php declare(strict_types=1);
+/**
+ *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
@@ -17,18 +19,14 @@
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
-*}
+ */
 
-{if (isset($status) == true) && ($status == 'ok')}
-<h3>Your order has been registered.</h3>
-<p>
-	<br />{l s='An email has been sent with this information.' mod='multisafepay'}
-	<br /><br />{l s='If you have questions, comments or concerns, please contact our' mod='multisafepay'} <a href="{$link->getPageLink('contact', true)|escape:'html':'UTF-8'}">{l s='expert customer support team.' mod='multisafepay'}</a>
-</p>
-{else}
-<h3>Your order has not been accepted.</h3>
-<p>
-	<br />{l s='Please, try to order again.' mod='multisafepay'}
-	<br /><br />{l s='If you have questions, comments or concerns, please contact our' mod='multisafepay'} <a href="{$link->getPageLink('contact', true)|escape:'html':'UTF-8'}">{l s='expert customer support team.' mod='multisafepay'}</a>
-</p>
-{/if}
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
+
+header('Location: ../');
+exit;

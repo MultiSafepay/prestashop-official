@@ -29,11 +29,10 @@ class MultisafepayConfirmationModuleFrontController extends ModuleFrontControlle
             return false;
         }
 
-        $cart_id = Tools::getValue('cart_id');
+        $cart_id    = Tools::getValue('cart_id');
         $secure_key = Tools::getValue('secure_key');
-
-        $cart = new Cart((int) $cart_id);
-        $customer = new Customer((int) $cart->id_customer);
+        $cart       = new Cart((int) $cart_id);
+        $customer   = new Customer((int) $cart->id_customer);
 
         /**
          * Since it's an example we are validating the order right here,
