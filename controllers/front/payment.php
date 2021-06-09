@@ -25,9 +25,7 @@ use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\TransactionResponse;
-use CurrencyCore as PrestaShopCurrency;
-use OrderHistoryCore as PrestaShopOrderHistory;
-use OrderPaymentCore as PrestaShopOrderPayment;
+use MultiSafepay\Exception\ApiException;
 
 class MultisafepayPaymentModuleFrontController extends ModuleFrontController
 {
@@ -73,9 +71,8 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         $module_name = $this->module->displayName;
 
         try {
-            $validate = $this->module->validateOrder($cart_id, $payment_status, $amount, $module_name, $message, array('transaction_id' => 'START'), $currency_id, false, $secure_key);
+            $validate = $this->module->validateOrder($cart_id, $payment_status, $amount, $module_name, $message, array('dont_send_email' => true), $currency_id, false, $secure_key);
         } catch (PrestaShopException $prestaShopException) {
-
         }
 
         $order = Order::getByCartId($cart_id);
@@ -83,17 +80,7 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         $order_request = $order_service->createOrderRequest();
         $transaction = $this->createMultiSafepayTransaction($order_request);
 
-//        $order_payment = new PrestaShopOrderPayment();
-//        $order_payment->order_reference = $order->reference;
-//        $order_payment->id_currency = $order->id_currency;
-//        $order_payment->conversion_rate = (new PrestaShopCurrency($order->id_currency))->conversion_rate;
-//        $order_payment->payment_method = $order->payment;
-//        $order_payment->transaction_id = ' -- ';
-//        $order_payment->amount = 0;
-//        $order_payment->add(true);
-
         Tools::redirectLink($transaction->getPaymentUrl());
-
     }
 
     /**
@@ -104,14 +91,12 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
      * @param OrderRequest $order_request
      * @return TransactionResponse
      */
-    private function createMultiSafepayTransaction( OrderRequest $order_request ): TransactionResponse
+    private function createMultiSafepayTransaction(OrderRequest $order_request): TransactionResponse
     {
-        $multisafepay_sdk    = (new SdkService())->getSdk();
-        $transaction_manager = $multisafepay_sdk->getTransactionManager();
-
+        $transaction_manager    = ((new SdkService())->getSdk())->getTransactionManager();
         try {
-            $transaction = $transaction_manager->create( $order_request );
-        } catch ( ApiException $api_exception ) {
+            $transaction = $transaction_manager->create($order_request);
+        } catch (ApiException $api_exception) {
             // Log error
         }
         return $transaction;

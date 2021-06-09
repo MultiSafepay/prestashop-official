@@ -54,7 +54,11 @@ class Multisafepay extends PaymentModule
         $this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
     }
 
-    public static function getVersion() {
+    /**
+     * @return string
+     */
+    public static function getVersion(): string
+    {
         return self::MULTISAFEPAY_MODULE_VERSION;
     }
 
@@ -294,27 +298,24 @@ class Multisafepay extends PaymentModule
     /**
      * Disable send emails on order confirmation
      *
-     * @param $params
+     * @param  array $params
      * @return bool
      */
-    public function hookActionEmailSendBefore($params){
-        $params = $params;
-        if(
-            ($params['template'] === 'order_conf' && $this->isMultiSafepayOrderConfirmationEmail($params)) ||
-            (isset($params['templateVars']['dont_send_email']) && $params['dont_send_email'] === true)
-        )
-        {
+    public function hookActionEmailSendBefore(array $params): bool
+    {
+        if ($this->isMultiSafepayTemplateVarsSetAsNoSendEmail($params)) {
             return false;
         }
         return true;
     }
 
     /**
-     * @param $params
+     * @param  array $params
      * @return bool
      */
-    private function isMultiSafepayOrderConfirmationEmail($params) {
-        if(isset($params['cart']) && (Order::getByCartId($params['cart']->id)->payment === 'MultiSafepay')) {
+    private function isMultiSafepayTemplateVarsSetAsNoSendEmail(array $params): bool
+    {
+        if (isset($params['templateVars']['dont_send_email']) &&  $params['templateVars']['dont_send_email'] === true) {
             return true;
         }
         return false;

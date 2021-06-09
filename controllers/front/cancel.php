@@ -24,7 +24,8 @@
 use OrderCore as PrestaShopOrder;
 use OrderHistoryCore as PrestaShopOrderHistory;
 use CartCore as PrestaShopCart;
-use PrestaShop\PrestaShop\Adapter\StockManager as StockManagerAdapter;
+use MultiSafepay\PrestaShop\Services\SdkService;
+use MultiSafepay\Api\Transactions\TransactionResponse;
 
 class MultisafepayCancelModuleFrontController extends ModuleFrontController
 {
@@ -37,38 +38,22 @@ class MultisafepayCancelModuleFrontController extends ModuleFrontController
      */
     public function postProcess()
     {
-        if ($this->module->active == false) {
+        if ($this->module->active == false || !Tools::getValue('id_order')) {
             die;
         }
-
-        $order = new PrestaShopOrder(Tools::getValue('id_order'));
+        $order_id = Tools::getValue('id_order');
+        $order = new PrestaShopOrder($order_id);
         $history  = new PrestaShopOrderHistory();
         $history->id_order = (int)$order->id;
         $history->id_order_state = (int)$order->id;
-        // Default cancelled state.
-        $cancel_order_status_id = 6;
-
-        // Custom cancel state
-        // $cancel_order_status_id = 21;
-
+        $cancel_order_status_id = (int) Configuration::get('PS_OS_CANCELED');
         $history->changeIdOrderState($cancel_order_status_id, $order->id);
         $history->addWithemail(true, array('dont_send_email' => true));
-
-        // Reverse stock quantities is required if we use a custom status with no email.
-        // see https://github.com/PrestaShop/PrestaShop/blob/ad181f7fb89dea67dfebba779a6440854baa6d5b/src/Adapter/StockManager.php#L134
-        // StockManager->updatePhysicalProductQuantity($shopId, $errorState, $cancellationState, $idProduct = null, $idOrder = null);
-
         $cart = new PrestaShopCart(Tools::getValue('id_cart'));
-        // This method probably will be helpful to understand how to dupllicate the cart.
-        // $cart->isAllProductsInStock()
         $new_cart = $cart->duplicate();
         Context::getContext()->cookie->id_cart = $new_cart['cart']->id;
         Context::getContext()->cookie->write();
-
         $redirect = $this->context->link->getPageLink('order', true, null, array('step' => '3'));
         Tools::redirect($redirect);
-
-
     }
-
 }

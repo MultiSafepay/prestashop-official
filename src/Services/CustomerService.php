@@ -40,9 +40,16 @@ use StateCore as PrestaShopState;
  *
  * @package MultiSafepay\PrestaShop\Services
  */
-class CustomerService {
+class CustomerService
+{
 
-    public function __construct( PrestaShopOrder $order )
+    /**
+     * CustomerService constructor.
+     * @param PrestaShopOrder $order
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
+     */
+    public function __construct(PrestaShopOrder $order)
     {
         $this->order            = $order;
         $this->customer         = $this->order->getCustomer();
@@ -53,11 +60,11 @@ class CustomerService {
     }
 
     /**
-     * @param Order $order
      * @return CustomerDetails
      */
-    public function create_customer_details(): CustomerDetails {
-        $customer_address = $this->create_address(
+    public function createCustomerDetails(): CustomerDetails
+    {
+        $customer_address = $this->createAddress(
             $this->invoice_address->address1,
             $this->invoice_address->address2,
             $this->invoice_country->iso_code,
@@ -65,7 +72,7 @@ class CustomerService {
             $this->invoice_address->city,
             $this->invoice_address->postcode
         );
-        return $this->create_customer(
+        return $this->createCustomer(
             $customer_address,
             $this->customer->email,
             $this->invoice_address->phone,
@@ -78,10 +85,10 @@ class CustomerService {
     }
 
     /**
-     * @param WC_Order $order
      * @return CustomerDetails
      */
-    public function create_delivery_details(): CustomerDetails {
+    public function createDeliveryDetails(): CustomerDetails
+    {
         $delivery_address = $this->create_address(
             $this->shipping_address->address1,
             $this->shipping_address->address2,
@@ -91,7 +98,7 @@ class CustomerService {
             $this->shipping_address->postcode
         );
 
-        return $this->create_customer(
+        return $this->createCustomer(
             $delivery_address,
             $this->customer->email,
             $this->shipping_address->phone,
@@ -116,7 +123,7 @@ class CustomerService {
      * @param string  $company_name
      * @return CustomerDetails
      */
-    private function create_customer(
+    private function createCustomer(
         Address $address,
         string $email_address,
         string $phone_number,
@@ -130,22 +137,22 @@ class CustomerService {
         $customer_details
             ->addAddress($address)
             ->addEmailAddress(new EmailAddress($email_address))
-            ->addFirstName( $first_name )
-            ->addLastName( $last_name )
-            ->addPhoneNumber( new PhoneNumber( $phone_number ) )
-            ->addLocale( $this->getLanguageCode( PrestaShopLanguage::getIsoById($this->order->id_lang)))
-            ->addCompanyName( $company_name ? $company_name : '' );
+            ->addFirstName($first_name)
+            ->addLastName($last_name)
+            ->addPhoneNumber(new PhoneNumber($phone_number))
+            ->addLocale($this->getLanguageCode(PrestaShopLanguage::getIsoById($this->order->id_lang)))
+            ->addCompanyName($company_name ? $company_name : '');
 
-        if ( ! empty( $ip_address ) ) {
-            $customer_details->addIpAddressAsString( $ip_address );
+        if (! empty($ip_address)) {
+            $customer_details->addIpAddressAsString($ip_address);
         }
 
-        if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-            $customer_details->addForwardedIpAsString( $_SERVER['HTTP_X_FORWARDED_FOR'] );
+        if (! empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $customer_details->addForwardedIpAsString($_SERVER['HTTP_X_FORWARDED_FOR']);
         }
 
-        if ( ! empty( $user_agent ) ) {
-            $customer_details->addUserAgent( $user_agent );
+        if (! empty($user_agent)) {
+            $customer_details->addUserAgent($user_agent);
         }
 
         return $customer_details;
@@ -162,7 +169,7 @@ class CustomerService {
      * @param string $zip_code
      * @return Address
      */
-    private function create_address(
+    private function createAddress(
         string $address_line_1,
         string $address_line_2,
         string $country,
@@ -171,17 +178,17 @@ class CustomerService {
         string $zip_code
     ): Address {
         $address_parser = new AddressParser();
-        $address        = $address_parser->parse( $address_line_1, $address_line_2 );
+        $address        = $address_parser->parse($address_line_1, $address_line_2);
         $street       = $address[0];
         $house_number = $address[1];
         $customer_address = new Address();
         return $customer_address
-            ->addStreetName( $street )
-            ->addHouseNumber( $house_number )
-            ->addState( $state )
-            ->addCity( $city )
-            ->addCountry( new Country( $country ) )
-            ->addZipCode( $zip_code );
+            ->addStreetName($street)
+            ->addHouseNumber($house_number)
+            ->addState($state)
+            ->addCity($city)
+            ->addCountry(new Country($country))
+            ->addZipCode($zip_code);
     }
 
 
@@ -198,5 +205,4 @@ class CustomerService {
         $language_code = $parts[0] . '_' . strtoupper($parts[1]);
         return $language_code;
     }
-
 }

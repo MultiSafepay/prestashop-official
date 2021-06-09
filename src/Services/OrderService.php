@@ -41,7 +41,8 @@ use ConfigurationCore as PrestaShopConfiguration;
  *
  * @package MultiSafepay\PrestaShop\Services
  */
-class OrderService {
+class OrderService
+{
 
     /**
      * @var Order
@@ -59,7 +60,8 @@ class OrderService {
      * @param $module_id
      * @param $secure_key
      */
-    public function __construct( PrestaShopOrder $order, $module_id, $secure_key ) {
+    public function __construct(PrestaShopOrder $order, $module_id, $secure_key)
+    {
         $this->order = $order;
         $this->module_id = $module_id;
         $this->secure_key = $secure_key;
@@ -72,28 +74,29 @@ class OrderService {
      * @param GatewayInfoInterface $gateway_info
      * @return OrderRequest
      */
-    public function createOrderRequest( string $gateway_code = '', string $type = 'redirect', GatewayInfoInterface $gateway_info = null ): OrderRequest {
+    public function createOrderRequest(string $gateway_code = '', string $type = 'redirect', GatewayInfoInterface $gateway_info = null): OrderRequest
+    {
         $order_request = new OrderRequest();
         $order_request
-            ->addOrderId( (string) $this->order->id )
-            ->addMoney( MoneyUtils::create_money( (float) $this->order->total_paid, PrestaShopCurrency::getIsoCodeById( (int) $this->order->id_currency)  ) )
-            ->addGatewayCode( $gateway_code )
-            ->addType( $type )
-            ->addPluginDetails( $this->create_plugin_details() )
-            ->addDescriptionText( $this->get_order_description_text( $this->order->id ) )
-            ->addCustomer( $this->customer_service->create_customer_details() )
-            ->addPaymentOptions( $this->create_payment_options( $this->order ) )
-            ->addSecondsActive( $this->getTimeActive() )
-            ->addSecondChance( ( new SecondChance() )->addSendEmail( true ) );
+            ->addOrderId((string) $this->order->id)
+            ->addMoney(MoneyUtils::createMoney((float) $this->order->total_paid, PrestaShopCurrency::getIsoCodeById((int) $this->order->id_currency)))
+            ->addGatewayCode($gateway_code)
+            ->addType($type)
+            ->addPluginDetails($this->createPluginDetails())
+            ->addDescriptionText($this->getOrderDescriptionText($this->order->id))
+            ->addCustomer($this->customer_service->createCustomerDetails())
+            ->addPaymentOptions($this->createPaymentOptions($this->order))
+            ->addSecondsActive($this->getTimeActive())
+            ->addSecondChance(( new SecondChance() )->addSendEmail(true));
 
-        if ( $this->order->total_shipping > 0 ) {
-            $order_request->addDelivery( $this->customer_service->create_delivery_details() );
+        if ($this->order->total_shipping > 0) {
+            $order_request->addDelivery($this->customer_service->createDeliveryDetails());
         }
-        if ( PrestaShopConfiguration::get('MULTISAFEPAY_GOOGLE_ANALYTICS_ID') ) {
-            $order_request->addGoogleAnalytics( ( new GoogleAnalytics() )->addAccountId( PrestaShopConfiguration::get('MULTISAFEPAY_GOOGLE_ANALYTICS_ID') ) );
+        if (PrestaShopConfiguration::get('MULTISAFEPAY_GOOGLE_ANALYTICS_ID')) {
+            $order_request->addGoogleAnalytics(( new GoogleAnalytics() )->addAccountId(PrestaShopConfiguration::get('MULTISAFEPAY_GOOGLE_ANALYTICS_ID')));
         }
-        if ( $gateway_info ) {
-            $order_request->addGatewayInfo( $gateway_info );
+        if ($gateway_info) {
+            $order_request->addGatewayInfo($gateway_info);
         }
         return $order_request;
     }
@@ -110,10 +113,10 @@ class OrderService {
         $time_active_unit = PrestaShopConfiguration::get('MULTISAFEPAY_TIME_ACTIVE_UNIT');
         $time_active      = 30;
         $time_active_unit = 'days';
-        if ( 'days' === $time_active_unit ) {
+        if ('days' === $time_active_unit) {
             $time_active = $time_active * 24 * 60 * 60;
         }
-        if ( 'hours' === $time_active_unit ) {
+        if ('hours' === $time_active_unit) {
             $time_active = $time_active * 60 * 60;
         }
         return $time_active;
@@ -122,39 +125,42 @@ class OrderService {
     /**
      * @return PluginDetails
      */
-    private function create_plugin_details() {
+    private function createPluginDetails()
+    {
         $plugin_details = new PluginDetails();
         return $plugin_details
-            ->addApplicationName( 'PrestaShop ' )
-            ->addApplicationVersion( 'PrestaShop: ' . _PS_VERSION_ )
-            ->addPluginVersion( MultiSafepay::getVersion() )
-            ->addShopRootUrl( PrestaShopContext::getContext()->shop->getBaseURL(true) );
+            ->addApplicationName('PrestaShop ')
+            ->addApplicationVersion('PrestaShop: ' . _PS_VERSION_)
+            ->addPluginVersion(MultiSafepay::getVersion())
+            ->addShopRootUrl(PrestaShopContext::getContext()->shop->getBaseURL(true));
     }
 
     /**
      * @param   $order
      * @return  PaymentOptions
      */
-    private function create_payment_options(): PaymentOptions {
+    private function createPaymentOptions(): PaymentOptions
+    {
         $payment_options        = new PaymentOptions();
         return $payment_options
-            ->addNotificationUrl( PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'notification', array(), true) )
-            ->addCancelUrl( PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'cancel', array('id_cart' => $this->order->id_cart, 'id_order' => $this->order->id), true) )
-            ->addRedirectUrl( PrestaShopContext::getContext()->shop->getBaseURL(true) . 'index.php?controller=order-confirmation&id_cart=' . $this->order->id_cart . '&id_order=' . $this->order->id . '&id_module=' . $this->module_id . '&key=' . $this->secure_key );
+            ->addNotificationMethod('GET')
+            ->addNotificationUrl(PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'notification', array(), true))
+            ->addCancelUrl(PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'cancel', array('id_cart' => $this->order->id_cart, 'id_order' => $this->order->id), true))
+            ->addRedirectUrl(PrestaShopContext::getContext()->shop->getBaseURL(true) . 'index.php?controller=order-confirmation&id_cart=' . $this->order->id_cart . '&id_order=' . $this->order->id . '&id_module=' . $this->module_id . '&key=' . $this->secure_key);
     }
 
     /**
      * Return the order description.
      *
-     * @param   int      $order_id
+     * @param   int   $order_id
      * @return  string   $order_description
      */
-    private function get_order_description_text( int $order_id ):string {
-        $order_description = sprintf( 'Payment for order: %s', $order_id );
-        if ( PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION') ) {
-            $order_description = str_replace( '{order_id}', $order_id, PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION'));
+    private function getOrderDescriptionText(int $order_id):string
+    {
+        $order_description = sprintf('Payment for order: %s', $order_id);
+        if (PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION')) {
+            $order_description = str_replace('{order_id}', $order_id, PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION'));
         }
         return $order_description;
     }
-
 }

@@ -25,14 +25,14 @@ namespace MultiSafepay\PrestaShop\Utils;
 
 use MultiSafepay\ValueObject\Money;
 
-
 /**
  * Class MoneyUtil
  *
  * @package MultiSafepay\PrestaShop\Utils
  * @since    4.0.0
  */
-class MoneyUtils {
+class MoneyUtils
+{
     public const DEFAULT_CURRENCY_CODE = 'EUR';
 
     /**
@@ -40,15 +40,17 @@ class MoneyUtils {
      * @param string $currency_code
      * @return Money
      */
-    public static function create_money( float $amount, string $currency_code = self::DEFAULT_CURRENCY_CODE ): Money {
-        return new Money( self::price_to_cents( $amount ), $currency_code );
+    public static function createMoney(float $amount, string $currency_code = self::DEFAULT_CURRENCY_CODE): Money
+    {
+        return new Money(self::priceToCents($amount), $currency_code);
     }
 
     /**
      * @param float $price
      * @return float|integer
      */
-    private static function price_to_cents( float $price ) {
+    private static function priceToCents(float $price)
+    {
         return $price * 100;
     }
 }
