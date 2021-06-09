@@ -58,10 +58,7 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         $this->context->language = new Language((int) Context::getContext()->customer->id_lang);
 
         if ($this->isValidOrder() === true) {
-            // Get Initialized order status ID.
-            // This order status should be registered within the install method of the plugin.
-            // Should not send emails, or validate order.
-            $payment_status = 20;
+            $payment_status = Configuration::get('MULTISAFEPAY_OS_INITIALIZED');
             $message = null;
         } else {
             $payment_status = Configuration::get('PS_OS_ERROR');
