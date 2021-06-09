@@ -21,9 +21,9 @@
  *
  */
 
-use Order as PrestaShopOrder;
-use OrderHistory as PrestaShopOrderHistory;
-use Cart as PrestaShopCart;
+use OrderCore as PrestaShopOrder;
+use OrderHistoryCore as PrestaShopOrderHistory;
+use CartCore as PrestaShopCart;
 
 class MultisafepayCancelModuleFrontController extends ModuleFrontController
 {
@@ -44,11 +44,24 @@ class MultisafepayCancelModuleFrontController extends ModuleFrontController
         $history  = new PrestaShopOrderHistory();
         $history->id_order = (int)$order->id;
         $history->id_order_state = (int)$order->id;
+        // Default cancelled state.
         $cancel_order_status_id = 6;
+
+        // Custom cancel state
+        // $cancel_order_status_id = 21;
         $history->changeIdOrderState($cancel_order_status_id, $order->id);
+
+        // this does not seems to work in combination with a hook ActionEmailSendBefore
+        // $history->addWithemail(true, array('dont_send_email' => true));
         $history->add();
 
+        // Reverse stock quantities is required if we use a custom status with no email.
+        // see https://github.com/PrestaShop/PrestaShop/blob/ad181f7fb89dea67dfebba779a6440854baa6d5b/src/Adapter/StockManager.php#L134
+        // StockManager->updatePhysicalProductQuantity($shopId, $errorState, $cancellationState, $idProduct = null, $idOrder = null);
+
         $cart = new PrestaShopCart(Tools::getValue('id_cart'));
+        // This method probably will be helpful to understand how to dupllicate the cart.
+        // $cart->isAllProductsInStock()
         $new_cart = $cart->duplicate();
         Context::getContext()->cookie->id_cart = $new_cart['cart']->id;
         Context::getContext()->cookie->write();

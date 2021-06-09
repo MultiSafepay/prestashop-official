@@ -76,7 +76,8 @@ class Multisafepay extends PaymentModule
             $this->registerHook('backOfficeHeader') &&
             $this->registerHook('payment') &&
             $this->registerHook('paymentReturn') &&
-            $this->registerHook('paymentOptions');
+            $this->registerHook('paymentOptions') &&
+            $this->registerHook('actionEmailSendBefore');
     }
 
     /**
@@ -288,6 +289,34 @@ class Multisafepay extends PaymentModule
         return [
             $option
         ];
+    }
+
+    /**
+     * Disable send emails on order confirmation
+     *
+     * @param $params
+     * @return bool
+     */
+    public function hookActionEmailSendBefore($params){
+        if(
+            ($params['template'] === 'order_conf' && $this->isMultiSafepayOrderConfirmationEmail($params)) ||
+            (isset($params['dont_send_email']) && $params['dont_send_email'] === true)
+        )
+        {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param $params
+     * @return bool
+     */
+    private function isMultiSafepayOrderConfirmationEmail($params) {
+        if(isset($params['cart']) && (Order::getByCartId($params['cart']->id)->payment === 'MultiSafepay')) {
+            return true;
+        }
+        return false;
     }
 
     public function checkCurrency($cart)

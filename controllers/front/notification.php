@@ -23,7 +23,8 @@
 
 use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\Util\Notification;
-use Tools;
+use OrderCore as PrestaShopOrder;
+use OrderHistoryCore as PrestaShopOrderHistory;
 
 class MultisafepayNotificationModuleFrontController extends ModuleFrontController
 {
@@ -42,26 +43,15 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
             die;
         }
 
-        $timestamp           = Tools::getValue( 'timestamp' );
-        $transactionid       = Tools::getValue( 'transactionid' );
-        $auth                = $request->get_header( 'auth' );
-        $body                = $request->get_body();
-        $api_key             = ( new SdkService() )->get_api_key();
-        $verify_notification = Notification::verifyNotification( $body, $auth, $api_key );
-
-        if ( ! $verify_notification ) {
-            $logger = wc_get_logger();
-            $logger->log( 'info', 'Notification for transactionid . ' . $transactionid . ' has been received but is not validated' );
-            header( 'Content-type: text/plain' );
-            die( 'OK' );
-        }
-
-        $multisafepay_transaction = new TransactionResponse( $request->get_json_params(), $body );
-        ( new PaymentMethodCallback( (string) $transactionid, $multisafepay_transaction ) )->process_callback();
-
-
-        $transaction_id = '';
-        $order_id = '';
+        $order = new PrestaShopOrder(Tools::getValue('transactionid'));
+        $history  = new PrestaShopOrderHistory();
+        $history->id_order = (int)$order->id;
+        $history->id_order_state = (int)$order->id;
+        $status_id = 20;
+        // Deliveried status
+//        $status_id = 5;
+        $history->changeIdOrderState($status_id, $order->id);
+        $history->add();
 
         header('Content-Type: text/plain');
         die('OK');

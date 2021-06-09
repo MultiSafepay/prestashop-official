@@ -29,11 +29,11 @@ use MultiSafepay\ValueObject\Customer\AddressParser;
 use MultiSafepay\ValueObject\Customer\Country;
 use MultiSafepay\ValueObject\Customer\EmailAddress;
 use MultiSafepay\ValueObject\Customer\PhoneNumber;
-use Order as PrestaShopOrder;
-use Address as PrestaShopAddress;
-use Country as PrestaShopCountry;
-use Language as PrestaShopLanguage;
-use State as PrestaShopState;
+use OrderCore as PrestaShopOrder;
+use AddressCore as PrestaShopAddress;
+use CountryCore as PrestaShopCountry;
+use LanguageCore as PrestaShopLanguage;
+use StateCore as PrestaShopState;
 
 /**
  * Class CustomerService

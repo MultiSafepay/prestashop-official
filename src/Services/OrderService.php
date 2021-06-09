@@ -31,10 +31,10 @@ use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PluginDetails;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\SecondChance;
 use MultiSafepay\PrestaShop\Utils\MoneyUtils;
 use MultiSafepay;
-use Context as PrestaShopContext;
-use Order as PrestaShopOrder;
-use Currency as PrestaShopCurrency;
-use Configuration as PrestaShopConfiguration;
+use ContextCore as PrestaShopContext;
+use OrderCore as PrestaShopOrder;
+use CurrencyCore as PrestaShopCurrency;
+use ConfigurationCore as PrestaShopConfiguration;
 
 /**
  * Class OrderService

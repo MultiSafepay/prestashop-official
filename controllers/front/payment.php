@@ -25,6 +25,9 @@ use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\TransactionResponse;
+use CurrencyCore as PrestaShopCurrency;
+use OrderHistoryCore as PrestaShopOrderHistory;
+use OrderPaymentCore as PrestaShopOrderPayment;
 
 class MultisafepayPaymentModuleFrontController extends ModuleFrontController
 {
@@ -47,8 +50,8 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         $cart_id      = $this->context->cart->id;
         $customer_id  = $this->context->cart->id_customer;
         $currency_id  = $this->context->cart->id_currency;
-        $amount       = $this->context->cart->getOrderTotal();
-        $amount       = 10;
+        // $amount       = $this->context->cart->getOrderTotal();
+        $amount = 0;
         $secure_key   = $this->context->customer->secure_key;
 
         $this->context->cart     = new Cart((int) $cart_id);
@@ -57,8 +60,10 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         $this->context->language = new Language((int) Context::getContext()->customer->id_lang);
 
         if ($this->isValidOrder() === true) {
-            // Get Initialized order status ID
-            $payment_status = 43;
+            // Get Initialized order status ID.
+            // This order status should be registered within the install method of the plugin.
+            // Should not send emails, or validate order.
+            $payment_status = 20;
             $message = null;
         } else {
             $payment_status = Configuration::get('PS_OS_ERROR');
@@ -68,7 +73,7 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         $module_name = $this->module->displayName;
 
         try {
-            $validate = $this->module->validateOrder($cart_id, $payment_status, $amount, $module_name, $message, array(), $currency_id, false, $secure_key);
+            $validate = $this->module->validateOrder($cart_id, $payment_status, $amount, $module_name, $message, array('transaction_id' => 'START'), $currency_id, false, $secure_key);
         } catch (PrestaShopException $prestaShopException) {
 
         }
@@ -77,6 +82,16 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         $order_service = new OrderService($order, $this->module->id, $secure_key);
         $order_request = $order_service->createOrderRequest();
         $transaction = $this->createMultiSafepayTransaction($order_request);
+
+//        $order_payment = new PrestaShopOrderPayment();
+//        $order_payment->order_reference = $order->reference;
+//        $order_payment->id_currency = $order->id_currency;
+//        $order_payment->conversion_rate = (new PrestaShopCurrency($order->id_currency))->conversion_rate;
+//        $order_payment->payment_method = $order->payment;
+//        $order_payment->transaction_id = ' -- ';
+//        $order_payment->amount = 0;
+//        $order_payment->add(true);
+
         Tools::redirectLink($transaction->getPaymentUrl());
 
     }
