@@ -24,6 +24,7 @@
 use OrderCore as PrestaShopOrder;
 use OrderHistoryCore as PrestaShopOrderHistory;
 use CartCore as PrestaShopCart;
+use PrestaShop\PrestaShop\Adapter\StockManager as StockManagerAdapter;
 
 class MultisafepayCancelModuleFrontController extends ModuleFrontController
 {
@@ -49,11 +50,9 @@ class MultisafepayCancelModuleFrontController extends ModuleFrontController
 
         // Custom cancel state
         // $cancel_order_status_id = 21;
-        $history->changeIdOrderState($cancel_order_status_id, $order->id);
 
-        // this does not seems to work in combination with a hook ActionEmailSendBefore
-        // $history->addWithemail(true, array('dont_send_email' => true));
-        $history->add();
+        $history->changeIdOrderState($cancel_order_status_id, $order->id);
+        $history->addWithemail(true, array('dont_send_email' => true));
 
         // Reverse stock quantities is required if we use a custom status with no email.
         // see https://github.com/PrestaShop/PrestaShop/blob/ad181f7fb89dea67dfebba779a6440854baa6d5b/src/Adapter/StockManager.php#L134
