@@ -148,7 +148,6 @@ class OrderService
             ->addNotificationUrl(PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'notification', array(), true))
             ->addCancelUrl(PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'cancel', array('id_cart' => $this->order->id_cart, 'id_order' => $this->order->id), true))
             ->addRedirectUrl(PrestaShopContext::getContext()->link->getPageLink('order-confirmation', null, PrestaShopContext::getContext()->language->id, 'id_cart=' . $this->order->id_cart . '&id_order=' . $this->order->id . '&id_module=' . $this->module_id . '&key=' . $this->secure_key));
-//            ->addRedirectUrl(PrestaShopContext::getContext()->shop->getBaseURL(true) . 'index.php?controller=order-confirmation&);
     }
 
     /**

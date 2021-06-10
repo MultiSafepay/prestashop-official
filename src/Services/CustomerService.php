@@ -89,7 +89,7 @@ class CustomerService
      */
     public function createDeliveryDetails(): CustomerDetails
     {
-        $delivery_address = $this->create_address(
+        $delivery_address = $this->createAddress(
             $this->shipping_address->address1,
             $this->shipping_address->address2,
             $this->shipping_country->iso_code,
