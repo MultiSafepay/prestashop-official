@@ -20,43 +20,11 @@ services:
     ports:
       - 8025:8025
       - 1025:1025
-  prestashop_1.6.7.1:
+  prestashop_1.7:
     build:
       context: ./
-      dockerfile: dockerfile-prestashop-1.6
-    container_name: prestashop-1.6
-    depends_on:
-      - db
-      - mailhog
-    ports:
-      - 8080:80
-    volumes:
-      - type: volume
-        source: prestashop-1-6-data
-        target: /var/www/html
-      - type: bind
-        source: ./
-        target: /var/www/html/modules/multisafepay
-    environment:
-      - DB_SERVER=db
-      - DB_PREFIX=ps16_
-      - PS_DEV_MODE=${PS_DEV_MODE}
-      - PS_INSTALL_AUTO=1
-      - DB_USER=${DB_USER}
-      - DB_PASSWD=${DB_PASSWD}
-      - DB_NAME=${DB_NAME}
-      - PS_FOLDER_ADMIN=${PS_FOLDER_ADMIN}
-      - PS_DOMAIN=${PS_DOMAIN}:8080
-      - PS_LANGUAGE=${PS_LANGUAGE}
-      - PS_COUNTRY=${PS_COUNTRY}
-      - PS_FOLDER_INSTALL=${PS_FOLDER_INSTALL}
-      - ADMIN_MAIL=${ADMIN_MAIL}
-      - ADMIN_PASSWD=${ADMIN_PASSWD}
-  prestashop_1.7.7.3:
-    build:
-      context: ./
-      dockerfile: dockerfile-prestashop-1.7-7.3
-    container_name: prestashop-1.7-7.3
+      dockerfile: dockerfile-prestashop-1.7
+    container_name: prestashop-1.7
     depends_on:
       - db
       - mailhog
@@ -66,7 +34,7 @@ services:
       - 9003
     volumes:
       - type: volume
-        source: prestashop-1-7-7-3-data
+        source: prestashop-1-7-data
         target: /var/www/html
       - type: bind
         source: ./.docker/php/conf.d/xdebug.ini
@@ -93,6 +61,5 @@ services:
       - ADMIN_MAIL=${ADMIN_MAIL}
       - ADMIN_PASSWD=${ADMIN_PASSWD}
 volumes:
-  prestashop-1-6-data:
-  prestashop-1-7-7-3-data:
+  prestashop-1-7-data:
   db-data:

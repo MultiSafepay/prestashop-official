@@ -1,7 +1,7 @@
 on:
   push:
     tags:
-      - '*' # Create for all tags a draft release
+      - '*'
 name: Upload Release Asset
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
           php-version: '7.3'
       - name: Get the version
         id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//} # Get the version number
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Build project

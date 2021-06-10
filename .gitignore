@@ -8,10 +8,10 @@
 /.distignore
 /.phpcs.xml
 /composer.lock
-/.codecov.yml
 .DS_Store
 /.env
 /vendor
 /.php_cs.cache
 /.php_cs.dist
 /.config.xml
+/config.xml
