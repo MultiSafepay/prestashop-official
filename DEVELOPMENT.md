@@ -12,19 +12,18 @@ This extension has been developed by MultiSafepay following the development guid
 ```
 git clone git@github.com:MultiSafepay/PrestaShop-internal.git ./
 ```
-* Install composer dependencies
-```
-composer install
-```
 * Rename the file .env.dist to .env
 * Change the values in the .env file to meet your expectations
 * Execute the following docker compose command
 ```
 docker compose up -d
 ```
-* Wait a couple of minutes if this is the first time you are executing this project.
+* Wait a couple of minutes if this is the first time you are executing this project
+* Install composer dependencies
+```
+docker exec --workdir /var/www/html/modules/multisafepay prestashop-1.7 composer install
+```
 * Now you can access to the browser to the following applications:
-    * Prestashop 1.6 (PHP 7.1): ${PS_DOMAIN}:8080*
     * Prestashop 1.7 (PHP 7.3): ${PS_DOMAIN}:8081*
     * Mailhog: localhost:8025
     
@@ -50,7 +49,14 @@ docker compose up -d
 
 <small>*${PS_DOMAIN} is defined in .env file</small>
 
-* Is possible to run local PHP CS tests executing the following command: 
+* Is possible to run PHPCS tests executing the following command: 
 ```
-composer run-script phpcs
+docker exec -e XDEBUG_MODE=off --workdir /var/www/html/modules/multisafepay prestashop-1.7 vendor/bin/phpcs -s --standard=phpcs.xml .
 ```
+
+* Is possible to run PHPUnit tests executing the following command:
+```
+docker exec -e XDEBUG_MODE=off --workdir /var/www/html/modules/multisafepay prestashop-1.7 vendor/bin/phpunit --testsuite prestashop-unit-tests
+```
+
+

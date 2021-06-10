@@ -15,3 +15,5 @@
 /.env.dist export-ignore
 /.php_cs.cache export-ignore
 /.php_cs.dist export-ignore
+/.codecov.yml export-ignore
+/.coverage.xml export-ignore
