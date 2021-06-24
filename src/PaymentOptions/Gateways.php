@@ -1,4 +1,6 @@
+<?php
 /**
+ *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
@@ -19,31 +21,30 @@
  *
  */
 
-#multisafepay-form {
-    margin-bottom: 35px;
-    border-bottom: 1px solid #ECECEC;
-    padding-bottom: 35px;
-}
+namespace MultiSafepay\PrestaShop\PaymentOptions;
 
-#multisafepay_payment_button a {
-    padding: 10px;
-    background-color: #FBFBFB;
-}
+use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal;
+use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay;
+use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic;
+use MultiSafepay\PrestaShop\Services\IssuerService;
+use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use Media;
 
-#multisafepay_payment_button a:hover {
-    background-color: #f6f6f6;
-}
+class Gateways
+{
 
-#multisafepay_payment_button a:after {
-    display: block;
-    content: "\f054";
-    position: absolute;
-    right: 15px;
-    margin-top: -11px;
-    top: 50%;
-    font-family: "FontAwesome";
-    font-size: 25px;
-    height: 22px;
-    width: 14px;
-    color: #777777;
+    const MULTISAFEPAY_PAYMENT_OPTIONS = array(
+        Ideal::class,
+        MultiSafepay::class,
+        Generic::class
+    );
+
+    public static function getMultiSafepayPaymentOptions(): array
+    {
+        $payment_options = array();
+        foreach (self::MULTISAFEPAY_PAYMENT_OPTIONS as $payment_option) {
+            $payment_options[] = new $payment_option();
+        }
+        return $payment_options;
+    }
 }

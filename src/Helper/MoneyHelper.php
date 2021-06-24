@@ -21,17 +21,15 @@
  *
  */
 
-namespace MultiSafepay\PrestaShop\Utils;
+namespace MultiSafepay\PrestaShop\Helper;
 
 use MultiSafepay\ValueObject\Money;
 
 /**
- * Class MoneyUtil
+ * Class MoneyHelper
  *
- * @package MultiSafepay\PrestaShop\Utils
- * @since    4.0.0
  */
-class MoneyUtils
+class MoneyHelper
 {
     public const DEFAULT_CURRENCY_CODE = 'EUR';
 

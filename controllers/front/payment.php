@@ -48,9 +48,8 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         $cart_id      = $this->context->cart->id;
         $customer_id  = $this->context->cart->id_customer;
         $currency_id  = $this->context->cart->id_currency;
-        // $amount       = $this->context->cart->getOrderTotal();
-        $amount = 0;
         $secure_key   = $this->context->customer->secure_key;
+        $amount = 0;
 
         $this->context->cart     = new Cart((int) $cart_id);
         $this->context->customer = new Customer((int) $customer_id);
@@ -70,15 +69,23 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         try {
             $validate = $this->module->validateOrder($cart_id, $payment_status, $amount, $module_name, $message, array('dont_send_email' => true), $currency_id, false, $secure_key);
         } catch (PrestaShopException $prestaShopException) {
+
         }
 
         $order = Order::getByCartId($cart_id);
         $order_service = new OrderService($order, $this->module->id, $secure_key);
-        $order_request = $order_service->createOrderRequest();
-        $transaction = $this->createMultiSafepayTransaction($order_request);
 
+        $multisafepay_gateway_code      = Tools::getValue('gateway');
+        $multisafepay_transaction_type  = Tools::getValue('type');
+        $multisafepay_gateway_info_vars = Tools::getAllValues();
+
+        $order_request = $order_service->createOrderRequest($multisafepay_gateway_code, $multisafepay_transaction_type, $multisafepay_gateway_info_vars);
+
+        $transaction = $this->createMultiSafepayTransaction($order_request);
+        //
         Tools::redirectLink($transaction->getPaymentUrl());
     }
+
 
     /**
      * Create a MultiSafepay Transaction

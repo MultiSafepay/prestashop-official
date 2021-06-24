@@ -1,4 +1,7 @@
+<?php declare(strict_types=1);
+
 /**
+ *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
@@ -16,34 +19,37 @@
  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  */
 
-#multisafepay-form {
-    margin-bottom: 35px;
-    border-bottom: 1px solid #ECECEC;
-    padding-bottom: 35px;
-}
+namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
-#multisafepay_payment_button a {
-    padding: 10px;
-    background-color: #FBFBFB;
-}
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
-#multisafepay_payment_button a:hover {
-    background-color: #f6f6f6;
-}
+class MultiSafepay extends BasePaymentOption
+{
 
-#multisafepay_payment_button a:after {
-    display: block;
-    content: "\f054";
-    position: absolute;
-    right: 15px;
-    margin-top: -11px;
-    top: 50%;
-    font-family: "FontAwesome";
-    font-size: 25px;
-    height: 22px;
-    width: 14px;
-    color: #777777;
+    public function getPaymentOptionName(): string
+    {
+        return 'MultiSafepay';
+    }
+
+    public function getPaymentOptionDescription(): string
+    {
+        return 'Default payment method';
+    }
+
+    public function getPaymentOptionGatewayCode(): string
+    {
+        return '';
+    }
+
+    public function getTransactionType(): string
+    {
+        return 'redirect';
+    }
+
+    public function getPaymentOptionLogo(): string
+    {
+        return 'multisafepay.png';
+    }
 }

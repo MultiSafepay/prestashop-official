@@ -29,12 +29,13 @@ use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GoogleAnalytics;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PaymentOptions;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PluginDetails;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\SecondChance;
-use MultiSafepay\PrestaShop\Utils\MoneyUtils;
+use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultiSafepay;
 use ContextCore as PrestaShopContext;
 use OrderCore as PrestaShopOrder;
 use CurrencyCore as PrestaShopCurrency;
 use ConfigurationCore as PrestaShopConfiguration;
+use MultiSafepay\PrestaShop\Services\GatewayInfoService;
 
 /**
  * Class OrderService
@@ -74,12 +75,12 @@ class OrderService
      * @param GatewayInfoInterface $gateway_info
      * @return OrderRequest
      */
-    public function createOrderRequest(string $gateway_code = '', string $type = 'redirect', GatewayInfoInterface $gateway_info = null): OrderRequest
+    public function createOrderRequest(string $gateway_code = '', string $type = 'redirect', array $gateway_info_vars = null): OrderRequest
     {
         $order_request = new OrderRequest();
         $order_request
             ->addOrderId((string) $this->order->id)
-            ->addMoney(MoneyUtils::createMoney((float) $this->order->total_paid, PrestaShopCurrency::getIsoCodeById((int) $this->order->id_currency)))
+            ->addMoney(MoneyHelper::createMoney((float) $this->order->total_paid, PrestaShopCurrency::getIsoCodeById((int) $this->order->id_currency)))
             ->addGatewayCode($gateway_code)
             ->addType($type)
             ->addPluginDetails($this->createPluginDetails())
@@ -92,12 +93,17 @@ class OrderService
         if ($this->order->total_shipping > 0) {
             $order_request->addDelivery($this->customer_service->createDeliveryDetails());
         }
+
         if (PrestaShopConfiguration::get('MULTISAFEPAY_GOOGLE_ANALYTICS_ID')) {
             $order_request->addGoogleAnalytics(( new GoogleAnalytics() )->addAccountId(PrestaShopConfiguration::get('MULTISAFEPAY_GOOGLE_ANALYTICS_ID')));
         }
-        if ($gateway_info) {
+
+        if ($gateway_info_vars) {
+            $gateway_info_service = new GatewayInfoService($gateway_code);
+            $gateway_info = $gateway_info_service->getGatewayInfo($gateway_info_vars);
             $order_request->addGatewayInfo($gateway_info);
         }
+
         return $order_request;
     }
 

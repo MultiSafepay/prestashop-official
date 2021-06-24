@@ -27,6 +27,10 @@ if (!defined('_PS_VERSION_')) {
 
 require __DIR__ . '/vendor/autoload.php';
 
+use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use MultiSafepay\PrestaShop\PaymentOptions\Gateways;
+use MultiSafepay\PrestaShop\Services\IssuerService;
+
 class Multisafepay extends PaymentModule
 {
 
@@ -51,7 +55,7 @@ class Multisafepay extends PaymentModule
         $this->displayName            = $this->l('MultiSafepay');
         $this->description            = $this->l('MultiSafepay payment plugin for PrestaShop');
         $this->confirmUninstall       = $this->l('Are you sure you want to uninstall MultiSafepay?');
-        $this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = array('min' => '1.7.0', 'max' => _PS_VERSION_);
     }
 
     /**
@@ -208,7 +212,6 @@ class Multisafepay extends PaymentModule
     protected function postProcess()
     {
         $form_values = $this->getConfigFormValues();
-
         foreach (array_keys($form_values) as $key) {
             Configuration::updateValue($key, Tools::getValue($key));
         }
@@ -287,13 +290,75 @@ class Multisafepay extends PaymentModule
             return;
         }
 
-        $option = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
-        $option->setCallToActionText($this->l($this->name))
-            ->setAction($this->context->link->getModuleLink($this->name, 'payment', array(), true));
+        $payment_options = array();
+        $payment_methods = Gateways::getMultiSafepayPaymentOptions($this);
 
-        return [
-            $option
-        ];
+        foreach ($payment_methods as $payment_method) {
+            $option = new PaymentOption();
+
+            $option->setCallToActionText($payment_method->call_to_action_text);
+            $option->setAction($payment_method->action);
+
+            if ($payment_method->icon) {
+                // Investigate this method to resize icons if required.
+                $resize = ImageManager::resize(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $payment_method->icon, _PS_MODULE_DIR_ . $this->name . '/views/img/resize', 105, 45, 'png');
+                if ($resize) {
+                    $option->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/resize' . $payment_method->icon));
+                } else {
+                    $option->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $payment_method->icon));
+                }
+            }
+
+            if ($payment_method->payment_form) {
+                $option->setForm($this->getMultiSafepayPaymentOptionForm($payment_method->gateway_code, $payment_method->inputs));
+            }
+
+            if ($payment_method->description) {
+                $option->setAdditionalInformation($payment_method->description);
+            }
+
+            $payment_options[] = $option;
+        }
+
+        return $payment_options;
+    }
+
+    /**
+     * Return payment form
+     *
+     * @return false|string
+     * @throws SmartyException
+     */
+    public function getMultiSafepayPaymentOptionForm(string $gateway_code, array $inputs = array())
+    {
+        switch ($gateway_code) {
+            case "IDEAL":
+                return $this->getIdealPaymentOptionForm($inputs);
+                break;
+            default:
+                break;
+        }
+    }
+
+
+    /**
+     * Return iDEAL payment form
+     *
+     * @return false|string
+     * @throws SmartyException
+     */
+    public function getIdealPaymentOptionForm(array $inputs)
+    {
+        $issuers = IssuerService::getIdealIssuers();
+        $this->context->smarty->assign(
+            array(
+                'action'       => $this->context->link->getModuleLink($this->name, 'payment', array(), true),
+                'inputs'       => $inputs,
+                'select_bank'  => 'Choose your bank',
+                'issuers'      => $issuers
+            )
+        );
+        return $this->context->smarty->fetch('module:multisafepay/views/templates/front/ideal.tpl');
     }
 
     /**
@@ -336,7 +401,8 @@ class Multisafepay extends PaymentModule
         return false;
     }
 
-    private function registerMultiSafepayOrderStatuses() {
+    private function registerMultiSafepayOrderStatuses()
+    {
         $multisafepay_order_statuses = $this->getMultiSafepayOrderStatuses();
         foreach ($multisafepay_order_statuses as $status => $value) {
             if (!Configuration::get('MULTISAFEPAY_OS_' . Tools::strtoupper($status))) {

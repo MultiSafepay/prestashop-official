@@ -29,7 +29,7 @@ services:
       - db
       - mailhog
     ports:
-      - 8081:80
+      - 80:80
     expose:
       - 9003
     volumes:
