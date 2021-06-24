@@ -49,6 +49,11 @@ class Ideal extends BasePaymentOption
         return 'iDEAL Description';
     }
 
+    public function getPaymentOptionLogo(): string
+    {
+        return 'ideal.png';
+    }
+
     public function getPaymentOptionForm(): bool
     {
         return true;
