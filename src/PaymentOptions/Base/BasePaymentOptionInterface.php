@@ -25,7 +25,6 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\Base;
 
 interface BasePaymentOptionInterface
 {
-
     /**
      *
      * @return string
@@ -50,9 +49,9 @@ interface BasePaymentOptionInterface
      */
     public function getTransactionType(): string;
 
-//    /**
-//     *
-//     * @return string
-//     */
-//    public function getPaymentOptionLogo(): string;
+    /**
+     *
+     * @return string
+     */
+    public function getPaymentOptionLogo(): string;
 }
