@@ -69,7 +69,6 @@ class Multisafepay extends PaymentModule
     /**
      * Install method
      * @see http://doc.prestashop.com/display/PS16/Enabling+the+Auto-Update
-     * @todo Don't forget to create update methods if needed:
      */
     public function install()
     {
@@ -85,7 +84,6 @@ class Multisafepay extends PaymentModule
         return parent::install() &&
             $this->registerHook('header') &&
             $this->registerHook('backOfficeHeader') &&
-            $this->registerHook('payment') &&
             $this->registerHook('paymentReturn') &&
             $this->registerHook('paymentOptions') &&
             $this->registerHook('actionEmailSendBefore');
@@ -240,24 +238,6 @@ class Multisafepay extends PaymentModule
     }
 
     /**
-     * This method is used to render the payment button,
-     * Take care if the button should be displayed or not.
-     */
-    public function hookPayment($params)
-    {
-        $currency_id = $params['cart']->id_currency;
-        $currency = new Currency((int)$currency_id);
-
-        if (in_array($currency->iso_code, $this->limited_currencies) == false) {
-            return false;
-        }
-
-        $this->smarty->assign('module_dir', $this->_path);
-
-        return $this->display(__FILE__, 'views/templates/hook/payment.tpl');
-    }
-
-    /**
      * This hook is used to display the order confirmation page.
      */
     public function hookPaymentReturn($params)
@@ -293,7 +273,7 @@ class Multisafepay extends PaymentModule
         }
 
         $payment_options = array();
-        $payment_methods = Gateways::getMultiSafepayPaymentOptions($this);
+        $payment_methods = Gateways::getMultiSafepayPaymentOptions();
 
         foreach ($payment_methods as $payment_method) {
             $option = new PaymentOption();
@@ -321,6 +301,8 @@ class Multisafepay extends PaymentModule
     /**
      * Return payment form
      *
+     * @param string $gateway_code
+     * @param array $inputs
      * @return false|string
      * @throws SmartyException
      */
