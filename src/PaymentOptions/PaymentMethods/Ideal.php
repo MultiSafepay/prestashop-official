@@ -24,6 +24,7 @@
 namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
+use MultiSafepay\PrestaShop\Services\IssuerService;
 
 class Ideal extends BasePaymentOption
 {
@@ -52,4 +53,12 @@ class Ideal extends BasePaymentOption
     {
         return true;
     }
+
+    public function getInputFields(): array
+    {
+        $input = parent::getInputFields();
+        $input['issuers'] = IssuerService::getIdealIssuers();
+        return $input;
+    }
+
 }

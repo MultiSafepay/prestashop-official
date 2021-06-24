@@ -64,13 +64,15 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     public function getInputFields(): array
     {
         return array(
-            array(
-                'name'  => 'gateway',
-                'value' => $this->getPaymentOptionGatewayCode(),
-            ),
-            array(
-                'name'  => 'type',
-                'value' => $this->getTransactionType(),
+            'hidden' => array(
+                array(
+                    'name'  => 'gateway',
+                    'value' => $this->getPaymentOptionGatewayCode(),
+                ),
+                array(
+                    'name'  => 'type',
+                    'value' => $this->getTransactionType(),
+                )
             )
         );
     }

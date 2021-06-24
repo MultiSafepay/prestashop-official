@@ -295,13 +295,12 @@ class Multisafepay extends PaymentModule
 
         foreach ($payment_methods as $payment_method) {
             $option = new PaymentOption();
-
             $option->setCallToActionText($payment_method->call_to_action_text);
             $option->setAction($payment_method->action);
 
+
             if ($payment_method->icon) {
-                // Investigate this method to resize icons if required.
-                $resize = ImageManager::resize(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $payment_method->icon, _PS_MODULE_DIR_ . $this->name . '/views/img/resize', 105, 45, 'png');
+//                $resize = ImageManager::resize(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $payment_method->icon, _PS_MODULE_DIR_ . $this->name . '/views/img/resize', 105, 45, 'png');
                 if ($resize) {
                     $option->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/resize' . $payment_method->icon));
                 } else {
@@ -331,34 +330,13 @@ class Multisafepay extends PaymentModule
      */
     public function getMultiSafepayPaymentOptionForm(string $gateway_code, array $inputs = array())
     {
-        switch ($gateway_code) {
-            case "IDEAL":
-                return $this->getIdealPaymentOptionForm($inputs);
-                break;
-            default:
-                break;
-        }
-    }
-
-
-    /**
-     * Return iDEAL payment form
-     *
-     * @return false|string
-     * @throws SmartyException
-     */
-    public function getIdealPaymentOptionForm(array $inputs)
-    {
-        $issuers = IssuerService::getIdealIssuers();
         $this->context->smarty->assign(
             array(
                 'action'       => $this->context->link->getModuleLink($this->name, 'payment', array(), true),
-                'inputs'       => $inputs,
-                'select_bank'  => 'Choose your bank',
-                'issuers'      => $issuers
+                'inputs'       => $inputs
             )
         );
-        return $this->context->smarty->fetch('module:multisafepay/views/templates/front/ideal.tpl');
+        return $this->context->smarty->fetch('module:multisafepay/views/templates/front/form.tpl');
     }
 
     /**
