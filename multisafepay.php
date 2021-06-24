@@ -300,14 +300,8 @@ class Multisafepay extends PaymentModule
             $option->setCallToActionText($payment_method->call_to_action_text);
             $option->setAction($payment_method->action);
 
-
-            if ($payment_method->icon) {
-//                $resize = ImageManager::resize(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $payment_method->icon, _PS_MODULE_DIR_ . $this->name . '/views/img/resize', 105, 45, 'png');
-                if ($resize) {
-                    $option->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/resize' . $payment_method->icon));
-                } else {
-                    $option->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $payment_method->icon));
-                }
+            if ($payment_method->icon && file_exists(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $payment_method->icon)) {
+                $option->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $payment_method->icon));
             }
 
             if ($payment_method->payment_form) {
@@ -349,22 +343,10 @@ class Multisafepay extends PaymentModule
      */
     public function hookActionEmailSendBefore(array $params): bool
     {
-        if ($this->isMultiSafepayTemplateVarsSetAsNoSendEmail($params)) {
+        if (isset($params['templateVars']['dont_send_email']) &&  $params['templateVars']['dont_send_email'] === true) {
             return false;
         }
         return true;
-    }
-
-    /**
-     * @param  array $params
-     * @return bool
-     */
-    private function isMultiSafepayTemplateVarsSetAsNoSendEmail(array $params): bool
-    {
-        if (isset($params['templateVars']['dont_send_email']) &&  $params['templateVars']['dont_send_email'] === true) {
-            return true;
-        }
-        return false;
     }
 
     public function checkCurrency($cart)
