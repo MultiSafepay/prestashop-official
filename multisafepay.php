@@ -29,7 +29,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use MultiSafepay\PrestaShop\PaymentOptions\Gateways;
-use MultiSafepay\PrestaShop\Services\IssuerService;
+use MultiSafepay\PrestaShop\Services\OrderStatusService;
 
 class Multisafepay extends PaymentModule
 {
@@ -79,7 +79,9 @@ class Multisafepay extends PaymentModule
         }
         Configuration::updateValue('MULTISAFEPAY_TEST_MODE', false);
         include(__DIR__.'/sql/install.php');
-        $this->registerMultiSafepayOrderStatuses();
+
+        (new OrderStatusService())->registerMultiSafepayOrderStatuses();
+
         return parent::install() &&
             $this->registerHook('header') &&
             $this->registerHook('backOfficeHeader') &&
@@ -379,79 +381,4 @@ class Multisafepay extends PaymentModule
         return false;
     }
 
-    private function registerMultiSafepayOrderStatuses()
-    {
-        $multisafepay_order_statuses = $this->getMultiSafepayOrderStatuses();
-        foreach ($multisafepay_order_statuses as $status => $value) {
-            if (!Configuration::get('MULTISAFEPAY_OS_' . Tools::strtoupper($status))) {
-                $order_state = new OrderState();
-                $order_state->name = array();
-                foreach (Language::getLanguages() as $language) {
-                    $order_state->name[$language['id_lang']] = 'MultiSafepay ' . $value['name'];
-                }
-                $order_state->send_email = $value['send_mail'];
-                $order_state->color = $value['color'];
-                $order_state->unremovable = true;
-                $order_state->hidden = false;
-                $order_state->delivery = false;
-                $order_state->logable = $value['logable'];
-                $order_state->invoice = $value['invoice'];
-                $order_state->template = $value['template'];
-                $order_state->paid = $value['paid'];
-                $order_state->add();
-                Configuration::updateValue('MULTISAFEPAY_OS_' . Tools::strtoupper($status), (int) $order_state->id);
-            }
-        }
-    }
-
-    private function getMultiSafepayOrderStatuses(): array
-    {
-        return array(
-            'initialized' => array(
-                'name' => 'initialized',
-                'send_mail' => false,
-                'color' => '#4169E1',
-                'invoice' => false,
-                'template' => '',
-                'paid' => false,
-                'logable' => false
-            ),
-            'uncleared' => array(
-                'name' => 'uncleared',
-                'send_mail' => false,
-                'color' => '#ec2e15',
-                'invoice' => false,
-                'template' => '',
-                'paid' => false,
-                'logable' => false
-            ),
-            'partial_refunded' => array(
-                'name' => 'partial refunded',
-                'send_mail' => true,
-                'color' => '#ec2e15',
-                'invoice' => false,
-                'template' => 'refund',
-                'paid' => false,
-                'logable' => false
-            ),
-            'chargeback' => array(
-                'name' => 'chargeback',
-                'send_mail' => true,
-                'color' => '#ec2e15',
-                'invoice' => false,
-                'template' => '',
-                'paid' => false,
-                'logable' => false
-            ),
-            'awaiting_bank_transfer_payment' => array(
-                'name' => 'awaiting bank transfer payment',
-                'send_mail' => false,
-                'color' => '#4169E1',
-                'invoice' => false,
-                'template' => '',
-                'paid' => false,
-                'logable' => false
-            ),
-        );
-    }
 }
