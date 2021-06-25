@@ -46,7 +46,7 @@ class OrderStatusService
         }
     }
 
-    private function createOrderStatus( string $multisafepay_order_status_key, array $multisafepay_order_status_values)
+    private function createOrderStatus(string $multisafepay_order_status_key, array $multisafepay_order_status_values)
     {
         $order_state = new OrderState();
         $order_state->name = array();
@@ -116,5 +116,4 @@ class OrderStatusService
             ),
         );
     }
-
 }

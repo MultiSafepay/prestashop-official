@@ -343,5 +343,4 @@ class Multisafepay extends PaymentModule
         }
         return false;
     }
-
 }

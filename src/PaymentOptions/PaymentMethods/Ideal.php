@@ -65,5 +65,4 @@ class Ideal extends BasePaymentOption
         $input['issuers'] = IssuerService::getIdealIssuers();
         return $input;
     }
-
 }

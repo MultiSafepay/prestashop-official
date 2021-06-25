@@ -23,7 +23,6 @@
 
 namespace MultiSafepay\PrestaShop\Helper;
 
-
 class LoggerHelper
 {
     const MULTISAFEPAY_LOG_DESTINATION  = _PS_MODULE_DIR_ . 'multisafepay/logs/multisafepay_log';
@@ -140,5 +139,4 @@ class LoggerHelper
     {
         return (bool) file_put_contents(self::MULTISAFEPAY_LOG_DESTINATION, self::formatMessage($message, 7), FILE_APPEND);
     }
-
 }

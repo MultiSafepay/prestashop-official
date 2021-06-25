@@ -69,7 +69,6 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         try {
             $validate = $this->module->validateOrder($cart_id, $payment_status, $amount, $module_name, $message, array('dont_send_email' => true), $currency_id, false, $secure_key);
         } catch (PrestaShopException $prestaShopException) {
-
         }
 
         $order = Order::getByCartId($cart_id);
