@@ -68,7 +68,6 @@ class Multisafepay extends PaymentModule
 
     /**
      * Install method
-     * @see http://doc.prestashop.com/display/PS16/Enabling+the+Auto-Update
      */
     public function install()
     {
@@ -76,8 +75,8 @@ class Multisafepay extends PaymentModule
             $this->_errors[] = $this->l('You have to enable the cURL extension on your server to install this module');
             return false;
         }
+
         Configuration::updateValue('MULTISAFEPAY_TEST_MODE', false);
-        include(__DIR__.'/sql/install.php');
 
         (new OrderStatusService())->registerMultiSafepayOrderStatuses();
 
@@ -98,7 +97,6 @@ class Multisafepay extends PaymentModule
         Configuration::deleteByName('MULTISAFEPAY_TEST_MODE');
         Configuration::deleteByName('MULTISAFEPAY_API_KEY');
         Configuration::deleteByName('MULTISAFEPAY_TEST_API_KEY');
-        include(__DIR__ .'/sql/uninstall.php');
         return parent::uninstall();
     }
 
@@ -110,6 +108,7 @@ class Multisafepay extends PaymentModule
         if (((bool)Tools::isSubmit('submitMultisafepayModule')) == true) {
             $this->postProcess();
         }
+
         return $this->renderForm();
     }
 
