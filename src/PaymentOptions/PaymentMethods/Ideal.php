@@ -61,8 +61,16 @@ class Ideal extends BasePaymentOption
 
     public function getInputFields(): array
     {
-        $input = parent::getInputFields();
-        $input['issuers'] = IssuerService::getIdealIssuers();
-        return $input;
+        $parent_inputs        = parent::getInputFields();
+        $payment_method_input = array(
+            'select' => array(
+                array(
+                    'name'          => 'issuer_id',
+                    'placeholder'   => 'Select bank',
+                    'options'       => IssuerService::getIdealIssuers()
+                ),
+            ),
+        );
+        return array_merge($parent_inputs, $payment_method_input);
     }
 }

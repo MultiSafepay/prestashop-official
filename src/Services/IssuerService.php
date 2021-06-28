@@ -37,8 +37,8 @@ class IssuerService
         $options = array();
         foreach ($issuers as $issuer) {
             $options[] = array(
-                'code'        => $issuer->getCode(),
-                'description' => $issuer->getDescription()
+                'value' => $issuer->getCode(),
+                'name'  => $issuer->getDescription()
             );
         }
         return $options;
