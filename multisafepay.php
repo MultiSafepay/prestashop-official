@@ -69,8 +69,10 @@ class Multisafepay extends PaymentModule
 
     /**
      * Install method
+     *
+     * @return boolean
      */
-    public function install()
+    public function install(): bool
     {
         if (extension_loaded('curl') == false) {
             $this->_errors[] = $this->l('You have to enable the cURL extension on your server to install this module');
@@ -91,9 +93,10 @@ class Multisafepay extends PaymentModule
 
     /**
      * Uninstall method
+     *
      * @return bool
      */
-    public function uninstall()
+    public function uninstall(): bool
     {
         Configuration::deleteByName('MULTISAFEPAY_TEST_MODE');
         Configuration::deleteByName('MULTISAFEPAY_API_KEY');
