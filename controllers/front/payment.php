@@ -72,16 +72,16 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         }
 
         $order = Order::getByCartId($cart_id);
-        $order_service = new OrderService($order, $this->module->id, $secure_key);
+        $order_service = new OrderService($this->module->id, $secure_key);
 
         $multisafepay_gateway_code      = Tools::getValue('gateway');
         $multisafepay_transaction_type  = Tools::getValue('type');
         $multisafepay_gateway_info_vars = Tools::getAllValues();
 
-        $order_request = $order_service->createOrderRequest($multisafepay_gateway_code, $multisafepay_transaction_type, $multisafepay_gateway_info_vars);
+        $order_request = $order_service->createOrderRequest($order, $multisafepay_gateway_code, $multisafepay_transaction_type, $multisafepay_gateway_info_vars);
 
         $transaction = $this->createMultiSafepayTransaction($order_request);
-        //
+
         Tools::redirectLink($transaction->getPaymentUrl());
     }
 

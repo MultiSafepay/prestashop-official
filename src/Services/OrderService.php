@@ -57,16 +57,13 @@ class OrderService
 
     /**
      * OrderService constructor.
-     * @param PrestaShopOrder $order
      * @param $module_id
      * @param $secure_key
      */
-    public function __construct(PrestaShopOrder $order, $module_id, $secure_key)
+    public function __construct($module_id, $secure_key)
     {
-        $this->order = $order;
         $this->module_id = $module_id;
         $this->secure_key = $secure_key;
-        $this->customer_service = new CustomerService($this->order);
     }
 
     /**
@@ -75,23 +72,23 @@ class OrderService
      * @param GatewayInfoInterface $gateway_info
      * @return OrderRequest
      */
-    public function createOrderRequest(string $gateway_code = '', string $type = 'redirect', array $gateway_info_vars = null): OrderRequest
+    public function createOrderRequest(PrestaShopOrder $order, string $gateway_code = '', string $type = 'redirect', array $gateway_info_vars = null): OrderRequest
     {
         $order_request = new OrderRequest();
         $order_request
-            ->addOrderId((string) $this->order->id)
-            ->addMoney(MoneyHelper::createMoney((float) $this->order->total_paid, PrestaShopCurrency::getIsoCodeById((int) $this->order->id_currency)))
+            ->addOrderId((string) $order->id)
+            ->addMoney(MoneyHelper::createMoney((float) $order->total_paid, PrestaShopCurrency::getIsoCodeById((int) $order->id_currency)))
             ->addGatewayCode($gateway_code)
             ->addType($type)
             ->addPluginDetails($this->createPluginDetails())
-            ->addDescriptionText($this->getOrderDescriptionText($this->order->id))
-            ->addCustomer($this->customer_service->createCustomerDetails())
-            ->addPaymentOptions($this->createPaymentOptions($this->order))
+            ->addDescriptionText($this->getOrderDescriptionText($order->id))
+            ->addCustomer((new CustomerService())->createCustomerDetails($order))
+            ->addPaymentOptions($this->createPaymentOptions($order))
             ->addSecondsActive($this->getTimeActive())
             ->addSecondChance(( new SecondChance() )->addSendEmail(true));
 
-        if ($this->order->total_shipping > 0) {
-            $order_request->addDelivery($this->customer_service->createDeliveryDetails());
+        if ($order->total_shipping > 0) {
+            $order_request->addDelivery((new CustomerService())->createDeliveryDetails($order));
         }
 
         if (PrestaShopConfiguration::get('MULTISAFEPAY_GOOGLE_ANALYTICS_ID')) {
@@ -99,8 +96,7 @@ class OrderService
         }
 
         if ($gateway_info_vars) {
-            $gateway_info_service = new GatewayInfoService($gateway_code);
-            $gateway_info = $gateway_info_service->getGatewayInfo($gateway_info_vars);
+            $gateway_info = (new GatewayInfoService())->getGatewayInfo($gateway_code, $gateway_info_vars);
             $order_request->addGatewayInfo($gateway_info);
         }
 
@@ -142,18 +138,17 @@ class OrderService
     }
 
     /**
-     * @param   $order
+     * @param   PrestaShopOrder $order
      * @return  PaymentOptions
      */
-    private function createPaymentOptions(): PaymentOptions
+    private function createPaymentOptions(PrestaShopOrder $order): PaymentOptions
     {
         $payment_options        = new PaymentOptions();
-
         return $payment_options
             ->addNotificationMethod('GET')
             ->addNotificationUrl(PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'notification', array(), true))
-            ->addCancelUrl(PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'cancel', array('id_cart' => $this->order->id_cart, 'id_order' => $this->order->id), true))
-            ->addRedirectUrl(PrestaShopContext::getContext()->link->getPageLink('order-confirmation', null, PrestaShopContext::getContext()->language->id, 'id_cart=' . $this->order->id_cart . '&id_order=' . $this->order->id . '&id_module=' . $this->module_id . '&key=' . $this->secure_key));
+            ->addCancelUrl(PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'cancel', array('id_cart' => $order->id_cart, 'id_order' => $order->id), true))
+            ->addRedirectUrl(PrestaShopContext::getContext()->link->getPageLink('order-confirmation', null, PrestaShopContext::getContext()->language->id, 'id_cart=' . $order->id_cart . '&id_order=' . $order->id . '&id_module=' . $this->module_id . '&key=' . $this->secure_key));
     }
 
     /**

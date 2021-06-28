@@ -21,36 +21,23 @@
  *
  */
 
-namespace MultiSafepay\PrestaShop\Services;
+namespace MultiSafepay\PrestaShop\PaymentOptions\Base;
 
-use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Ideal;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
-use MultiSafepay\PrestaShop\PaymentOptions\Base\BaseGatewayInfo;
 
 /**
  * This class returns the SDK object.
  *
  * @since      4.0.0
  */
-class GatewayInfoService
-{
-    public function getGatewayInfo($gateway_code, $data)
-    {
-        switch ($gateway_code) {
-            case "IDEAL":
-                return $this->getIdealGatewayInfo($data['issuer_id']);
-                break;
-            default:
-                return new BaseGatewayInfo();
-                break;
-        }
-    }
+class BaseGatewayInfo implements GatewayInfoInterface {
 
-    public static function getIdealGatewayInfo($issuer_id): GatewayInfoInterface
-    {
-        $gateway_info = new Ideal();
-        $gateway_info->addIssuerId($issuer_id);
-        return $gateway_info;
+    /**
+     * @return array
+     */
+    public function getData(): array {
+        return array();
     }
 
 }
+

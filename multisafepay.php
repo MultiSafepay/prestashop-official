@@ -30,6 +30,7 @@ require __DIR__ . '/vendor/autoload.php';
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use MultiSafepay\PrestaShop\PaymentOptions\Gateways;
 use MultiSafepay\PrestaShop\Services\OrderStatusService;
+use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 
 class Multisafepay extends PaymentModule
 {
@@ -278,13 +279,10 @@ class Multisafepay extends PaymentModule
             $option = new PaymentOption();
             $option->setCallToActionText($payment_method->call_to_action_text);
             $option->setAction($payment_method->action);
+            $option->setForm($this->getMultiSafepayPaymentOptionForm($payment_method->gateway_code, $payment_method->inputs));
 
             if ($payment_method->icon && file_exists(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $payment_method->icon)) {
                 $option->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $payment_method->icon));
-            }
-
-            if ($payment_method->payment_form) {
-                $option->setForm($this->getMultiSafepayPaymentOptionForm($payment_method->gateway_code, $payment_method->inputs));
             }
 
             if ($payment_method->description) {

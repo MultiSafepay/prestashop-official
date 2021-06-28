@@ -42,71 +42,63 @@ use StateCore as PrestaShopState;
  */
 class CustomerService
 {
-
     /**
-     * CustomerService constructor.
      * @param PrestaShopOrder $order
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
-     */
-    public function __construct(PrestaShopOrder $order)
-    {
-        $this->order            = $order;
-        $this->customer         = $this->order->getCustomer();
-        $this->invoice_address  = new PrestaShopAddress($this->order->id_address_invoice);
-        $this->invoice_country  = new PrestaShopCountry($this->invoice_address->id_country);
-        $this->shipping_address = new PrestaShopAddress($this->order->id_address_delivery);
-        $this->shipping_country = new PrestaShopCountry($this->shipping_address->id_country);
-    }
-
-    /**
      * @return CustomerDetails
      */
-    public function createCustomerDetails(): CustomerDetails
+    public function createCustomerDetails(PrestaShopOrder $order): CustomerDetails
     {
+        $invoice_address = $this->getCustomerAddress($order->id_address_invoice);
+
         $customer_address = $this->createAddress(
-            $this->invoice_address->address1,
-            $this->invoice_address->address2,
-            $this->invoice_country->iso_code,
-            PrestaShopState::getNameById($this->invoice_address->id_state) ? PrestaShopState::getNameById($this->invoice_address->id_state) : '',
-            $this->invoice_address->city,
-            $this->invoice_address->postcode
+            $invoice_address->address1,
+            $invoice_address->address2,
+            (new PrestaShopCountry($invoice_address->id_country))->iso_code,
+            PrestaShopState::getNameById($invoice_address->id_state) ? PrestaShopState::getNameById($invoice_address->id_state) : '',
+            $invoice_address->city,
+            $invoice_address->postcode
         );
+
         return $this->createCustomer(
             $customer_address,
-            $this->customer->email,
-            $this->invoice_address->phone,
-            $this->invoice_address->firstname,
-            $this->invoice_address->lastname,
+            $order->getCustomer()->email,
+            $invoice_address->phone,
+            $invoice_address->firstname,
+            $invoice_address->lastname,
             '',
             '',
-            $this->invoice_address->company
+            $order->id_lang,
+            $invoice_address->company
         );
     }
 
     /**
+     * @param PrestaShopOrder $order
      * @return CustomerDetails
      */
-    public function createDeliveryDetails(): CustomerDetails
+    public function createDeliveryDetails(PrestaShopOrder $order): CustomerDetails
     {
+        $shipping_address = $this->getCustomerAddress($order->id_address_delivery);
+
         $delivery_address = $this->createAddress(
-            $this->shipping_address->address1,
-            $this->shipping_address->address2,
-            $this->shipping_country->iso_code,
-            PrestaShopState::getNameById($this->shipping_address->id_state) ? PrestaShopState::getNameById($this->shipping_address->id_state) : '',
-            $this->shipping_address->city,
-            $this->shipping_address->postcode
+            $shipping_address->address1,
+            $shipping_address->address2,
+            (new PrestaShopCountry($shipping_address->id_country))->iso_code,
+            PrestaShopState::getNameById($shipping_address->id_state) ? PrestaShopState::getNameById($shipping_address->id_state) : '',
+            $shipping_address->city,
+            $shipping_address->postcode
         );
 
         return $this->createCustomer(
             $delivery_address,
-            $this->customer->email,
-            $this->shipping_address->phone,
-            $this->shipping_address->firstname,
-            $this->shipping_address->lastname,
+            $order->getCustomer()->email,
+            $shipping_address->phone,
+            $shipping_address->firstname,
+            $shipping_address->lastname,
             '',
             '',
-            $this->invoice_address->company
+            $order->id_lang,
+            $shipping_address->company
         );
     }
 
@@ -131,6 +123,7 @@ class CustomerService
         string $last_name,
         string $ip_address,
         string $user_agent,
+        string $lang_id,
         string $company_name = null
     ): CustomerDetails {
         $customer_details = new CustomerDetails();
@@ -140,7 +133,7 @@ class CustomerService
             ->addFirstName($first_name)
             ->addLastName($last_name)
             ->addPhoneNumber(new PhoneNumber($phone_number))
-            ->addLocale($this->getLanguageCode(PrestaShopLanguage::getIsoById($this->order->id_lang)))
+            ->addLocale($this->getLanguageCode(PrestaShopLanguage::getIsoById($lang_id)))
             ->addCompanyName($company_name ? $company_name : '');
 
         if (! empty($ip_address)) {
@@ -204,5 +197,15 @@ class CustomerService
         $parts = explode('-', $locale);
         $language_code = $parts[0] . '_' . strtoupper($parts[1]);
         return $language_code;
+    }
+
+    /**
+     * Return the Address by the given address id
+     *
+     * @param $address_id
+     * @return PrestaShopAddress
+     */
+    private function getCustomerAddress($address_id) {
+        return new PrestaShopAddress($address_id);
     }
 }
