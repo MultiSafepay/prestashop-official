@@ -23,6 +23,7 @@
 
 namespace MultiSafepay\PrestaShop\Services;
 
+use PaymentModule;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GoogleAnalytics;
@@ -30,7 +31,7 @@ use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PaymentOptions;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PluginDetails;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\SecondChance;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
-use MultiSafepay;
+use Multisafepay;
 use ContextCore as PrestaShopContext;
 use OrderCore as PrestaShopOrder;
 use CurrencyCore as PrestaShopCurrency;
@@ -46,30 +47,31 @@ class OrderService
 {
 
     /**
-     * @var Order
+     * @var string
      */
-    private $order;
+    private $module_id;
 
     /**
-     * @var CustomerService
+     * @var string
      */
-    private $customer_service;
+    private $secure_key;
 
     /**
      * OrderService constructor.
-     * @param $module_id
-     * @param $secure_key
+     * @param string $module_id
+     * @param string $secure_key
      */
-    public function __construct($module_id, $secure_key)
+    public function __construct(string $module_id, string $secure_key)
     {
         $this->module_id = $module_id;
         $this->secure_key = $secure_key;
     }
 
     /**
-     * @param string               $gateway_code
-     * @param string               $type
-     * @param GatewayInfoInterface $gateway_info
+     * @param PrestaShopOrder   $order
+     * @param string            $gateway_code
+     * @param string            $type
+     * @param array             $gateway_info_vars
      * @return OrderRequest
      */
     public function createOrderRequest(PrestaShopOrder $order, string $gateway_code = '', string $type = 'redirect', array $gateway_info_vars = null): OrderRequest
@@ -105,7 +107,6 @@ class OrderService
 
     /**
      * Return SecondsActive
-     * @todo Create this fields in the settings
      *
      * @return int
      */
@@ -134,7 +135,7 @@ class OrderService
             ->addApplicationName('PrestaShop ')
             ->addApplicationVersion('PrestaShop: ' . _PS_VERSION_)
             ->addPluginVersion(MultiSafepay::getVersion())
-            ->addShopRootUrl(PrestaShopContext::getContext()->shop->getBaseURL(true));
+            ->addShopRootUrl(PrestaShopContext::getContext()->shop->getBaseURL());
     }
 
     /**
@@ -161,7 +162,7 @@ class OrderService
     {
         $order_description = sprintf('Payment for order: %s', $order_id);
         if (PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION')) {
-            $order_description = str_replace('{order_id}', $order_id, PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION'));
+            $order_description = str_replace('{order_id}', $order_id, (string) PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION'));
         }
         return $order_description;
     }

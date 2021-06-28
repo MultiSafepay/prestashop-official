@@ -27,17 +27,17 @@ if (!defined('_PS_VERSION_')) {
 
 require __DIR__ . '/vendor/autoload.php';
 
+use PaymentModule;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use MultiSafepay\PrestaShop\PaymentOptions\Gateways;
 use MultiSafepay\PrestaShop\Services\OrderStatusService;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+use Cart as PrestaShopCart;
 
 class Multisafepay extends PaymentModule
 {
 
     const MULTISAFEPAY_MODULE_VERSION = '5.0.0';
-
-    protected $config_form = false;
 
     /**
      * Multisafepay plugin constructor.
@@ -106,8 +106,10 @@ class Multisafepay extends PaymentModule
 
     /**
      * Load the configuration form or process the submitted data
+     *
+     * @return string
      */
-    public function getContent()
+    public function getContent(): string
     {
         if (((bool)Tools::isSubmit('submitMultisafepayModule')) == true) {
             $this->postProcess();
@@ -118,8 +120,10 @@ class Multisafepay extends PaymentModule
 
     /**
      * Create the form that will be displayed in the configuration
+     *
+     * @return string
      */
-    protected function renderForm()
+    protected function renderForm(): string
     {
         $helper = new HelperForm();
 
@@ -146,8 +150,10 @@ class Multisafepay extends PaymentModule
 
     /**
      * Create the structure of your form.
+     *
+     * @return array
      */
-    protected function getConfigForm()
+    protected function getConfigForm(): array
     {
         return array(
             'form' => array(
@@ -198,9 +204,11 @@ class Multisafepay extends PaymentModule
     }
 
     /**
-     * Set values for the inputs.
+     * Set values for the inputs
+     *
+     * @return array
      */
-    protected function getConfigFormValues()
+    protected function getConfigFormValues(): array
     {
         return array(
             'MULTISAFEPAY_TEST_MODE' => Configuration::get('MULTISAFEPAY_TEST_MODE'),
@@ -211,8 +219,10 @@ class Multisafepay extends PaymentModule
 
     /**
      * Save form data.
+     *
+     * @return void
      */
-    protected function postProcess()
+    protected function postProcess(): void
     {
         $form_values = $this->getConfigFormValues();
         foreach (array_keys($form_values) as $key) {
@@ -221,9 +231,11 @@ class Multisafepay extends PaymentModule
     }
 
     /**
-    * Add the CSS & JavaScript files you want to be loaded in the BO.
+     * Add the CSS & JavaScript files you want to be loaded in the BO.
+     *
+     * @return void
     */
-    public function hookBackOfficeHeader()
+    public function hookBackOfficeHeader(): void
     {
         if (Tools::getValue('module_name') == $this->name) {
             $this->context->controller->addJS($this->_path.'views/js/back.js');
@@ -233,46 +245,29 @@ class Multisafepay extends PaymentModule
 
     /**
      * Add the CSS & JavaScript files you want to be added on the FO.
+     *
+     * @return void
      */
-    public function hookHeader()
+    public function hookHeader(): void
     {
         $this->context->controller->addJS($this->_path.'/views/js/front.js');
         $this->context->controller->addCSS($this->_path.'/views/css/front.css');
     }
 
     /**
-     * This hook is used to display the order confirmation page.
-     */
-    public function hookPaymentReturn($params)
-    {
-        if ($this->active == false) {
-            return;
-        }
-
-        $order = $params['order'];
-
-        if ($order->getCurrentOrderState()->id != Configuration::get('PS_OS_ERROR')) {
-            $this->smarty->assign('status', 'ok');
-        }
-
-        return $this->display(__FILE__, 'views/templates/hook/confirmation.tpl');
-    }
-
-    /**
      * Return payment options available for PS 1.7+
      *
-     * @param array Hook parameters
-     *
+     * @param array $params
      * @return array|null
      */
-    public function hookPaymentOptions($params)
+    public function hookPaymentOptions(array $params)
     {
         if (!$this->active) {
-            return;
+            return null;
         }
 
         if (!$this->checkCurrency($params['cart'])) {
-            return;
+            return null;
         }
 
         $payment_options = array();
@@ -331,7 +326,11 @@ class Multisafepay extends PaymentModule
         return true;
     }
 
-    public function checkCurrency($cart)
+    /**
+     * @param PrestaShopCart $cart
+     * @return bool
+     */
+    public function checkCurrency(PrestaShopCart $cart): bool
     {
         $currency_order = new Currency($cart->id_currency);
         $currencies_module = $this->getCurrency($cart->id_currency);

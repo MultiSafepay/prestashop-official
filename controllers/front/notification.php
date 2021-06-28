@@ -24,6 +24,7 @@
 use MultiSafepay\PrestaShop\Services\SdkService;
 use OrderCore as PrestaShopOrder;
 use OrderHistoryCore as PrestaShopOrderHistory;
+use MultiSafepay\Api\Transactions\TransactionResponse;
 
 class MultisafepayNotificationModuleFrontController extends ModuleFrontController
 {
@@ -44,44 +45,57 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
     private $transaction;
 
     /**
-     *
      * Process notification
+     *
+     * @return string
      */
-    public function postProcess()
+    public function postProcess(): string
     {
         if ($this->module->active == false) {
             die;
         }
-        $this->order_id = Tools::getValue('transactionid');
-        $this->order    = new PrestaShopOrder(Tools::getValue('transactionid'));
-        $this->transaction = (new SdkService())->getSdk()->getTransactionManager()->get($this->order_id);
-        $this->setNewOrderStatus($this->getOrderStatusId($this->transaction->getStatus()));
+        $this->order_id     = Tools::getValue('transactionid');
+        $this->order        = new PrestaShopOrder(Tools::getValue('transactionid'));
+        $this->transaction  = (new SdkService())->getSdk()->getTransactionManager()->get($this->order_id);
+        $this->setNewOrderStatus((int) $this->getOrderStatusId($this->transaction->getStatus()));
         header('Content-Type: text/plain');
         die('OK');
     }
 
-    private function setNewOrderStatus($order_status_id)
+    /**
+     * Change the order status
+     *
+     * @param int $order_status_id
+     * @return void
+     */
+    private function setNewOrderStatus(int $order_status_id): void
     {
-        $history  = new PrestaShopOrderHistory();
+        $history           = new PrestaShopOrderHistory();
         $history->id_order = (int)$this->order->id;
         $history->changeIdOrderState($order_status_id, $this->order->id);
         $history->addWithemail();
     }
 
-    private function getOrderStatusId($transaction_status)
+    /**
+     * Return the order status id for the given transaction status
+     *
+     * @param string $transaction_status
+     * @return string
+     */
+    private function getOrderStatusId(string $transaction_status): string
     {
         $order_status = array(
-            'initialized' => Configuration::get('MULTISAFEPAY_OS_AWAITING_BANK_TRANSFER_PAYMENT'),
-            'declined' => Configuration::get('PS_OS_CANCELED'),
-            'cancelled' => Configuration::get('PS_OS_CANCELED'),
-            'completed' => Configuration::get('PS_OS_PAYMENT'),
-            'expired' => Configuration::get('PS_OS_CANCELED'),
-            'uncleared' => Configuration::get('MULTISAFEPAY_OS_UNCLEARED'),
-            'refunded' => Configuration::get('PS_OS_REFUND'),
+            'initialized'      => Configuration::get('MULTISAFEPAY_OS_AWAITING_BANK_TRANSFER_PAYMENT'),
+            'declined'         => Configuration::get('PS_OS_CANCELED'),
+            'cancelled'        => Configuration::get('PS_OS_CANCELED'),
+            'completed'        => Configuration::get('PS_OS_PAYMENT'),
+            'expired'          => Configuration::get('PS_OS_CANCELED'),
+            'uncleared'        => Configuration::get('MULTISAFEPAY_OS_UNCLEARED'),
+            'refunded'         => Configuration::get('PS_OS_REFUND'),
             'partial_refunded' => Configuration::get('MULTISAFEPAY_OS_PARTIAL_REFUNDED'),
-            'void' => Configuration::get('PS_OS_CANCELED'),
-            'chargedback' => Configuration::get('MULTISAFEPAY_OS_CHARGEBACK'),
-            'shipped' => Configuration::get('PS_OS_SHIPPING')
+            'void'             => Configuration::get('PS_OS_CANCELED'),
+            'chargedback'      => Configuration::get('MULTISAFEPAY_OS_CHARGEBACK'),
+            'shipped'          => Configuration::get('PS_OS_SHIPPING')
         );
         return isset($order_status[$transaction_status]) ? $order_status[$transaction_status] : Configuration::get('PS_OS_ERROR');
     }

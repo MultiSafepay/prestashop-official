@@ -24,36 +24,55 @@
 use OrderCore as PrestaShopOrder;
 use OrderHistoryCore as PrestaShopOrderHistory;
 use CartCore as PrestaShopCart;
-use MultiSafepay\PrestaShop\Services\SdkService;
-use MultiSafepay\Api\Transactions\TransactionResponse;
 
 class MultisafepayCancelModuleFrontController extends ModuleFrontController
 {
-
     /**
-     * @todo Refactor this method. This is just a draft to test the order flow
      *
+     * @return void
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    public function postProcess()
+    public function postProcess(): void
     {
         if ($this->module->active == false || !Tools::getValue('id_order')) {
             die;
         }
-        $order_id = Tools::getValue('id_order');
-        $order = new PrestaShopOrder($order_id);
+
+        $order = new PrestaShopOrder(Tools::getValue('id_order'));
+        $this->cancelOrder($order);
+
+        $cart = new PrestaShopCart(Tools::getValue('id_cart'));
+        $this->duplicateCart($cart);
+
+        Tools::redirect($this->context->link->getPageLink('order', true, null, array('step' => '3')));
+    }
+
+
+    /**
+     * @return void
+     * @param CartCore $cart
+     */
+    private function duplicateCart(PrestaShopCart $cart): void
+    {
+        $duplicated_cart         = $cart->duplicate();
+        $this->context->cart     = $duplicated_cart['cart'];
+        $this->context->customer = new Customer((int) $cart->id_customer);
+        $this->context->currency = new Currency((int) $cart->id_currency);
+        $this->context->language = new Language((int) $cart->id_lang);
+        $this->context->cookie->__set('id_cart', $duplicated_cart['cart']->id);
+    }
+
+    /**
+     * @param OrderCore $order
+     * @return void
+     */
+    private function cancelOrder(PrestaShopOrder $order): void
+    {
         $history  = new PrestaShopOrderHistory();
         $history->id_order = (int)$order->id;
         $history->id_order_state = (int)$order->id;
-        $cancel_order_status_id = (int) Configuration::get('PS_OS_CANCELED');
-        $history->changeIdOrderState($cancel_order_status_id, $order->id);
+        $history->changeIdOrderState((int) Configuration::get('PS_OS_CANCELED'), $order->id);
         $history->addWithemail(true, array('dont_send_email' => true));
-        $cart = new PrestaShopCart(Tools::getValue('id_cart'));
-        $new_cart = $cart->duplicate();
-        Context::getContext()->cookie->id_cart = $new_cart['cart']->id;
-        Context::getContext()->cookie->write();
-        $redirect = $this->context->link->getPageLink('order', true, null, array('step' => '3'));
-        Tools::redirect($redirect);
     }
 }

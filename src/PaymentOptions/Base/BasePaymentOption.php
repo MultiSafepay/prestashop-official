@@ -28,6 +28,51 @@ use ContextCore as PrestaShopContext;
 abstract class BasePaymentOption implements BasePaymentOptionInterface
 {
 
+    /**
+     * @var string
+     */
+    public $name;
+
+    /**
+     * @var string
+     */
+    public $description;
+
+    /**
+     * @var string
+     */
+    public $gateway_code;
+
+    /**
+     * @var string
+     */
+    public $type;
+
+    /**
+     * @var array
+     */
+    public $inputs;
+
+    /**
+     * @var string
+     */
+    public $call_to_action_text;
+
+    /**
+     * @var string
+     */
+    public $icon;
+
+    /**
+     * @var boolean
+     */
+    public $payment_form;
+
+    /**
+     * @var string
+     */
+    public $action;
+
     public function __construct()
     {
         $this->name                 = $this->getPaymentOptionName();

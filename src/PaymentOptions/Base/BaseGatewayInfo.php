@@ -30,14 +30,14 @@ use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
  *
  * @since      4.0.0
  */
-class BaseGatewayInfo implements GatewayInfoInterface {
+class BaseGatewayInfo implements GatewayInfoInterface
+{
 
     /**
      * @return array
      */
-    public function getData(): array {
+    public function getData(): array
+    {
         return array();
     }
-
 }
-

@@ -45,9 +45,9 @@ class MoneyHelper
 
     /**
      * @param float $price
-     * @return float|integer
+     * @return float
      */
-    private static function priceToCents(float $price)
+    private static function priceToCents(float $price): float
     {
         return $price * 100;
     }

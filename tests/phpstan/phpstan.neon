@@ -8,50 +8,17 @@ parameters:
   # From Phpstan 0.12, paths are relative to the .neon file.
   paths:
     - ../../controllers
-    - ../../sql
     - ../../upgrade
     - ../../views
     - ../../multisafepay.php
+    - ../../src
   excludePaths:
     - ../../tests
   ignoreErrors:
     - '#Call to an undefined method [a-zA-Z0-9\\_]+::validateOrder\(\)#'
-    - '#Method [a-zA-Z0-9\\_]+::postProcess\(\) with return type void returns false but should not return anything.#'
-    - '#Method [a-zA-Z0-9\\_]+::postProcess\(\) has no return typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::displayError\(\) has no return typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::displayError\(\) has parameter \$description with no typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::displayError\(\) has parameter \$message with no typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::isValidOrder\(\) has no return typehint specified.#'
-    - '#Function upgrade_module_1_1_0\(\) has no return typehint specified.#'
-    - '#Function upgrade_module_1_1_0\(\) has parameter \$module with no typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::install\(\) has no return typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::uninstall\(\) has no return typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::getContent\(\) has no return typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::renderForm\(\) has no return typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::getConfigForm\(\) has no return typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::getConfigFormValues\(\) has no return typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::hookBackOfficeHeader\(\) has no return typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::hookHeader\(\) has no return typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::hookPayment\(\) has no return typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::hookPaymentReturn\(\) has no return typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::checkCurrency\(\) has no return typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::install\(\) has no return typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::hookPayment\(\) has parameter \$params with no typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::hookPaymentReturn\(\) has parameter \$params with no typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::hookPaymentOptions\(\) has parameter \$params with no typehint specified.#'
-    - '#Method [a-zA-Z0-9\\_]+::checkCurrency\(\) has parameter \$cart with no typehint specified.#'
-    - '#Property [a-zA-Z0-9\\_]+::\$config_form has no typehint specified.#'
-    - '#Access to an undefined property [a-zA-Z0-9\\_]+::\$limited_currencies.#'
-    - '#Call to an undefined method AdminController\|FrontController::getLanguages\(\).#'
-    - '#Access to an undefined property [a-zA-Z0-9\\_]+::\$limited_currencies.  #'
-    - '#Method [a-zA-Z0-9\\_]+::hookPaymentOptions\(\) return type has no value type specified in iterable type array.#'
-    - '#PHPDoc tag @param has invalid value (array Hook parameters): Unexpected token "Hook", expected variable at offset 83#'
-    - '#Method [a-zA-Z0-9\\_]+::hookPaymentOptions\(\) should return array\|null but empty return statement found.#'
-    - '#Method [a-zA-Z0-9\\_]+::hookPaymentOptions\(\) should return array\|null but empty return statement found.#'
+    - '#Variable \$transaction might not be defined.#'
     - '#Call to function is_array\(\) with Currency\|false will always evaluate to false.#'
-    - '#Parameter \#1 \$idCountry of static method [a-zA-Z0-9\\_]+::getIsoById\(\) expects int, string given.#'
-    - '#Parameter \#2 \$idLang of static method [a-zA-Z0-9\\_]+::get\(\) expects int\|null, true given.#'
-    - '#Parameter \#2 \$idLang of static method [a-zA-Z0-9\\_]+::get\(\) expects int\|null, string given.#'
-    - '#Parameter \#1 \$key of static method [a-zA-Z0-9\\_]+::updateValue\(\) expects string, int\|string given.#'
-    - '#Parameter \#1 \$key of static method [a-zA-Z0-9\\_]+::getValue\(\) expects string, int\|string given.#'
-    - '#PHPDoc tag @param has invalid value \(array Hook parameters\): Unexpected token "Hook", expected variable at offset 83#'
+    - '#Call to an undefined method AdminController\|FrontController::getLanguages\(\).#'
+    - '#Call to an undefined method [a-zA-Z0-9\\_]+::addLocale\(\).#'
+    - '#Parameter \#8 \$lang_id of method [a-zA-Z0-9\\_]+::createCustomer\(\) expects string, int given.#'
+    - '#Parameter \#1 \$module_id of class MultiSafepay\\PrestaShop\\Services\\OrderService constructor expects string, int given.#'

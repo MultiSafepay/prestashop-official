@@ -23,6 +23,9 @@
 
 namespace MultiSafepay\PrestaShop\Services;
 
+use AddressCore as PrestaShopAddress;
+use CountryCore as PrestaShopCountry;
+use LanguageCore as PrestaShopLanguage;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\CustomerDetails;
 use MultiSafepay\ValueObject\Customer\Address;
 use MultiSafepay\ValueObject\Customer\AddressParser;
@@ -30,9 +33,6 @@ use MultiSafepay\ValueObject\Customer\Country;
 use MultiSafepay\ValueObject\Customer\EmailAddress;
 use MultiSafepay\ValueObject\Customer\PhoneNumber;
 use OrderCore as PrestaShopOrder;
-use AddressCore as PrestaShopAddress;
-use CountryCore as PrestaShopCountry;
-use LanguageCore as PrestaShopLanguage;
 use StateCore as PrestaShopState;
 
 /**
@@ -48,7 +48,7 @@ class CustomerService
      */
     public function createCustomerDetails(PrestaShopOrder $order): CustomerDetails
     {
-        $invoice_address = $this->getCustomerAddress($order->id_address_invoice);
+        $invoice_address = $this->getCustomerAddress((int) $order->id_address_invoice);
 
         $customer_address = $this->createAddress(
             $invoice_address->address1,
@@ -78,7 +78,7 @@ class CustomerService
      */
     public function createDeliveryDetails(PrestaShopOrder $order): CustomerDetails
     {
-        $shipping_address = $this->getCustomerAddress($order->id_address_delivery);
+        $shipping_address = $this->getCustomerAddress((int) $order->id_address_delivery);
 
         $delivery_address = $this->createAddress(
             $shipping_address->address1,
@@ -133,7 +133,7 @@ class CustomerService
             ->addFirstName($first_name)
             ->addLastName($last_name)
             ->addPhoneNumber(new PhoneNumber($phone_number))
-            ->addLocale($this->getLanguageCode(PrestaShopLanguage::getIsoById($lang_id)))
+            ->addLocale($this->getLanguageCode(PrestaShopLanguage::getIsoById((int) $lang_id)))
             ->addCompanyName($company_name ? $company_name : '');
 
         if (! empty($ip_address)) {
@@ -194,7 +194,7 @@ class CustomerService
     private function getLanguageCode(string $iso_code): string
     {
         $locale = PrestaShopLanguage::getLanguageCodeByIso($iso_code);
-        $parts = explode('-', $locale);
+        $parts = explode('-', (string) $locale);
         $language_code = $parts[0] . '_' . strtoupper($parts[1]);
         return $language_code;
     }
@@ -202,10 +202,11 @@ class CustomerService
     /**
      * Return the Address by the given address id
      *
-     * @param $address_id
+     * @param int $address_id
      * @return PrestaShopAddress
      */
-    private function getCustomerAddress($address_id) {
-        return new PrestaShopAddress($address_id);
+    private function getCustomerAddress(int $address_id)
+    {
+        return new PrestaShopAddress((int) $address_id);
     }
 }

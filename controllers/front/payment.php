@@ -33,13 +33,12 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
     /**
      * Process checkout form and register the order.
      *
-     * @todo Get the initializes order status. Now is hardcoded.
      * @todo Log steps
-     *
+     * @return void
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    public function postProcess()
+    public function postProcess(): void
     {
         if ($this->module->active == false) {
             die;

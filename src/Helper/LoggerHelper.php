@@ -55,7 +55,7 @@ class LoggerHelper
     /**
      * Log an emergency level message.
      *
-     * @param string message
+     * @param string $message
      * @return bool
      */
     public static function logEmergency(string $message): bool
@@ -66,7 +66,7 @@ class LoggerHelper
     /**
      * Log an alert level message.
      *
-     * @param string message
+     * @param string $message
      * @return bool
      */
     public static function logAlert(string $message): bool
@@ -77,7 +77,7 @@ class LoggerHelper
     /**
      * Log a critical level message.
      *
-     * @param string message
+     * @param string $message
      * @return bool
      */
     public static function logCritical(string $message): bool
@@ -88,7 +88,7 @@ class LoggerHelper
     /**
      * Log an error level message.
      *
-     * @param string message
+     * @param string $message
      * @return bool
      */
     public static function logError(string $message): bool
@@ -99,7 +99,7 @@ class LoggerHelper
     /**
      * Log a warning level message.
      *
-     * @param string message
+     * @param string $message
      * @return bool
      */
     public static function logWarning(string $message): bool
@@ -110,7 +110,7 @@ class LoggerHelper
     /**
      * Log a notice level message.
      *
-     * @param string message
+     * @param string $message
      * @return bool
      */
     public static function logNotice(string $message): bool
@@ -121,7 +121,7 @@ class LoggerHelper
     /**
      * Log an info level message.
      *
-     * @param string message
+     * @param string $message
      * @return bool
      */
     public static function logInfo(string $message): bool
@@ -132,7 +132,7 @@ class LoggerHelper
     /**
      * Log a debug level message.
      *
-     * @param string message
+     * @param string $message
      * @return bool
      */
     public static function logDebug(string $message): bool
