@@ -14,6 +14,8 @@ parameters:
     - ../../src
   excludePaths:
     - ../../tests
+  scanFiles:
+    - ../../multisafepay.php
   ignoreErrors:
     - '#Call to an undefined method [a-zA-Z0-9\\_]+::validateOrder\(\)#'
     - '#Variable \$transaction might not be defined.#'
@@ -22,3 +24,5 @@ parameters:
     - '#Call to an undefined method [a-zA-Z0-9\\_]+::addLocale\(\).#'
     - '#Parameter \#8 \$lang_id of method [a-zA-Z0-9\\_]+::createCustomer\(\) expects string, int given.#'
     - '#Parameter \#1 \$module_id of class MultiSafepay\\PrestaShop\\Services\\OrderService constructor expects string, int given.#'
+    - "#Strict comparison using === between 'days' and 'hours' will always evaluate to false.#"
+    - '#Parameter \#2 \$replace of function str_replace expects array\|string, int given.#'

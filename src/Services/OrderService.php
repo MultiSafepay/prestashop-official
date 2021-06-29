@@ -116,10 +116,10 @@ class OrderService
         $time_active_unit = PrestaShopConfiguration::get('MULTISAFEPAY_TIME_ACTIVE_UNIT');
         $time_active      = 30;
         $time_active_unit = 'days';
-        if ('days' === $time_active_unit) {
+        if ((string) $time_active_unit === 'days') {
             $time_active = $time_active * 24 * 60 * 60;
         }
-        if ('hours' === $time_active_unit) {
+        if ((string)$time_active_unit === 'hours') {
             $time_active = $time_active * 60 * 60;
         }
         return $time_active;
@@ -134,7 +134,7 @@ class OrderService
         return $plugin_details
             ->addApplicationName('PrestaShop ')
             ->addApplicationVersion('PrestaShop: ' . _PS_VERSION_)
-            ->addPluginVersion(MultiSafepay::getVersion())
+            ->addPluginVersion(Multisafepay::getVersion())
             ->addShopRootUrl(PrestaShopContext::getContext()->shop->getBaseURL());
     }
 
@@ -162,7 +162,7 @@ class OrderService
     {
         $order_description = sprintf('Payment for order: %s', $order_id);
         if (PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION')) {
-            $order_description = str_replace('{order_id}', $order_id, (string) PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION'));
+            $order_description = str_replace('{order_id}', $order_id, PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION'));
         }
         return $order_description;
     }
