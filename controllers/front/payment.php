@@ -26,6 +26,8 @@ use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\Exception\ApiException;
+use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+use PaymentModule;
 
 class MultisafepayPaymentModuleFrontController extends ModuleFrontController
 {
@@ -33,53 +35,62 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
     /**
      * Process checkout form and register the order.
      *
-     * @todo Log steps
      * @return void
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
     public function postProcess(): void
     {
-        if ($this->module->active == false) {
-            die;
+
+        if (!$this->isContextSetUp()) {
+            LoggerHelper::logWarning('Warning: It seems postProcess method of MultiSafepay is being called out of context.');
+            Tools::redirect('index.php?controller=order&step=1');
+            return;
         }
 
-        $cart_id      = $this->context->cart->id;
-        $customer_id  = $this->context->cart->id_customer;
-        $currency_id  = $this->context->cart->id_currency;
-        $secure_key   = $this->context->customer->secure_key;
-        $amount = 0;
+        $cart_id    = $this->context->cart->id;
+        $secure_key = $this->context->customer->secure_key;
 
-        $this->context->cart     = new Cart((int) $cart_id);
-        $this->context->customer = new Customer((int) $customer_id);
-        $this->context->currency = new Currency((int) Context::getContext()->cart->id_currency);
-        $this->context->language = new Language((int) Context::getContext()->customer->id_lang);
-
-        if ($this->isValidOrder() === true) {
-            $payment_status = Configuration::get('MULTISAFEPAY_OS_INITIALIZED');
-            $message = null;
-        } else {
-            $payment_status = Configuration::get('PS_OS_ERROR');
-            $message = $this->module->l('An error occurred while processing payment');
+        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+            LoggerHelper::logInfo('Starting the payment process for Cart ID: ' . $this->context->cart->id);
         }
 
-        $module_name = $this->module->displayName;
+        if (!$this->isValidPaymentMethod()) {
+            LoggerHelper::logWarning('The customer address changed just before the end of the checkout process method and now this method is not available any more.');
+            Tools::redirect('index.php?controller=order&step=1');
+            return;
+        }
 
         try {
-            $validate = $this->module->validateOrder($cart_id, $payment_status, $amount, $module_name, $message, array('dont_send_email' => true), $currency_id, false, $secure_key);
+            $validate = $this->module->validateOrder($cart_id, Configuration::get('MULTISAFEPAY_OS_INITIALIZED'), 0, $this->module->displayName, null, array('dont_send_email' => true), $this->context->cart->id_currency, false, $this->context->customer->secure_key);
         } catch (PrestaShopException $prestaShopException) {
+            LoggerHelper::logError('Error when try to create an order using Cart ID ' . $cart_id);
+            LoggerHelper::logError($prestaShopException->getMessage());
+            Tools::redirectLink($this->context->link->getPageLink('order', true, null, array('step' => '3')));
         }
 
         $order = Order::getByCartId($cart_id);
-        $order_service = new OrderService($this->module->id, $secure_key);
 
+        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+            LoggerHelper::logInfo('Order with Cart ID:' . $cart_id . ' has been validated getting Order ID: ' . $order->id);
+        }
+
+        $order_service                  = new OrderService($this->module->id, $this->context->customer->secure_key);
         $multisafepay_gateway_code      = Tools::getValue('gateway');
         $multisafepay_transaction_type  = Tools::getValue('type');
         $multisafepay_gateway_info_vars = Tools::getAllValues();
 
         $order_request = $order_service->createOrderRequest($order, $multisafepay_gateway_code, $multisafepay_transaction_type, $multisafepay_gateway_info_vars);
 
+        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+            LoggerHelper::logInfo('An OrderRequest for the order ID: ' . $order->id . ' has been created and contains the following information: ' . json_encode($order_request->getData()));
+        }
+
         $transaction = $this->createMultiSafepayTransaction($order_request);
+
+        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+            LoggerHelper::logInfo('Ending payment process. A transaction has been created for order ID: ' . $order->id . ' with payment link ' . $transaction->getPaymentUrl());
+        }
 
         Tools::redirectLink($transaction->getPaymentUrl());
     }
@@ -87,8 +98,6 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
 
     /**
      * Create a MultiSafepay Transaction
-     *
-     * @todo Log errors
      *
      * @param OrderRequest $order_request
      * @return TransactionResponse
@@ -99,18 +108,46 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         try {
             $transaction = $transaction_manager->create($order_request);
         } catch (ApiException $api_exception) {
-            // Log error
+            LoggerHelper::logError('Error when try to create a MultiSafepay transaction using the following OrderRequest data: ' . json_encode($order_request->getData()));
+            LoggerHelper::logError($api_exception->getMessage());
         }
         return $transaction;
     }
 
     /**
-     * @todo Check if there is something to check internally to validate the order
+     * Return according the context if the payment address is not supported by the module.
      *
-     * @return bool
+     * @return boolean
      */
-    protected function isValidOrder()
+    private function isValidPaymentMethod(): bool
     {
+        $is_valid = false;
+        foreach (Module::getPaymentModules() as $module) {
+            if ($module['name'] == 'multisafepay') {
+                $is_valid = true;
+                break;
+            }
+        }
+        return $is_valid;
+    }
+
+    /**
+     * Return if the basic variables are not supported by the module.
+     *
+     * @return boolean
+     */
+    private function isContextSetUp(): bool
+    {
+        // If the module is not active or is being called out of context
+        if (!$this->module->active || !($this->module instanceof Multisafepay)) {
+            return false;
+        }
+
+        // If the cart context is not properly setup
+        if ($this->context->cart->id_customer == 0 || $this->context->cart->id_address_delivery == 0 || $this->context->cart->id_address_invoice == 0) {
+            return false;
+        }
+
         return true;
     }
 }

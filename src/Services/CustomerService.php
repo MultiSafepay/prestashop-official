@@ -38,6 +38,8 @@ use StateCore as PrestaShopState;
 /**
  * Class CustomerService
  *
+ * @todo Check for customer IP addresses and user agent arguments
+ *
  * @package MultiSafepay\PrestaShop\Services
  */
 class CustomerService

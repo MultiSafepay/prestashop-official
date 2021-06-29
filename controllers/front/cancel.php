@@ -24,6 +24,7 @@
 use OrderCore as PrestaShopOrder;
 use OrderHistoryCore as PrestaShopOrderHistory;
 use CartCore as PrestaShopCart;
+use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 
 class MultisafepayCancelModuleFrontController extends ModuleFrontController
 {
@@ -61,6 +62,10 @@ class MultisafepayCancelModuleFrontController extends ModuleFrontController
         $this->context->currency = new Currency((int) $cart->id_currency);
         $this->context->language = new Language((int) $cart->id_lang);
         $this->context->cookie->__set('id_cart', $duplicated_cart['cart']->id);
+
+        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+            LoggerHelper::logInfo('Cart ID: ' . $cart->id . ' has been duplicated');
+        }
     }
 
     /**
@@ -74,5 +79,9 @@ class MultisafepayCancelModuleFrontController extends ModuleFrontController
         $history->id_order_state = (int)$order->id;
         $history->changeIdOrderState((int) Configuration::get('PS_OS_CANCELED'), $order->id);
         $history->addWithemail(true, array('dont_send_email' => true));
+
+        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+            LoggerHelper::logInfo('Order ID: ' . $order->id . ' has been canceled');
+        }
     }
 }

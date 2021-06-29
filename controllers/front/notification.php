@@ -25,6 +25,8 @@ use MultiSafepay\PrestaShop\Services\SdkService;
 use OrderCore as PrestaShopOrder;
 use OrderHistoryCore as PrestaShopOrderHistory;
 use MultiSafepay\Api\Transactions\TransactionResponse;
+use MultiSafepay\Exception\ApiException;
+use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 
 class MultisafepayNotificationModuleFrontController extends ModuleFrontController
 {
@@ -47,6 +49,11 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
     /**
      * Process notification
      *
+     * @todo If the payment method changed in MultiSafepay payment page, after leave WooCommerce checkout page
+     * @todo Check if the WooCommerce Order status do not match with the order status received in notification, to avoid to process repeated of notification.
+     * @todo What to do with final order statuses: refunded, partial refunded.
+     * @todo Register Payments within the order information.
+     *
      * @return string
      */
     public function postProcess(): string
@@ -54,10 +61,36 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
         if ($this->module->active == false) {
             die;
         }
-        $this->order_id     = Tools::getValue('transactionid');
-        $this->order        = new PrestaShopOrder(Tools::getValue('transactionid'));
-        $this->transaction  = (new SdkService())->getSdk()->getTransactionManager()->get($this->order_id);
+
+        $this->order_id = Tools::getValue('transactionid');
+        $this->order    = new PrestaShopOrder(Tools::getValue('transactionid'));
+
+        if (!$this->order->id) {
+            LoggerHelper::logWarning('Warning: It seems a notification is trying to process an order which does not exist.');
+            header('Content-Type: text/plain');
+            die('OK');
+        }
+
+        if ($this->order->module && $this->order->module != 'multisafepay') {
+            LoggerHelper::logWarning('Warning: It seems a notification is trying to process an order processed by another payment method.');
+            header('Content-Type: text/plain');
+            die('OK');
+        }
+
+        try {
+            $this->transaction  = (new SdkService())->getSdk()->getTransactionManager()->get($this->order_id);
+        } catch (ApiException $api_exception) {
+            LoggerHelper::logError($api_exception->getMessage());
+            header('Content-Type: text/plain');
+            die('OK');
+        }
+
         $this->setNewOrderStatus((int) $this->getOrderStatusId($this->transaction->getStatus()));
+
+        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+            LoggerHelper::logInfo('A notification has been processed for order ID: ' . $this->order_id . ' with status: ' . $this->transaction->getStatus() . ' and PSP ID: ' . $this->transaction->getTransactionId());
+        }
+
         header('Content-Type: text/plain');
         die('OK');
     }

@@ -27,7 +27,6 @@ if (!defined('_PS_VERSION_')) {
 
 require __DIR__ . '/vendor/autoload.php';
 
-use PaymentModule;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use MultiSafepay\PrestaShop\PaymentOptions\Gateways;
 use MultiSafepay\PrestaShop\Services\OrderStatusService;
@@ -74,12 +73,21 @@ class Multisafepay extends PaymentModule
      */
     public function install(): bool
     {
+        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+            LoggerHelper::logInfo('Begin install process');
+        }
+
         if (extension_loaded('curl') == false) {
+            LoggerHelper::logAlert('cURL extension is not enabled.');
             $this->_errors[] = $this->l('You have to enable the cURL extension on your server to install this module');
             return false;
         }
 
         Configuration::updateValue('MULTISAFEPAY_TEST_MODE', false);
+
+        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+            LoggerHelper::logInfo('Default values has been set in database');
+        }
 
         (new OrderStatusService())->registerMultiSafepayOrderStatuses();
 
@@ -255,7 +263,8 @@ class Multisafepay extends PaymentModule
     }
 
     /**
-     * Return payment options available for PS 1.7+
+     * Return payment options available
+     * @todo Check according with each setting if the PaymentOption should be loaded. Filters like currency, total, group, etc
      *
      * @param array $params
      * @return array|null

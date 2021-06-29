@@ -67,7 +67,7 @@ class Ideal extends BasePaymentOption
                 array(
                     'name'          => 'issuer_id',
                     'placeholder'   => 'Select bank',
-                    'options'       => IssuerService::getIdealIssuers()
+                    'options'       => IssuerService::getIssuers($this->getPaymentOptionGatewayCode())
                 ),
             ),
         );
