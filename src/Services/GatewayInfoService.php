@@ -21,12 +21,40 @@
  *
  */
 
-$sql = array();
-if(!empty($sql)) {
-    foreach ($sql as $query) {
-        if (Db::getInstance()->execute($query) == false) {
-            return false;
+namespace MultiSafepay\PrestaShop\Services;
+
+use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Ideal;
+use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BaseGatewayInfo;
+
+/**
+ * This class returns the SDK object.
+ *
+ */
+class GatewayInfoService
+{
+
+    /**
+     * @param string $gateway_code
+     * @param array $data
+     * @return GatewayInfoInterface
+     */
+    public function getGatewayInfo(string $gateway_code, array $data): GatewayInfoInterface
+    {
+        if ('IDEAL' === $gateway_code) {
+            return $this->getIdealGatewayInfo($data['issuer_id']);
         }
+        return new BaseGatewayInfo();
+    }
+
+    /**
+     * @param string $issuer_id
+     * @return GatewayInfoInterface
+     */
+    public function getIdealGatewayInfo(string $issuer_id): GatewayInfoInterface
+    {
+        $gateway_info = new Ideal();
+        $gateway_info->addIssuerId($issuer_id);
+        return $gateway_info;
     }
 }
-

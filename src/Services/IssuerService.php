@@ -21,21 +21,26 @@
  *
  */
 
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
+namespace MultiSafepay\PrestaShop\Services;
 
 /**
- * This function updates your module from previous versions to the version 1.1,
- * usefull when you modify your database, or register a new hook ...
- * Don't forget to create one file per version.
+ * This class returns the SDK object.
+ *
+ * @since      4.0.0
  */
-function upgrade_module_1_1_0($module)
+class IssuerService
 {
-    /*
-     * Do everything you want right there,
-     * You could add a column in one of your module's tables
-     */
 
-    return true;
+    public static function getIssuers(string $gateway_code): array
+    {
+        $issuers = (new SdkService())->getSdk()->getIssuerManager()->getIssuersByGatewayCode($gateway_code);
+        $options = array();
+        foreach ($issuers as $issuer) {
+            $options[] = array(
+                'value' => $issuer->getCode(),
+                'name'  => $issuer->getDescription()
+            );
+        }
+        return $options;
+    }
 }

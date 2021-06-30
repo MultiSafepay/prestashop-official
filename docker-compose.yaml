@@ -29,7 +29,7 @@ services:
       - db
       - mailhog
     ports:
-      - 8081:80
+      - 80:80
     expose:
       - 9003
     volumes:
@@ -54,7 +54,7 @@ services:
       - DB_PASSWD=${DB_PASSWD}
       - DB_NAME=${DB_NAME}
       - PS_FOLDER_ADMIN=${PS_FOLDER_ADMIN}
-      - PS_DOMAIN=${PS_DOMAIN}:8081
+      - PS_DOMAIN=${PS_DOMAIN}
       - PS_LANGUAGE=${PS_LANGUAGE}
       - PS_COUNTRY=${PS_COUNTRY}
       - PS_FOLDER_INSTALL=${PS_FOLDER_INSTALL}

@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 /**
  *
  * DISCLAIMER
@@ -18,18 +19,38 @@
  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  */
 
-$sql = array();
+namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
-$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'multisafepay` (
-    `id_multisafepay` int(11) NOT NULL AUTO_INCREMENT,
-    PRIMARY KEY  (`id_multisafepay`)
-) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
+use Configuration;
 
-foreach ($sql as $query) {
-    if (Db::getInstance()->execute($query) == false) {
-        return false;
+class Generic extends BasePaymentOption
+{
+
+    public function getPaymentOptionName(): string
+    {
+        return 'Generic Gateway';
+    }
+
+    public function getPaymentOptionDescription(): string
+    {
+        return (Configuration::get('MULTISAFEPAY_GENERIC_DESCRIPTION') ? Configuration::get('MULTISAFEPAY_GENERIC_DESCRIPTION') : '');
+    }
+
+    public function getPaymentOptionGatewayCode(): string
+    {
+        return (Configuration::get('MULTISAFEPAY_GENERIC_CODE') ? Configuration::get('MULTISAFEPAY_GENERIC_CODE') : '');
+    }
+
+    public function getTransactionType(): string
+    {
+        return 'redirect';
+    }
+
+    public function getPaymentOptionLogo(): string
+    {
+        return (Configuration::get('MULTISAFEPAY_GENERIC_ICON') ? Configuration::get('MULTISAFEPAY_GENERIC_ICON') : '');
     }
 }

@@ -1,4 +1,6 @@
-{*
+<?php
+/**
+ *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
@@ -17,22 +19,32 @@
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
-*}
+ */
 
-<div class="row">
-	<div class="col-xs-12 col-md-6">
-		<p class="payment_module" id="multisafepay_payment_button">
-			{if $cart->getOrderTotal() < 2}
-				<a href="">
-					<img src="{$domain|cat:$payment_button|escape:'html':'UTF-8'}" alt="{l s='Pay with my payment module' mod='multisafepay'}" />
-					{l s='Minimum amount required in order to pay with my payment module:' mod='multisafepay'} {convertPrice price=2}
-				</a>
-			{else}
-				<a href="{$link->getModuleLink('multisafepay', 'redirect', array(), true)|escape:'htmlall':'UTF-8'}" title="{l s='Pay with my payment module' mod='multisafepay'}">
-					<img src="{$module_dir|escape:'htmlall':'UTF-8'}/logo.png" alt="{l s='Pay with my payment module' mod='multisafepay'}" width="32" height="32" />
-					{l s='Pay with my payment module' mod='multisafepay'}
-				</a>
-			{/if}
-		</p>
-	</div>
-</div>
+namespace MultiSafepay\PrestaShop\PaymentOptions;
+
+use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal;
+use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay;
+use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic;
+use MultiSafepay\PrestaShop\Services\IssuerService;
+use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use Media;
+
+class Gateways
+{
+
+    const MULTISAFEPAY_PAYMENT_OPTIONS = array(
+        Ideal::class,
+        MultiSafepay::class,
+        Generic::class
+    );
+
+    public static function getMultiSafepayPaymentOptions(): array
+    {
+        $payment_options = array();
+        foreach (self::MULTISAFEPAY_PAYMENT_OPTIONS as $payment_option) {
+            $payment_options[] = new $payment_option();
+        }
+        return $payment_options;
+    }
+}

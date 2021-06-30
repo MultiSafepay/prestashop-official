@@ -1,4 +1,6 @@
-{*
+<?php declare(strict_types=1);
+/**
+ *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
@@ -17,13 +19,36 @@
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
-*}
+ */
 
-<div>
-	<h3>{l s='An error occurred' mod='multisafepay'}:</h3>
-	<ul class="alert alert-danger">
-		{foreach from=$errors item='error'}
-			<li>{$error|escape:'htmlall':'UTF-8'}.</li>
-		{/foreach}
-	</ul>
-</div>
+namespace MultiSafepay\PrestaShop\Helper;
+
+use MultiSafepay\ValueObject\Money;
+
+/**
+ * Class MoneyHelper
+ *
+ */
+class MoneyHelper
+{
+    public const DEFAULT_CURRENCY_CODE = 'EUR';
+
+    /**
+     * @param float  $amount
+     * @param string $currency_code
+     * @return Money
+     */
+    public static function createMoney(float $amount, string $currency_code = self::DEFAULT_CURRENCY_CODE): Money
+    {
+        return new Money(self::priceToCents($amount), $currency_code);
+    }
+
+    /**
+     * @param float $price
+     * @return float
+     */
+    private static function priceToCents(float $price): float
+    {
+        return $price * 100;
+    }
+}

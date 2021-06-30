@@ -25,75 +25,100 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+require __DIR__ . '/vendor/autoload.php';
+
+use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use MultiSafepay\PrestaShop\PaymentOptions\Gateways;
+use MultiSafepay\PrestaShop\Services\OrderStatusService;
+use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+use Cart as PrestaShopCart;
+
 class Multisafepay extends PaymentModule
 {
-    protected $config_form = false;
 
+    const MULTISAFEPAY_MODULE_VERSION = '5.0.0';
+
+    /**
+     * Multisafepay plugin constructor.
+     * @todo Check if we need an instance on load admin. Until now, we don`t
+     */
     public function __construct()
     {
-        $this->name = 'multisafepay';
-        $this->tab = 'payments_gateways';
-        $this->version = '1.0.0';
-        $this->author = 'MultiSafepay';
+        $this->name          = 'multisafepay';
+        $this->tab           = 'payments_gateways';
+        $this->version       = self::MULTISAFEPAY_MODULE_VERSION;
+        $this->author        = 'MultiSafepay';
         $this->need_instance = 1;
-
-        /**
-         * Set $this->bootstrap to true if your module is compliant with bootstrap (PrestaShop 1.6)
-         */
-        $this->bootstrap = true;
-
+        $this->bootstrap     = true;
         parent::__construct();
 
-        $this->displayName = $this->l('MultiSafepay');
-        $this->description = $this->l('MultiSafepay payment plugin for PrestaShop');
-
-        $this->confirmUninstall = $this->l('');
-
-        $this->ps_versions_compliancy = array('min' => '1.6', 'max' => _PS_VERSION_);
+        $this->displayName            = $this->l('MultiSafepay');
+        $this->description            = $this->l('MultiSafepay payment plugin for PrestaShop');
+        $this->confirmUninstall       = $this->l('Are you sure you want to uninstall MultiSafepay?');
+        $this->ps_versions_compliancy = array('min' => '1.7.0', 'max' => _PS_VERSION_);
     }
 
     /**
-     * Don't forget to create update methods if needed:
-     * http://doc.prestashop.com/display/PS16/Enabling+the+Auto-Update
+     * @return string
      */
-    public function install()
+    public static function getVersion(): string
     {
+        return self::MULTISAFEPAY_MODULE_VERSION;
+    }
+
+    /**
+     * Install method
+     *
+     * @return boolean
+     */
+    public function install(): bool
+    {
+        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+            LoggerHelper::logInfo('Begin install process');
+        }
+
         if (extension_loaded('curl') == false) {
+            LoggerHelper::logAlert('cURL extension is not enabled.');
             $this->_errors[] = $this->l('You have to enable the cURL extension on your server to install this module');
             return false;
         }
 
         Configuration::updateValue('MULTISAFEPAY_TEST_MODE', false);
 
-        include(dirname(__FILE__).'/sql/install.php');
+        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+            LoggerHelper::logInfo('Default values has been set in database');
+        }
+
+        (new OrderStatusService())->registerMultiSafepayOrderStatuses();
 
         return parent::install() &&
             $this->registerHook('header') &&
             $this->registerHook('backOfficeHeader') &&
-            $this->registerHook('payment') &&
             $this->registerHook('paymentReturn') &&
-            $this->registerHook('paymentOptions');
+            $this->registerHook('paymentOptions') &&
+            $this->registerHook('actionEmailSendBefore');
     }
 
-    public function uninstall()
+    /**
+     * Uninstall method
+     *
+     * @return bool
+     */
+    public function uninstall(): bool
     {
         Configuration::deleteByName('MULTISAFEPAY_TEST_MODE');
         Configuration::deleteByName('MULTISAFEPAY_API_KEY');
         Configuration::deleteByName('MULTISAFEPAY_TEST_API_KEY');
-
-        include(dirname(__FILE__).'/sql/uninstall.php');
-
         return parent::uninstall();
     }
 
     /**
-     * Load the configuration form
+     * Load the configuration form or process the submitted data
+     *
+     * @return string
      */
-    public function getContent()
+    public function getContent(): string
     {
-        /**
-         * If values have been submitted in the form, process.
-         */
         if (((bool)Tools::isSubmit('submitMultisafepayModule')) == true) {
             $this->postProcess();
         }
@@ -102,9 +127,11 @@ class Multisafepay extends PaymentModule
     }
 
     /**
-     * Create the form that will be displayed in the configuration of your module.
+     * Create the form that will be displayed in the configuration
+     *
+     * @return string
      */
-    protected function renderForm()
+    protected function renderForm(): string
     {
         $helper = new HelperForm();
 
@@ -131,8 +158,10 @@ class Multisafepay extends PaymentModule
 
     /**
      * Create the structure of your form.
+     *
+     * @return array
      */
-    protected function getConfigForm()
+    protected function getConfigForm(): array
     {
         return array(
             'form' => array(
@@ -183,9 +212,11 @@ class Multisafepay extends PaymentModule
     }
 
     /**
-     * Set values for the inputs.
+     * Set values for the inputs
+     *
+     * @return array
      */
-    protected function getConfigFormValues()
+    protected function getConfigFormValues(): array
     {
         return array(
             'MULTISAFEPAY_TEST_MODE' => Configuration::get('MULTISAFEPAY_TEST_MODE'),
@@ -196,20 +227,23 @@ class Multisafepay extends PaymentModule
 
     /**
      * Save form data.
+     *
+     * @return void
      */
-    protected function postProcess()
+    protected function postProcess(): void
     {
         $form_values = $this->getConfigFormValues();
-
         foreach (array_keys($form_values) as $key) {
             Configuration::updateValue($key, Tools::getValue($key));
         }
     }
 
     /**
-    * Add the CSS & JavaScript files you want to be loaded in the BO.
+     * Add the CSS & JavaScript files you want to be loaded in the BO.
+     *
+     * @return void
     */
-    public function hookBackOfficeHeader()
+    public function hookBackOfficeHeader(): void
     {
         if (Tools::getValue('module_name') == $this->name) {
             $this->context->controller->addJS($this->_path.'views/js/back.js');
@@ -219,81 +253,93 @@ class Multisafepay extends PaymentModule
 
     /**
      * Add the CSS & JavaScript files you want to be added on the FO.
+     *
+     * @return void
      */
-    public function hookHeader()
+    public function hookHeader(): void
     {
         $this->context->controller->addJS($this->_path.'/views/js/front.js');
         $this->context->controller->addCSS($this->_path.'/views/css/front.css');
     }
 
     /**
-     * This method is used to render the payment button,
-     * Take care if the button should be displayed or not.
-     */
-    public function hookPayment($params)
-    {
-        $currency_id = $params['cart']->id_currency;
-        $currency = new Currency((int)$currency_id);
-
-        if (in_array($currency->iso_code, $this->limited_currencies) == false) {
-            return false;
-        }
-
-        $this->smarty->assign('module_dir', $this->_path);
-
-        return $this->display(__FILE__, 'views/templates/hook/payment.tpl');
-    }
-
-    /**
-     * This hook is used to display the order confirmation page.
-     */
-    public function hookPaymentReturn($params)
-    {
-        if ($this->active == false) {
-            return;
-        }
-
-        $order = $params['objOrder'];
-
-        if ($order->getCurrentOrderState()->id != Configuration::get('PS_OS_ERROR')) {
-            $this->smarty->assign('status', 'ok');
-        }
-
-        $this->smarty->assign(array(
-            'id_order' => $order->id,
-            'reference' => $order->reference,
-            'params' => $params,
-            'total' => Tools::displayPrice($params['total_to_pay'], $params['currencyObj'], false),
-        ));
-
-        return $this->display(__FILE__, 'views/templates/hook/confirmation.tpl');
-    }
-
-    /**
-     * Return payment options available for PS 1.7+
+     * Return payment options available
+     * @todo Check according with each setting if the PaymentOption should be loaded. Filters like currency, total, group, etc
      *
-     * @param array Hook parameters
-     *
+     * @param array $params
      * @return array|null
      */
-    public function hookPaymentOptions($params)
+    public function hookPaymentOptions(array $params)
     {
         if (!$this->active) {
-            return;
+            return null;
         }
-        if (!$this->checkCurrency($params['cart'])) {
-            return;
-        }
-        $option = new \PrestaShop\PrestaShop\Core\Payment\PaymentOption();
-        $option->setCallToActionText($this->l('Pay offline'))
-            ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true));
 
-        return [
-            $option
-        ];
+        if (!$this->checkCurrency($params['cart'])) {
+            return null;
+        }
+
+        $payment_options = array();
+        $payment_methods = Gateways::getMultiSafepayPaymentOptions();
+
+        foreach ($payment_methods as $payment_method) {
+            $option = new PaymentOption();
+            $option->setCallToActionText($payment_method->call_to_action_text);
+            $option->setAction($payment_method->action);
+            $option->setForm($this->getMultiSafepayPaymentOptionForm($payment_method->gateway_code, $payment_method->inputs));
+
+            if ($payment_method->icon && file_exists(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $payment_method->icon)) {
+                $option->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $payment_method->icon));
+            }
+
+            if ($payment_method->description) {
+                $option->setAdditionalInformation($payment_method->description);
+            }
+
+            $payment_options[] = $option;
+        }
+
+        return $payment_options;
     }
 
-    public function checkCurrency($cart)
+    /**
+     * Return payment form
+     *
+     * @param string $gateway_code
+     * @param array $inputs
+     * @return false|string
+     * @throws SmartyException
+     */
+    public function getMultiSafepayPaymentOptionForm(string $gateway_code, array $inputs = array())
+    {
+        $this->context->smarty->assign(
+            array(
+                'action'       => $this->context->link->getModuleLink($this->name, 'payment', array(), true),
+                'inputs'       => $inputs
+            )
+        );
+        return $this->context->smarty->fetch('module:multisafepay/views/templates/front/form.tpl');
+    }
+
+    /**
+     * Disable send emails on order confirmation
+     *
+     * @param  array $params
+     * @return bool
+     */
+    public function hookActionEmailSendBefore(array $params): bool
+    {
+        if (isset($params['templateVars']['dont_send_email']) &&  $params['templateVars']['dont_send_email'] === true) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param PrestaShopCart $cart
+     * @return bool
+     */
+    public function checkCurrency(PrestaShopCart $cart): bool
     {
         $currency_order = new Currency($cart->id_currency);
         $currencies_module = $this->getCurrency($cart->id_currency);
