@@ -36,7 +36,10 @@ class OrderStatusService
 {
 
     /**
+     * Register the MultiSafepay Order statuses
      *
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
     public function registerMultiSafepayOrderStatuses(): void
     {
@@ -50,6 +53,8 @@ class OrderStatusService
     }
 
     /**
+     * Creates the Order Statuses
+     *
      * @param string $multisafepay_order_status_key
      * @param array $multisafepay_order_status_values
      * @return OrderState
@@ -59,10 +64,12 @@ class OrderStatusService
     private function createOrderStatus(string $multisafepay_order_status_key, array $multisafepay_order_status_values): OrderState
     {
         $order_state              = new OrderState();
-        $order_state->name        = 'MultiSafepay ' . $multisafepay_order_status_values['name'];
+        foreach (Language::getLanguages() as $language) {
+            $order_state->name[$language['id_lang']] = 'MultiSafepay ' . $multisafepay_order_status_values['name'];
+        }
         $order_state->send_email  = $multisafepay_order_status_values['send_mail'];
         $order_state->color       = $multisafepay_order_status_values['color'];
-        $order_state->unremovable = true;
+        $order_state->unremovable = false;
         $order_state->hidden      = false;
         $order_state->delivery    = false;
         $order_state->logable     = $multisafepay_order_status_values['logable'];
