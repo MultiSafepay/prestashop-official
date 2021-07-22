@@ -26,3 +26,8 @@ parameters:
     - '#Parameter \#1 \$module_id of class MultiSafepay\\PrestaShop\\Services\\OrderService constructor expects string, int given.#'
     - "#Strict comparison using === between 'days' and 'hours' will always evaluate to false.#"
     - '#Parameter \#2 \$replace of function str_replace expects array\|string, int given.#'
+    - '#Cannot access property \$reference on ObjectModel\|false.#'
+    - '#Cannot access property \$id_currency on ObjectModel\|false.#'
+    - '#Parameter \#1 \$order of method [a-zA-Z0-9\\_]+::createCustomerDetails\(\) expects OrderCore, ObjectModel\|false given.#'
+    - '#Parameter \#1 \$order of method [a-zA-Z0-9\\_]+::createPaymentOptions\(\) expects Order, ObjectModel\|false given.#'
+    - '#Parameter \#1 \$order of method [a-zA-Z0-9\\_]+::createDeliveryDetails\(\) expects OrderCore, ObjectModel\|false given.#'

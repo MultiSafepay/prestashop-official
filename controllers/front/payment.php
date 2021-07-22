@@ -48,9 +48,6 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
             return;
         }
 
-        $cart_id    = $this->context->cart->id;
-        $secure_key = $this->context->customer->secure_key;
-
         if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
             LoggerHelper::logInfo('Starting the payment process for Cart ID: ' . $this->context->cart->id);
         }
@@ -62,17 +59,19 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         }
 
         try {
-            $validate = $this->module->validateOrder($cart_id, Configuration::get('MULTISAFEPAY_OS_INITIALIZED'), 0, $this->module->displayName, null, array('dont_send_email' => true), $this->context->cart->id_currency, false, $this->context->customer->secure_key);
+            $validate = $this->module->validateOrder($this->context->cart->id, Configuration::get('MULTISAFEPAY_OS_INITIALIZED'), 0, $this->module->displayName, null, array('dont_send_email' => true), $this->context->cart->id_currency, false, $this->context->customer->secure_key);
         } catch (PrestaShopException $prestaShopException) {
-            LoggerHelper::logError('Error when try to create an order using Cart ID ' . $cart_id);
+            LoggerHelper::logError('Error when try to create an order using Cart ID ' . $this->context->cart->id);
             LoggerHelper::logError($prestaShopException->getMessage());
             Tools::redirectLink($this->context->link->getPageLink('order', true, null, array('step' => '3')));
         }
 
-        $order = Order::getByCartId($cart_id);
+        $order_collection = new PrestaShopCollection('Order');
+        $order_collection->where('id_cart', '=', $this->context->cart->id);
 
         if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
-            LoggerHelper::logInfo('Order with Cart ID:' . $cart_id . ' has been validated getting Order ID: ' . $order->id);
+            $orders_ids = $this->getOrdersIdsFromCollection($order_collection);
+            LoggerHelper::logInfo('Order with Cart ID:' . $this->context->cart->id . ' has been validated and as result the following orders IDS: ' . implode(',', $orders_ids) . ' has been registered.');
         }
 
         $order_service                  = new OrderService($this->module->id, $this->context->customer->secure_key);
@@ -80,16 +79,16 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         $multisafepay_transaction_type  = Tools::getValue('type');
         $multisafepay_gateway_info_vars = Tools::getAllValues();
 
-        $order_request = $order_service->createOrderRequest($order, $multisafepay_gateway_code, $multisafepay_transaction_type, $multisafepay_gateway_info_vars);
+        $order_request = $order_service->createOrderRequest($order_collection, $multisafepay_gateway_code, $multisafepay_transaction_type, $multisafepay_gateway_info_vars);
 
         if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
-            LoggerHelper::logInfo('An OrderRequest for the order ID: ' . $order->id . ' has been created and contains the following information: ' . json_encode($order_request->getData()));
+            LoggerHelper::logInfo('An OrderRequest for the Cart ID: ' . $this->context->cart->id . ' has been created and contains the following information: ' . json_encode($order_request->getData()));
         }
 
         $transaction = $this->createMultiSafepayTransaction($order_request);
 
         if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
-            LoggerHelper::logInfo('Ending payment process. A transaction has been created for order ID: ' . $order->id . ' with payment link ' . $transaction->getPaymentUrl());
+            LoggerHelper::logInfo('Ending payment process. A transaction has been created for Cart ID: ' . $this->context->cart->id . ' with payment link ' . $transaction->getPaymentUrl());
         }
 
         Tools::redirectLink($transaction->getPaymentUrl());
@@ -149,5 +148,21 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         }
 
         return true;
+    }
+
+    /**
+     *
+     * Return an array of Orders IDs for the given PrestaShopCollection
+     *
+     * @param PrestaShopCollection $order_collection
+     * @return array
+     */
+    private function getOrdersIdsFromCollection(PrestaShopCollection $order_collection): array
+    {
+        $orders_ids = array();
+        foreach ($order_collection->getResults() as $order) {
+            $orders_ids[] = $order->id;
+        }
+        return $orders_ids;
     }
 }

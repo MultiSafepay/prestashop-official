@@ -32,63 +32,51 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
 {
 
     /**
-     * @var int
-     */
-    private $order_id;
-
-    /**
-     * @var PrestaShopOrder
-     */
-    private $order;
-
-    /**
-     * @var TransactionResponse
-     */
-    private $transaction;
-
-    /**
      * Process notification
      *
      * @todo If the payment method changed in MultiSafepay payment page, after leave WooCommerce checkout page
      * @todo Check if the WooCommerce Order status do not match with the order status received in notification, to avoid to process repeated of notification.
      * @todo What to do with final order statuses: refunded, partial refunded.
      * @todo Register Payments within the order information.
+     * @todo Change to support POST notification
      *
      * @return string
      */
     public function postProcess(): string
     {
         if ($this->module->active == false) {
-            die;
+            die();
         }
 
-        $this->order_id = Tools::getValue('transactionid');
-        $this->order    = new PrestaShopOrder(Tools::getValue('transactionid'));
+        $order_reference  = Tools::getValue('transactionid');
+        $order_collection = PrestaShopOrder::getByReference($order_reference);
 
-        if (!$this->order->id) {
-            LoggerHelper::logWarning('Warning: It seems a notification is trying to process an order which does not exist.');
-            header('Content-Type: text/plain');
-            die('OK');
-        }
+        foreach ($order_collection->getResults() as $order) {
+            if (!$order->id) {
+                LoggerHelper::logWarning('Warning: It seems a notification is trying to process an order which does not exist.');
+                header('Content-Type: text/plain');
+                die('OK');
+            }
 
-        if ($this->order->module && $this->order->module != 'multisafepay') {
-            LoggerHelper::logWarning('Warning: It seems a notification is trying to process an order processed by another payment method.');
-            header('Content-Type: text/plain');
-            die('OK');
-        }
+            if ($order->module && $order->module !== 'multisafepay') {
+                LoggerHelper::logWarning('Warning: It seems a notification is trying to process an order processed by another payment method.');
+                header('Content-Type: text/plain');
+                die('OK');
+            }
 
-        try {
-            $this->transaction  = (new SdkService())->getSdk()->getTransactionManager()->get($this->order_id);
-        } catch (ApiException $api_exception) {
-            LoggerHelper::logError($api_exception->getMessage());
-            header('Content-Type: text/plain');
-            die('OK');
-        }
+            try {
+                $transaction = (new SdkService())->getSdk()->getTransactionManager()->get($order_reference);
+            } catch (ApiException $api_exception) {
+                LoggerHelper::logError($api_exception->getMessage());
+                header('Content-Type: text/plain');
+                die('OK');
+            }
 
-        $this->setNewOrderStatus((int) $this->getOrderStatusId($this->transaction->getStatus()));
+            $this->setNewOrderStatus($order->id, (int)$this->getOrderStatusId($transaction->getStatus()));
 
-        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
-            LoggerHelper::logInfo('A notification has been processed for order ID: ' . $this->order_id . ' with status: ' . $this->transaction->getStatus() . ' and PSP ID: ' . $this->transaction->getTransactionId());
+            if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+                LoggerHelper::logInfo('A notification has been processed for order ID: ' . $order->id . ' with status: ' . $transaction->getStatus() . ' and PSP ID: ' . $transaction->getTransactionId());
+            }
         }
 
         header('Content-Type: text/plain');
@@ -101,11 +89,11 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
      * @param int $order_status_id
      * @return void
      */
-    private function setNewOrderStatus(int $order_status_id): void
+    private function setNewOrderStatus(int $order_id, int $order_status_id): void
     {
         $history           = new PrestaShopOrderHistory();
-        $history->id_order = (int)$this->order->id;
-        $history->changeIdOrderState($order_status_id, $this->order->id);
+        $history->id_order = (int)$order_id;
+        $history->changeIdOrderState($order_status_id, $order_id);
         $history->addWithemail();
     }
 

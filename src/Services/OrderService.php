@@ -33,10 +33,12 @@ use MultiSafepay\Api\Transactions\OrderRequest\Arguments\SecondChance;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use Multisafepay;
 use ContextCore as PrestaShopContext;
-use OrderCore as PrestaShopOrder;
+use Order as PrestaShopOrder;
+use PrestaShopCollection;
 use CurrencyCore as PrestaShopCurrency;
 use ConfigurationCore as PrestaShopConfiguration;
 use MultiSafepay\PrestaShop\Services\GatewayInfoService;
+use ObjectModel;
 
 /**
  * Class OrderService
@@ -68,29 +70,31 @@ class OrderService
     }
 
     /**
-     * @param PrestaShopOrder   $order
-     * @param string            $gateway_code
-     * @param string            $type
-     * @param array             $gateway_info_vars
+     * @param PrestaShopCollection  $order_collection
+     * @param string                $gateway_code
+     * @param string                $type
+     * @param array                 $gateway_info_vars
      * @return OrderRequest
      */
-    public function createOrderRequest(PrestaShopOrder $order, string $gateway_code = '', string $type = 'redirect', array $gateway_info_vars = null): OrderRequest
+    public function createOrderRequest(PrestaShopCollection $order_collection, string $gateway_code = '', string $type = 'redirect', array $gateway_info_vars = null): OrderRequest
     {
+
+        $order_request_arguments = $this->getOrderRequestArgumentsByOrderCollection($order_collection);
         $order_request = new OrderRequest();
         $order_request
-            ->addOrderId((string) $order->id)
-            ->addMoney(MoneyHelper::createMoney((float) $order->total_paid, PrestaShopCurrency::getIsoCodeById((int) $order->id_currency)))
+            ->addOrderId((string) $order_request_arguments['order_id'])
+            ->addMoney(MoneyHelper::createMoney((float) $order_request_arguments['order_total'], $order_request_arguments['currency_code']))
             ->addGatewayCode($gateway_code)
             ->addType($type)
             ->addPluginDetails($this->createPluginDetails())
-            ->addDescriptionText($this->getOrderDescriptionText($order->id))
-            ->addCustomer((new CustomerService())->createCustomerDetails($order))
-            ->addPaymentOptions($this->createPaymentOptions($order))
+            ->addDescriptionText($this->getOrderDescriptionText($order_request_arguments['order_id']))
+            ->addCustomer((new CustomerService())->createCustomerDetails($order_collection->getFirst()))
+            ->addPaymentOptions($this->createPaymentOptions($order_collection->getFirst()))
             ->addSecondsActive($this->getTimeActive())
             ->addSecondChance(( new SecondChance() )->addSendEmail(true));
 
-        if ($order->total_shipping > 0) {
-            $order_request->addDelivery((new CustomerService())->createDeliveryDetails($order));
+        if ($order_request_arguments['shipping_total'] > 0) {
+            $order_request->addDelivery((new CustomerService())->createDeliveryDetails($order_collection->getFirst()));
         }
 
         if (PrestaShopConfiguration::get('MULTISAFEPAY_GOOGLE_ANALYTICS_ID')) {
@@ -103,6 +107,55 @@ class OrderService
         }
 
         return $order_request;
+    }
+
+
+    /**
+     * Return an array with values required in the OrderRequest object
+     * and which should be common to the orders of a collections
+     *
+     * @param PrestaShopCollection $order_collection
+     * @return array
+     */
+    public function getOrderRequestArgumentsByOrderCollection(PrestaShopCollection $order_collection): array
+    {
+        $order = $order_collection->getFirst();
+        return array(
+            'order_id'       => $order->reference,
+            'order_total'    => $this->getOrderTotalByOrderCollection($order_collection),
+            'shipping_total' => $this->getShippingTotalByOrderCollection($order_collection),
+            'currency_code'  => PrestaShopCurrency::getIsoCodeById((int) $order->id_currency)
+        );
+    }
+
+    /**
+     * Return the sum of the totals of the orders within the given order collection.
+     *
+     * @param PrestaShopCollection $order_collection
+     * @return float
+     */
+    public function getOrderTotalByOrderCollection(PrestaShopCollection $order_collection): float
+    {
+        $order_total = 0;
+        foreach ($order_collection->getResults() as $order) {
+            $order_total = $order_total + $order->total_paid;
+        }
+        return $order_total;
+    }
+
+    /**
+     * Return the sum of the shipping totals of the orders within the given order collection.
+     *
+     * @param PrestaShopCollection $order_collection
+     * @return float
+     */
+    public function getShippingTotalByOrderCollection(PrestaShopCollection $order_collection): float
+    {
+        $shipping_total = 0;
+        foreach ($order_collection->getResults() as $order) {
+            $shipping_total = $shipping_total + $order->total_shipping;
+        }
+        return $shipping_total;
     }
 
     /**
@@ -148,21 +201,21 @@ class OrderService
         return $payment_options
             ->addNotificationMethod('GET')
             ->addNotificationUrl(PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'notification', array(), true))
-            ->addCancelUrl(PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'cancel', array('id_cart' => $order->id_cart, 'id_order' => $order->id), true))
+            ->addCancelUrl(PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'cancel', array('id_cart' => $order->id_cart, 'id_reference' => $order->reference), true))
             ->addRedirectUrl(PrestaShopContext::getContext()->link->getPageLink('order-confirmation', null, PrestaShopContext::getContext()->language->id, 'id_cart=' . $order->id_cart . '&id_order=' . $order->id . '&id_module=' . $this->module_id . '&key=' . $this->secure_key));
     }
 
     /**
      * Return the order description.
      *
-     * @param   int   $order_id
+     * @param   string   $order_reference
      * @return  string   $order_description
      */
-    private function getOrderDescriptionText(int $order_id):string
+    private function getOrderDescriptionText(string $order_reference):string
     {
-        $order_description = sprintf('Payment for order: %s', $order_id);
+        $order_description = sprintf('Payment for order: %s', $order_reference);
         if (PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION')) {
-            $order_description = str_replace('{order_id}', $order_id, PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION'));
+            $order_description = str_replace('{order_id}', $order_reference, PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION'));
         }
         return $order_description;
     }
