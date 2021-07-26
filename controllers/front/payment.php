@@ -75,11 +75,9 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         }
 
         $order_service                  = new OrderService($this->module->id, $this->context->customer->secure_key);
-        $multisafepay_gateway_code      = Tools::getValue('gateway');
-        $multisafepay_transaction_type  = Tools::getValue('type');
-        $multisafepay_gateway_info_vars = Tools::getAllValues();
+        $paymentOption = \MultiSafepay\PrestaShop\PaymentOptions\Gateways::getMultiSafepayPaymentOption(Tools::getValue('gateway'));
 
-        $order_request = $order_service->createOrderRequest($order_collection, $multisafepay_gateway_code, $multisafepay_transaction_type, $multisafepay_gateway_info_vars);
+        $order_request = $order_service->createOrderRequest($order_collection, $paymentOption);
 
         if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
             LoggerHelper::logInfo('An OrderRequest for the Cart ID: ' . $this->context->cart->id . ' has been created and contains the following information: ' . json_encode($order_request->getData()));

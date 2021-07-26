@@ -23,6 +23,7 @@
 
 namespace MultiSafepay\PrestaShop\PaymentOptions;
 
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic;
@@ -46,5 +47,16 @@ class Gateways
             $payment_options[] = new $payment_option();
         }
         return $payment_options;
+    }
+
+    public static function getMultiSafepayPaymentOption(string $gatewayCode): BasePaymentOption
+    {
+        foreach (self::MULTISAFEPAY_PAYMENT_OPTIONS as $paymentOptionClassname) {
+            $paymentOption = new $paymentOptionClassname();
+            if ($paymentOption->getPaymentOptionGatewayCode() == $gatewayCode) {
+                return $paymentOption;
+            }
+        }
+        return new MultiSafepay();
     }
 }

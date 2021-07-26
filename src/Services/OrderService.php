@@ -23,6 +23,7 @@
 
 namespace MultiSafepay\PrestaShop\Services;
 
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use PaymentModule;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
@@ -38,6 +39,7 @@ use PrestaShopCollection;
 use CurrencyCore as PrestaShopCurrency;
 use ConfigurationCore as PrestaShopConfiguration;
 use MultiSafepay\PrestaShop\Services\GatewayInfoService;
+use Tools;
 use ObjectModel;
 
 /**
@@ -71,12 +73,10 @@ class OrderService
 
     /**
      * @param PrestaShopCollection  $order_collection
-     * @param string                $gateway_code
-     * @param string                $type
-     * @param array                 $gateway_info_vars
+     * @param BasePaymentOption     $paymentOption
      * @return OrderRequest
      */
-    public function createOrderRequest(PrestaShopCollection $order_collection, string $gateway_code = '', string $type = 'redirect', array $gateway_info_vars = null): OrderRequest
+    public function createOrderRequest(PrestaShopCollection $order_collection, BasePaymentOption $paymentOption): OrderRequest
     {
 
         $order_request_arguments = $this->getOrderRequestArgumentsByOrderCollection($order_collection);
@@ -84,8 +84,8 @@ class OrderService
         $order_request
             ->addOrderId((string) $order_request_arguments['order_id'])
             ->addMoney(MoneyHelper::createMoney((float) $order_request_arguments['order_total'], $order_request_arguments['currency_code']))
-            ->addGatewayCode($gateway_code)
-            ->addType($type)
+            ->addGatewayCode($paymentOption->getPaymentOptionGatewayCode())
+            ->addType($paymentOption->getTransactionType())
             ->addPluginDetails($this->createPluginDetails())
             ->addDescriptionText($this->getOrderDescriptionText($order_request_arguments['order_id']))
             ->addCustomer((new CustomerService())->createCustomerDetails($order_collection->getFirst()))
@@ -101,8 +101,9 @@ class OrderService
             $order_request->addGoogleAnalytics(( new GoogleAnalytics() )->addAccountId(PrestaShopConfiguration::get('MULTISAFEPAY_GOOGLE_ANALYTICS_ID')));
         }
 
+        $gateway_info_vars = Tools::getAllValues();
         if ($gateway_info_vars) {
-            $gateway_info = (new GatewayInfoService())->getGatewayInfo($gateway_code, $gateway_info_vars);
+            $gateway_info = (new GatewayInfoService())->getGatewayInfo($paymentOption->getPaymentOptionGatewayCode(), $gateway_info_vars);
             $order_request->addGatewayInfo($gateway_info);
         }
 

@@ -25,6 +25,7 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\IssuerService;
+use Tools;
 
 class Ideal extends BasePaymentOption
 {
@@ -36,7 +37,8 @@ class Ideal extends BasePaymentOption
 
     public function getTransactionType(): string
     {
-        return 'direct';
+        $checkoutVars = Tools::getAllValues();
+        return empty($checkoutVars['issuer_id']) ? 'redirect' : 'direct';
     }
 
     public function getPaymentOptionGatewayCode(): string
