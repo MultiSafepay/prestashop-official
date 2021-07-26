@@ -23,6 +23,8 @@
 
 namespace MultiSafepay\PrestaShop\PaymentOptions\Base;
 
+use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
+
 interface BasePaymentOptionInterface
 {
     /**
@@ -54,4 +56,11 @@ interface BasePaymentOptionInterface
      * @return string
      */
     public function getPaymentOptionLogo(): string;
+
+    /**
+     * @param array $data
+     *
+     * @return GatewayInfoInterface
+     */
+    public function getGatewayInfo(array $data = []): GatewayInfoInterface;
 }

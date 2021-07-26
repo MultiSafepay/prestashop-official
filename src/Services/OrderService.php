@@ -103,8 +103,7 @@ class OrderService
 
         $gateway_info_vars = Tools::getAllValues();
         if ($gateway_info_vars) {
-            $gateway_info = (new GatewayInfoService())->getGatewayInfo($paymentOption->getPaymentOptionGatewayCode(), $gateway_info_vars);
-            $order_request->addGatewayInfo($gateway_info);
+            $order_request->addGatewayInfo($paymentOption->getGatewayInfo($gateway_info_vars));
         }
 
         return $order_request;

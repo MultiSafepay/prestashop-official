@@ -23,6 +23,7 @@
 
 namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
+use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\IssuerService;
 use Tools;
@@ -74,5 +75,12 @@ class Ideal extends BasePaymentOption
             ),
         );
         return array_merge($parent_inputs, $payment_method_input);
+    }
+
+    public function getGatewayInfo(array $data = []): GatewayInfoInterface
+    {
+        $gateway_info = new \MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Ideal();
+        $gateway_info->addIssuerId($data['issuer_id']);
+        return $gateway_info;
     }
 }

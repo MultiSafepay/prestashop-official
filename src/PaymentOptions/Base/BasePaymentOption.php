@@ -24,6 +24,7 @@
 namespace MultiSafepay\PrestaShop\PaymentOptions\Base;
 
 use ContextCore as PrestaShopContext;
+use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 
 abstract class BasePaymentOption implements BasePaymentOptionInterface
 {
@@ -120,5 +121,10 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 )
             )
         );
+    }
+
+    public function getGatewayInfo(array $data = []): GatewayInfoInterface
+    {
+        return new BaseGatewayInfo();
     }
 }
