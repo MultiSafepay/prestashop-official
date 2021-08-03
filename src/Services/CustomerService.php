@@ -50,27 +50,27 @@ class CustomerService
      */
     public function createCustomerDetails(PrestaShopOrder $order): CustomerDetails
     {
-        $invoice_address = $this->getCustomerAddress((int) $order->id_address_invoice);
+        $invoiceAddress = $this->getCustomerAddress((int) $order->id_address_invoice);
 
-        $customer_address = $this->createAddress(
-            $invoice_address->address1,
-            $invoice_address->address2,
-            (new PrestaShopCountry($invoice_address->id_country))->iso_code,
-            PrestaShopState::getNameById($invoice_address->id_state) ? PrestaShopState::getNameById($invoice_address->id_state) : '',
-            $invoice_address->city,
-            $invoice_address->postcode
+        $customerAddress = $this->createAddress(
+            $invoiceAddress->address1,
+            $invoiceAddress->address2,
+            (new PrestaShopCountry($invoiceAddress->id_country))->iso_code,
+            PrestaShopState::getNameById($invoiceAddress->id_state) ? PrestaShopState::getNameById($invoiceAddress->id_state) : '',
+            $invoiceAddress->city,
+            $invoiceAddress->postcode
         );
 
         return $this->createCustomer(
-            $customer_address,
+            $customerAddress,
             $order->getCustomer()->email,
-            $invoice_address->phone,
-            $invoice_address->firstname,
-            $invoice_address->lastname,
+            $invoiceAddress->phone,
+            $invoiceAddress->firstname,
+            $invoiceAddress->lastname,
             '',
             '',
             $order->id_lang,
-            $invoice_address->company
+            $invoiceAddress->company
         );
     }
 
@@ -80,27 +80,27 @@ class CustomerService
      */
     public function createDeliveryDetails(PrestaShopOrder $order): CustomerDetails
     {
-        $shipping_address = $this->getCustomerAddress((int) $order->id_address_delivery);
+        $shippingAddress = $this->getCustomerAddress((int) $order->id_address_delivery);
 
-        $delivery_address = $this->createAddress(
-            $shipping_address->address1,
-            $shipping_address->address2,
-            (new PrestaShopCountry($shipping_address->id_country))->iso_code,
-            PrestaShopState::getNameById($shipping_address->id_state) ? PrestaShopState::getNameById($shipping_address->id_state) : '',
-            $shipping_address->city,
-            $shipping_address->postcode
+        $deliveryAddress = $this->createAddress(
+            $shippingAddress->address1,
+            $shippingAddress->address2,
+            (new PrestaShopCountry($shippingAddress->id_country))->iso_code,
+            PrestaShopState::getNameById($shippingAddress->id_state) ? PrestaShopState::getNameById($shippingAddress->id_state) : '',
+            $shippingAddress->city,
+            $shippingAddress->postcode
         );
 
         return $this->createCustomer(
-            $delivery_address,
+            $deliveryAddress,
             $order->getCustomer()->email,
-            $shipping_address->phone,
-            $shipping_address->firstname,
-            $shipping_address->lastname,
+            $shippingAddress->phone,
+            $shippingAddress->firstname,
+            $shippingAddress->lastname,
             '',
             '',
             $order->id_lang,
-            $shipping_address->company
+            $shippingAddress->company
         );
     }
 
@@ -108,107 +108,107 @@ class CustomerService
      * Return CustomerDetails object
      *
      * @param Address $address
-     * @param string  $email_address
-     * @param string  $phone_number
-     * @param string  $first_name
-     * @param string  $last_name
-     * @param string  $ip_address
-     * @param string  $user_agent
-     * @param string  $company_name
+     * @param string  $emailAddress
+     * @param string  $phoneNumber
+     * @param string  $firstName
+     * @param string  $lastName
+     * @param string  $ipAddress
+     * @param string  $userAgent
+     * @param string  $companyName
      * @return CustomerDetails
      */
     private function createCustomer(
         Address $address,
-        string $email_address,
-        string $phone_number,
-        string $first_name,
-        string $last_name,
-        string $ip_address,
-        string $user_agent,
-        string $lang_id,
-        string $company_name = null
+        string $emailAddress,
+        string $phoneNumber,
+        string $firstName,
+        string $lastName,
+        string $ipAddress,
+        string $userAgent,
+        string $langId,
+        string $companyName = null
     ): CustomerDetails {
-        $customer_details = new CustomerDetails();
-        $customer_details
+        $customerDetails = new CustomerDetails();
+        $customerDetails
             ->addAddress($address)
-            ->addEmailAddress(new EmailAddress($email_address))
-            ->addFirstName($first_name)
-            ->addLastName($last_name)
-            ->addPhoneNumber(new PhoneNumber($phone_number))
-            ->addLocale($this->getLanguageCode(PrestaShopLanguage::getIsoById((int) $lang_id)))
-            ->addCompanyName($company_name ? $company_name : '');
+            ->addEmailAddress(new EmailAddress($emailAddress))
+            ->addFirstName($firstName)
+            ->addLastName($lastName)
+            ->addPhoneNumber(new PhoneNumber($phoneNumber))
+            ->addLocale($this->getLanguageCode(PrestaShopLanguage::getIsoById((int) $langId)))
+            ->addCompanyName($companyName ? $companyName : '');
 
-        if (! empty($ip_address)) {
-            $customer_details->addIpAddressAsString($ip_address);
+        if (! empty($ipAddress)) {
+            $customerDetails->addIpAddressAsString($ipAddress);
         }
 
         if (! empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $customer_details->addForwardedIpAsString($_SERVER['HTTP_X_FORWARDED_FOR']);
+            $customerDetails->addForwardedIpAsString($_SERVER['HTTP_X_FORWARDED_FOR']);
         }
 
-        if (! empty($user_agent)) {
-            $customer_details->addUserAgent($user_agent);
+        if (! empty($userAgent)) {
+            $customerDetails->addUserAgent($userAgent);
         }
 
-        return $customer_details;
+        return $customerDetails;
     }
 
     /**
      * Return Address object
      *
-     * @param string $address_line_1
-     * @param string $address_line_2
+     * @param string $addressLine1
+     * @param string $addressLine2
      * @param string $country
      * @param string $state
      * @param string $city
-     * @param string $zip_code
+     * @param string $zipCode
      * @return Address
      */
     private function createAddress(
-        string $address_line_1,
-        string $address_line_2,
+        string $addressLine1,
+        string $addressLine2,
         string $country,
         string $state,
         string $city,
-        string $zip_code
+        string $zipCode
     ): Address {
-        $address_parser = new AddressParser();
-        $address        = $address_parser->parse($address_line_1, $address_line_2);
-        $street       = $address[0];
-        $house_number = $address[1];
-        $customer_address = new Address();
-        return $customer_address
+        $addressParser   = new AddressParser();
+        $address         = $addressParser->parse($addressLine1, $addressLine2);
+        $street          = $address[0];
+        $houseNumber     = $address[1];
+        $customerAddress = new Address();
+        return $customerAddress
             ->addStreetName($street)
-            ->addHouseNumber($house_number)
+            ->addHouseNumber($houseNumber)
             ->addState($state)
             ->addCity($city)
             ->addCountry(new Country($country))
-            ->addZipCode($zip_code);
+            ->addZipCode($zipCode);
     }
 
 
     /**
      * Return locale code
      *
-     * @param string $iso_code
+     * @param string $isoCode
      * @return string
      */
-    private function getLanguageCode(string $iso_code): string
+    private function getLanguageCode(string $isoCode): string
     {
-        $locale = PrestaShopLanguage::getLanguageCodeByIso($iso_code);
+        $locale = PrestaShopLanguage::getLanguageCodeByIso($isoCode);
         $parts = explode('-', (string) $locale);
-        $language_code = $parts[0] . '_' . strtoupper($parts[1]);
-        return $language_code;
+        $languageCode = $parts[0] . '_' . strtoupper($parts[1]);
+        return $languageCode;
     }
 
     /**
      * Return the Address by the given address id
      *
-     * @param int $address_id
+     * @param int $addressId
      * @return PrestaShopAddress
      */
-    private function getCustomerAddress(int $address_id)
+    private function getCustomerAddress(int $addressId)
     {
-        return new PrestaShopAddress((int) $address_id);
+        return new PrestaShopAddress((int) $addressId);
     }
 }

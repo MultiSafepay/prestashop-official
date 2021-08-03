@@ -40,12 +40,12 @@ class SdkService
     /**
      * @var     string      The API Key
      */
-    private $api_key;
+    private $apiKey;
 
     /**
      * @var   boolean       The environment.
      */
-    private $test_mode;
+    private $testMode;
 
     /**
      * @var   Sdk       Sdk.
@@ -56,18 +56,18 @@ class SdkService
     /**
      * SdkService constructor.
      *
-     * @param  string  $api_key
-     * @param  boolean $test_mode
+     * @param  string  $apiKey
+     * @param  boolean $testMode
      */
-    public function __construct(string $api_key = null, bool $test_mode = null)
+    public function __construct(string $apiKey = null, bool $testMode = null)
     {
-        $this->api_key   = $api_key ?? $this->getApiKey();
-        $this->test_mode = $test_mode ?? $this->getTestMode();
-        $psr_factory     = new Psr17Factory();
-        $client          = new Curl($psr_factory);
+        $this->apiKey   = $apiKey ?? $this->getApiKey();
+        $this->testMode = $testMode ?? $this->getTestMode();
+        $psrFactory     = new Psr17Factory();
+        $client          = new Curl($psrFactory);
         try {
-            $this->sdk = new Sdk($this->api_key, ( $this->test_mode ) ? false : true, $client, $psr_factory, $psr_factory);
-        } catch (InvalidApiKeyException $invalid_api_key_exception) {
+            $this->sdk = new Sdk($this->apiKey, ( $this->testMode ) ? false : true, $client, $psrFactory, $psrFactory);
+        } catch (InvalidApiKeyException $invalidApiKeyException) {
             // log
         }
     }

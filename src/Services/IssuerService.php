@@ -31,9 +31,9 @@ namespace MultiSafepay\PrestaShop\Services;
 class IssuerService
 {
 
-    public static function getIssuers(string $gateway_code): array
+    public static function getIssuers(string $gatewayCode): array
     {
-        $issuers = (new SdkService())->getSdk()->getIssuerManager()->getIssuersByGatewayCode($gateway_code);
+        $issuers = (new SdkService())->getSdk()->getIssuerManager()->getIssuersByGatewayCode($gatewayCode);
         $options = array();
         foreach ($issuers as $issuer) {
             $options[] = array(

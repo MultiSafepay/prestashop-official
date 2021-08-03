@@ -22,10 +22,10 @@
  */
 
 // PrestaShop dependencies
-$prestashop_directory = __DIR__ . '/../../../../';
-require_once $prestashop_directory . 'autoload.php';
-require_once $prestashop_directory . 'vendor/autoload.php';
+$prestashopDirectory = __DIR__ . '/../../../../';
+require_once $prestashopDirectory . 'autoload.php';
+require_once $prestashopDirectory . 'vendor/autoload.php';
 
 // Load MultiSafepay dependencies.
-$multisafepay_module_directory = __DIR__ . '/../../';
-require_once $multisafepay_module_directory . 'vendor/autoload.php';
+$multisafepayModuleDirectory = __DIR__ . '/../../';
+require_once $multisafepayModuleDirectory . 'vendor/autoload.php';

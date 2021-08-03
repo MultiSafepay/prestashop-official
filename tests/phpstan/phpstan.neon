@@ -22,8 +22,8 @@ parameters:
     - '#Call to function is_array\(\) with Currency\|false will always evaluate to false.#'
     - '#Call to an undefined method AdminController\|FrontController::getLanguages\(\).#'
     - '#Call to an undefined method [a-zA-Z0-9\\_]+::addLocale\(\).#'
-    - '#Parameter \#8 \$lang_id of method [a-zA-Z0-9\\_]+::createCustomer\(\) expects string, int given.#'
-    - '#Parameter \#1 \$module_id of class MultiSafepay\\PrestaShop\\Services\\OrderService constructor expects string, int given.#'
+    - '#Parameter \#8 \$langId of method [a-zA-Z0-9\\_]+::createCustomer\(\) expects string, int given.#'
+    - '#Parameter \#1 \$moduleId of class MultiSafepay\\PrestaShop\\Services\\OrderService constructor expects string, int given.#'
     - "#Strict comparison using === between 'days' and 'hours' will always evaluate to false.#"
     - '#Parameter \#2 \$replace of function str_replace expects array\|string, int given.#'
     - '#Cannot access property \$reference on ObjectModel\|false.#'

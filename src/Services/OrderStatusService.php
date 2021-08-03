@@ -43,11 +43,11 @@ class OrderStatusService
      */
     public function registerMultiSafepayOrderStatuses(): void
     {
-        $multisafepay_order_statuses = $this->getMultiSafepayOrderStatuses();
-        foreach ($multisafepay_order_statuses as $multisafepay_order_status_key => $multisafepay_order_status_values) {
-            if (!Configuration::get('MULTISAFEPAY_OS_' . Tools::strtoupper($multisafepay_order_status_key))) {
-                $order_state = $this->createOrderStatus($multisafepay_order_status_key, $multisafepay_order_status_values);
-                Configuration::updateValue('MULTISAFEPAY_OS_' . Tools::strtoupper($multisafepay_order_status_key), (int) $order_state->id);
+        $multisafepayOrderStatuses = $this->getMultiSafepayOrderStatuses();
+        foreach ($multisafepayOrderStatuses as $multisafepayOrderStatusKey => $multisafepayOrderStatusValues) {
+            if (!Configuration::get('MULTISAFEPAY_OS_' . Tools::strtoupper($multisafepayOrderStatusKey))) {
+                $orderState = $this->createOrderStatus($multisafepayOrderStatusKey, $multisafepayOrderStatusValues);
+                Configuration::updateValue('MULTISAFEPAY_OS_' . Tools::strtoupper($multisafepayOrderStatusKey), (int) $orderState->id);
             }
         }
     }
@@ -55,29 +55,29 @@ class OrderStatusService
     /**
      * Creates the Order Statuses
      *
-     * @param string $multisafepay_order_status_key
-     * @param array $multisafepay_order_status_values
+     * @param string $multisafepayOrderStatusKey
+     * @param array $multisafepayOrderStatusValues
      * @return OrderState
      * @throws \PrestaShopDatabaseException
      * @throws \PrestaShopException
      */
-    private function createOrderStatus(string $multisafepay_order_status_key, array $multisafepay_order_status_values): OrderState
+    private function createOrderStatus(string $multisafepayOrderStatusKey, array $multisafepayOrderStatusValues): OrderState
     {
-        $order_state              = new OrderState();
+        $orderState              = new OrderState();
         foreach (Language::getLanguages() as $language) {
-            $order_state->name[$language['id_lang']] = 'MultiSafepay ' . $multisafepay_order_status_values['name'];
+            $orderState->name[$language['id_lang']] = 'MultiSafepay ' . $multisafepayOrderStatusValues['name'];
         }
-        $order_state->send_email  = $multisafepay_order_status_values['send_mail'];
-        $order_state->color       = $multisafepay_order_status_values['color'];
-        $order_state->unremovable = false;
-        $order_state->hidden      = false;
-        $order_state->delivery    = false;
-        $order_state->logable     = $multisafepay_order_status_values['logable'];
-        $order_state->invoice     = $multisafepay_order_status_values['invoice'];
-        $order_state->template    = $multisafepay_order_status_values['template'];
-        $order_state->paid        = $multisafepay_order_status_values['paid'];
-        $order_state->add();
-        return $order_state;
+        $orderState->send_email  = $multisafepayOrderStatusValues['send_mail'];
+        $orderState->color       = $multisafepayOrderStatusValues['color'];
+        $orderState->unremovable = false;
+        $orderState->hidden      = false;
+        $orderState->delivery    = false;
+        $orderState->logable     = $multisafepayOrderStatusValues['logable'];
+        $orderState->invoice     = $multisafepayOrderStatusValues['invoice'];
+        $orderState->template    = $multisafepayOrderStatusValues['template'];
+        $orderState->paid        = $multisafepayOrderStatusValues['paid'];
+        $orderState->add();
+        return $orderState;
     }
 
     /**

@@ -64,8 +64,8 @@ class Ideal extends BasePaymentOption
 
     public function getInputFields(): array
     {
-        $parent_inputs        = parent::getInputFields();
-        $payment_method_input = array(
+        $parentInputs        = parent::getInputFields();
+        $paymentMethodInput = array(
             'select' => array(
                 array(
                     'name'          => 'issuer_id',
@@ -74,13 +74,13 @@ class Ideal extends BasePaymentOption
                 ),
             ),
         );
-        return array_merge($parent_inputs, $payment_method_input);
+        return array_merge($parentInputs, $paymentMethodInput);
     }
 
     public function getGatewayInfo(array $data = []): GatewayInfoInterface
     {
-        $gateway_info = new \MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Ideal();
-        $gateway_info->addIssuerId($data['issuer_id']);
-        return $gateway_info;
+        $gatewayInfo = new \MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Ideal();
+        $gatewayInfo->addIssuerId($data['issuer_id']);
+        return $gatewayInfo;
     }
 }

@@ -46,8 +46,8 @@ class MultisafepayCancelModuleFrontController extends ModuleFrontController
         }
 
         // Cancel orders
-        $order_collection = Order::getByReference(Tools::getValue('id_reference'));
-        $this->cancelOrder($order_collection);
+        $orderCollection = Order::getByReference(Tools::getValue('id_reference'));
+        $this->cancelOrder($orderCollection);
 
         // Duplicate cart
         $cart = new PrestaShopCart(Tools::getValue('id_cart'));
@@ -64,12 +64,12 @@ class MultisafepayCancelModuleFrontController extends ModuleFrontController
      */
     private function duplicateCart(PrestaShopCart $cart): void
     {
-        $duplicated_cart         = $cart->duplicate();
-        $this->context->cart     = $duplicated_cart['cart'];
+        $duplicatedCart         = $cart->duplicate();
+        $this->context->cart     = $duplicatedCart['cart'];
         $this->context->customer = new Customer((int) $cart->id_customer);
         $this->context->currency = new Currency((int) $cart->id_currency);
         $this->context->language = new Language((int) $cart->id_lang);
-        $this->context->cookie->__set('id_cart', $duplicated_cart['cart']->id);
+        $this->context->cookie->__set('id_cart', $duplicatedCart['cart']->id);
 
         if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
             LoggerHelper::logInfo('Cart ID: ' . $cart->id . ' has been duplicated');
@@ -77,12 +77,12 @@ class MultisafepayCancelModuleFrontController extends ModuleFrontController
     }
 
     /**
-     * @param PrestaShopCollection $order_collection
+     * @param PrestaShopCollection $orderCollection
      * @return void
      */
-    private function cancelOrder(PrestaShopCollection $order_collection): void
+    private function cancelOrder(PrestaShopCollection $orderCollection): void
     {
-        foreach ($order_collection->getResults() as $order) {
+        foreach ($orderCollection->getResults() as $order) {
             $history  = new PrestaShopOrderHistory();
             $history->id_order = (int)$order->id;
             $history->id_order_state = (int)$order->id;

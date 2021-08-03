@@ -66,24 +66,24 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
             Tools::redirectLink($this->context->link->getPageLink('order', true, null, array('step' => '3')));
         }
 
-        $order_collection = new PrestaShopCollection('Order');
-        $order_collection->where('id_cart', '=', $this->context->cart->id);
+        $orderCollection = new PrestaShopCollection('Order');
+        $orderCollection->where('id_cart', '=', $this->context->cart->id);
 
         if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
-            $orders_ids = $this->getOrdersIdsFromCollection($order_collection);
-            LoggerHelper::logInfo('Order with Cart ID:' . $this->context->cart->id . ' has been validated and as result the following orders IDS: ' . implode(',', $orders_ids) . ' has been registered.');
+            $ordersIds = $this->getOrdersIdsFromCollection($orderCollection);
+            LoggerHelper::logInfo('Order with Cart ID:' . $this->context->cart->id . ' has been validated and as result the following orders IDS: ' . implode(',', $ordersIds) . ' has been registered.');
         }
 
-        $order_service                  = new OrderService($this->module->id, $this->context->customer->secure_key);
+        $orderService  = new OrderService($this->module->id, $this->context->customer->secure_key);
         $paymentOption = \MultiSafepay\PrestaShop\PaymentOptions\Gateways::getMultiSafepayPaymentOption(Tools::getValue('gateway'));
 
-        $order_request = $order_service->createOrderRequest($order_collection, $paymentOption);
+        $orderRequest = $orderService->createOrderRequest($orderCollection, $paymentOption);
 
         if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
-            LoggerHelper::logInfo('An OrderRequest for the Cart ID: ' . $this->context->cart->id . ' has been created and contains the following information: ' . json_encode($order_request->getData()));
+            LoggerHelper::logInfo('An OrderRequest for the Cart ID: ' . $this->context->cart->id . ' has been created and contains the following information: ' . json_encode($orderRequest->getData()));
         }
 
-        $transaction = $this->createMultiSafepayTransaction($order_request);
+        $transaction = $this->createMultiSafepayTransaction($orderRequest);
 
         if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
             LoggerHelper::logInfo('Ending payment process. A transaction has been created for Cart ID: ' . $this->context->cart->id . ' with payment link ' . $transaction->getPaymentUrl());
@@ -96,17 +96,17 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
     /**
      * Create a MultiSafepay Transaction
      *
-     * @param OrderRequest $order_request
+     * @param OrderRequest $orderRequest
      * @return TransactionResponse
      */
-    private function createMultiSafepayTransaction(OrderRequest $order_request): TransactionResponse
+    private function createMultiSafepayTransaction(OrderRequest $orderRequest): TransactionResponse
     {
-        $transaction_manager    = ((new SdkService())->getSdk())->getTransactionManager();
+        $transactionManager    = ((new SdkService())->getSdk())->getTransactionManager();
         try {
-            $transaction = $transaction_manager->create($order_request);
-        } catch (ApiException $api_exception) {
-            LoggerHelper::logError('Error when try to create a MultiSafepay transaction using the following OrderRequest data: ' . json_encode($order_request->getData()));
-            LoggerHelper::logError($api_exception->getMessage());
+            $transaction = $transactionManager->create($orderRequest);
+        } catch (ApiException $apiException) {
+            LoggerHelper::logError('Error when try to create a MultiSafepay transaction using the following OrderRequest data: ' . json_encode($orderRequest->getData()));
+            LoggerHelper::logError($apiException->getMessage());
         }
         return $transaction;
     }
@@ -118,14 +118,14 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
      */
     private function isValidPaymentMethod(): bool
     {
-        $is_valid = false;
+        $isValid = false;
         foreach (Module::getPaymentModules() as $module) {
             if ($module['name'] == 'multisafepay') {
-                $is_valid = true;
+                $isValid = true;
                 break;
             }
         }
-        return $is_valid;
+        return $isValid;
     }
 
     /**
@@ -152,15 +152,15 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
      *
      * Return an array of Orders IDs for the given PrestaShopCollection
      *
-     * @param PrestaShopCollection $order_collection
+     * @param PrestaShopCollection $orderCollection
      * @return array
      */
-    private function getOrdersIdsFromCollection(PrestaShopCollection $order_collection): array
+    private function getOrdersIdsFromCollection(PrestaShopCollection $orderCollection): array
     {
-        $orders_ids = array();
-        foreach ($order_collection->getResults() as $order) {
-            $orders_ids[] = $order->id;
+        $ordersIds = array();
+        foreach ($orderCollection->getResults() as $order) {
+            $ordersIds[] = $order->id;
         }
-        return $orders_ids;
+        return $ordersIds;
     }
 }

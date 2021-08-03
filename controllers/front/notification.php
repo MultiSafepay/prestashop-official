@@ -48,10 +48,10 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
             die();
         }
 
-        $order_reference  = Tools::getValue('transactionid');
-        $order_collection = PrestaShopOrder::getByReference($order_reference);
+        $orderReference  = Tools::getValue('transactionid');
+        $orderCollection = PrestaShopOrder::getByReference($orderReference);
 
-        foreach ($order_collection->getResults() as $order) {
+        foreach ($orderCollection->getResults() as $order) {
             if (!$order->id) {
                 LoggerHelper::logWarning('Warning: It seems a notification is trying to process an order which does not exist.');
                 header('Content-Type: text/plain');
@@ -65,9 +65,9 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
             }
 
             try {
-                $transaction = (new SdkService())->getSdk()->getTransactionManager()->get($order_reference);
-            } catch (ApiException $api_exception) {
-                LoggerHelper::logError($api_exception->getMessage());
+                $transaction = (new SdkService())->getSdk()->getTransactionManager()->get($orderReference);
+            } catch (ApiException $apiException) {
+                LoggerHelper::logError($apiException->getMessage());
                 header('Content-Type: text/plain');
                 die('OK');
             }
@@ -86,26 +86,26 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
     /**
      * Change the order status
      *
-     * @param int $order_status_id
+     * @param int $orderStatusId
      * @return void
      */
-    private function setNewOrderStatus(int $order_id, int $order_status_id): void
+    private function setNewOrderStatus(int $orderId, int $orderStatusId): void
     {
         $history           = new PrestaShopOrderHistory();
-        $history->id_order = (int)$order_id;
-        $history->changeIdOrderState($order_status_id, $order_id);
+        $history->id_order = (int)$orderId;
+        $history->changeIdOrderState($orderStatusId, $orderId);
         $history->addWithemail();
     }
 
     /**
      * Return the order status id for the given transaction status
      *
-     * @param string $transaction_status
+     * @param string $transactionStatus
      * @return string
      */
-    private function getOrderStatusId(string $transaction_status): string
+    private function getOrderStatusId(string $transactionStatus): string
     {
-        $order_status = array(
+        $orderStatus = array(
             'initialized'      => Configuration::get('MULTISAFEPAY_OS_AWAITING_BANK_TRANSFER_PAYMENT'),
             'declined'         => Configuration::get('PS_OS_CANCELED'),
             'cancelled'        => Configuration::get('PS_OS_CANCELED'),
@@ -118,6 +118,6 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
             'chargedback'      => Configuration::get('MULTISAFEPAY_OS_CHARGEBACK'),
             'shipped'          => Configuration::get('PS_OS_SHIPPING')
         );
-        return isset($order_status[$transaction_status]) ? $order_status[$transaction_status] : Configuration::get('PS_OS_ERROR');
+        return isset($orderStatus[$transactionStatus]) ? $orderStatus[$transactionStatus] : Configuration::get('PS_OS_ERROR');
     }
 }

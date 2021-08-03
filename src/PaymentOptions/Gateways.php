@@ -42,11 +42,11 @@ class Gateways
 
     public static function getMultiSafepayPaymentOptions(): array
     {
-        $payment_options = array();
-        foreach (self::MULTISAFEPAY_PAYMENT_OPTIONS as $payment_option) {
-            $payment_options[] = new $payment_option();
+        $paymentOptions = array();
+        foreach (self::MULTISAFEPAY_PAYMENT_OPTIONS as $paymentOption) {
+            $paymentOptions[] = new $paymentOption();
         }
-        return $payment_options;
+        return $paymentOptions;
     }
 
     public static function getMultiSafepayPaymentOption(string $gatewayCode): BasePaymentOption

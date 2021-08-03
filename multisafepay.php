@@ -232,8 +232,8 @@ class Multisafepay extends PaymentModule
      */
     protected function postProcess(): void
     {
-        $form_values = $this->getConfigFormValues();
-        foreach (array_keys($form_values) as $key) {
+        $formValues = $this->getConfigFormValues();
+        foreach (array_keys($formValues) as $key) {
             Configuration::updateValue($key, Tools::getValue($key));
         }
     }
@@ -279,38 +279,38 @@ class Multisafepay extends PaymentModule
             return null;
         }
 
-        $payment_options = array();
-        $payment_methods = Gateways::getMultiSafepayPaymentOptions();
+        $paymentOptions = array();
+        $paymentMethods = Gateways::getMultiSafepayPaymentOptions();
 
-        foreach ($payment_methods as $payment_method) {
+        foreach ($paymentMethods as $paymentMethod) {
             $option = new PaymentOption();
-            $option->setCallToActionText($payment_method->call_to_action_text);
-            $option->setAction($payment_method->action);
-            $option->setForm($this->getMultiSafepayPaymentOptionForm($payment_method->gateway_code, $payment_method->inputs));
+            $option->setCallToActionText($paymentMethod->callToActionText);
+            $option->setAction($paymentMethod->action);
+            $option->setForm($this->getMultiSafepayPaymentOptionForm($paymentMethod->gatewayCode, $paymentMethod->inputs));
 
-            if ($payment_method->icon && file_exists(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $payment_method->icon)) {
-                $option->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $payment_method->icon));
+            if ($paymentMethod->icon && file_exists(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $paymentMethod->icon)) {
+                $option->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $paymentMethod->icon));
             }
 
-            if ($payment_method->description) {
-                $option->setAdditionalInformation($payment_method->description);
+            if ($paymentMethod->description) {
+                $option->setAdditionalInformation($paymentMethod->description);
             }
 
-            $payment_options[] = $option;
+            $paymentOptions[] = $option;
         }
 
-        return $payment_options;
+        return $paymentOptions;
     }
 
     /**
      * Return payment form
      *
-     * @param string $gateway_code
+     * @param string $gatewayCode
      * @param array $inputs
      * @return false|string
      * @throws SmartyException
      */
-    public function getMultiSafepayPaymentOptionForm(string $gateway_code, array $inputs = array())
+    public function getMultiSafepayPaymentOptionForm(string $gatewayCode, array $inputs = array())
     {
         $this->context->smarty->assign(
             array(
@@ -341,11 +341,11 @@ class Multisafepay extends PaymentModule
      */
     public function checkCurrency(PrestaShopCart $cart): bool
     {
-        $currency_order = new Currency($cart->id_currency);
-        $currencies_module = $this->getCurrency($cart->id_currency);
-        if (is_array($currencies_module)) {
-            foreach ($currencies_module as $currency_module) {
-                if ($currency_order->id == $currency_module['id_currency']) {
+        $currencyOrder = new Currency($cart->id_currency);
+        $currenciesModule = $this->getCurrency($cart->id_currency);
+        if (is_array($currenciesModule)) {
+            foreach ($currenciesModule as $currencyModule) {
+                if ($currencyOrder->id == $currencyModule['id_currency']) {
                     return true;
                 }
             }

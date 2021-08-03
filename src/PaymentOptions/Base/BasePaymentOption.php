@@ -42,7 +42,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     /**
      * @var string
      */
-    public $gateway_code;
+    public $gatewayCode;
 
     /**
      * @var string
@@ -57,7 +57,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     /**
      * @var string
      */
-    public $call_to_action_text;
+    public $callToActionText;
 
     /**
      * @var string
@@ -67,7 +67,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     /**
      * @var boolean
      */
-    public $payment_form;
+    public $paymentForm;
 
     /**
      * @var string
@@ -78,12 +78,12 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     {
         $this->name                 = $this->getPaymentOptionName();
         $this->description          = $this->getPaymentOptionDescription();
-        $this->gateway_code         = $this->getPaymentOptionGatewayCode();
+        $this->gatewayCode          = $this->getPaymentOptionGatewayCode();
         $this->type                 = $this->getTransactionType();
         $this->inputs               = $this->getInputFields();
-        $this->call_to_action_text  = $this->getPaymentOptionName();
+        $this->callToActionText     = $this->getPaymentOptionName();
         $this->icon                 = $this->getPaymentOptionLogo();
-        $this->payment_form         = $this->getPaymentOptionForm();
+        $this->paymentForm          = $this->getPaymentOptionForm();
         $this->action               = PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'payment', array(), true);
     }
 

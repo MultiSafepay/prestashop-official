@@ -35,12 +35,12 @@ class MoneyHelper
 
     /**
      * @param float  $amount
-     * @param string $currency_code
+     * @param string $currencyCode
      * @return Money
      */
-    public static function createMoney(float $amount, string $currency_code = self::DEFAULT_CURRENCY_CODE): Money
+    public static function createMoney(float $amount, string $currencyCode = self::DEFAULT_CURRENCY_CODE): Money
     {
-        return new Money(self::priceToCents($amount), $currency_code);
+        return new Money(self::priceToCents($amount), $currencyCode);
     }
 
     /**
