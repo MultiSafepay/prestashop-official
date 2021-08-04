@@ -23,7 +23,7 @@
 
 namespace MultiSafepay\PrestaShop\PaymentOptions\Base;
 
-use ContextCore as PrestaShopContext;
+use Context as PrestaShopContext;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 
 abstract class BasePaymentOption implements BasePaymentOptionInterface

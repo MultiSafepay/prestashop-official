@@ -21,9 +21,9 @@
  *
  */
 
-use OrderCore as PrestaShopOrder;
-use OrderHistoryCore as PrestaShopOrderHistory;
-use CartCore as PrestaShopCart;
+use Order as PrestaShopOrder;
+use OrderHistory as PrestaShopOrderHistory;
+use Cart as PrestaShopCart;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 
 class MultisafepayCancelModuleFrontController extends ModuleFrontController
@@ -60,7 +60,7 @@ class MultisafepayCancelModuleFrontController extends ModuleFrontController
 
     /**
      * @return void
-     * @param CartCore $cart
+     * @param PrestaShopCart $cart
      */
     private function duplicateCart(PrestaShopCart $cart): void
     {

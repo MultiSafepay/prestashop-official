@@ -23,24 +23,22 @@
 
 namespace MultiSafepay\PrestaShop\Services;
 
-use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
-use PaymentModule;
+use Configuration as PrestaShopConfiguration;
+use Context as PrestaShopContext;
+use Currency as PrestaShopCurrency;
 use MultiSafepay\Api\Transactions\OrderRequest;
-use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GoogleAnalytics;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PaymentOptions;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PluginDetails;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\SecondChance;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
-use Multisafepay;
-use ContextCore as PrestaShopContext;
-use Order as PrestaShopOrder;
-use PrestaShopCollection;
-use CurrencyCore as PrestaShopCurrency;
-use ConfigurationCore as PrestaShopConfiguration;
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\GatewayInfoService;
+use Multisafepay;
+use Order as PrestaShopOrder;
+use PaymentModule;
+use PrestaShopCollection;
 use Tools;
-use ObjectModel;
 
 /**
  * Class OrderService

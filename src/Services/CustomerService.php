@@ -23,17 +23,17 @@
 
 namespace MultiSafepay\PrestaShop\Services;
 
-use AddressCore as PrestaShopAddress;
-use CountryCore as PrestaShopCountry;
-use LanguageCore as PrestaShopLanguage;
+use Address as PrestaShopAddress;
+use Country as PrestaShopCountry;
+use Language as PrestaShopLanguage;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\CustomerDetails;
 use MultiSafepay\ValueObject\Customer\Address;
 use MultiSafepay\ValueObject\Customer\AddressParser;
 use MultiSafepay\ValueObject\Customer\Country;
 use MultiSafepay\ValueObject\Customer\EmailAddress;
 use MultiSafepay\ValueObject\Customer\PhoneNumber;
-use OrderCore as PrestaShopOrder;
-use StateCore as PrestaShopState;
+use Order as PrestaShopOrder;
+use State as PrestaShopState;
 
 /**
  * Class CustomerService
