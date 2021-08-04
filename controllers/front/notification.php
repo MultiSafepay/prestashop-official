@@ -22,8 +22,8 @@
  */
 
 use MultiSafepay\PrestaShop\Services\SdkService;
-use OrderCore as PrestaShopOrder;
-use OrderHistoryCore as PrestaShopOrderHistory;
+use Order as PrestaShopOrder;
+use OrderHistory as PrestaShopOrderHistory;
 use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
