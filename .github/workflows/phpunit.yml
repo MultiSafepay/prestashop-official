@@ -4,7 +4,7 @@ on:
     branches:
       - main
 jobs:
-  php_stan:
+  php_unit:
     name: PHPUnit
     runs-on: ubuntu-latest
     steps:
@@ -14,11 +14,17 @@ jobs:
           php-version: '7.3'
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Rename .env file
+        run:  cp .env.dist .env
       - name: Run docker compose
         run:  docker-compose up -d
       - name: Install Composer dependencies PrestaShop 1.7
-        run:  docker exec --workdir /var/www/html/modules/multisafepay prestashop-1.7 composer install
+        run:  docker exec -e XDEBUG_MODE=off --workdir /var/www/html/modules/multisafepay prestashop-1.7 composer install
+      - name: Sleep for 30 seconds to let PrestaShop the script finish the installation process
+        uses: kibertoad/wait-action@master
+        with:
+          time: '30s'
       - name: Run PHPUnit PrestaShop 1.7
-        run:  docker exec -e XDEBUG_MODE=coverage --workdir /var/www/html/modules/multisafepay prestashop-1.7 php vendor/bin/phpunit --coverage-clover=coverage.xml --testsuite prestashop-unit-tests
+        run:  docker exec -e XDEBUG_MODE=coverage -e MULTISAFEPAY_API_KEY=${{ secrets.MULTISAFEPAY_TEST_API_KEY }} --workdir /var/www/html/modules/multisafepay prestashop-1.7 composer run-script phpunit
       - name: Send coverage.xml to codecov
         run:  bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }}

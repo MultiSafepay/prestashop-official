@@ -64,7 +64,7 @@ class SdkService
         $this->apiKey   = $apiKey ?? $this->getApiKey();
         $this->testMode = $testMode ?? $this->getTestMode();
         $psrFactory     = new Psr17Factory();
-        $client          = new Curl($psrFactory);
+        $client         = new Curl($psrFactory);
         try {
             $this->sdk = new Sdk($this->apiKey, ( $this->testMode ) ? false : true, $client, $psrFactory, $psrFactory);
         } catch (InvalidApiKeyException $invalidApiKeyException) {

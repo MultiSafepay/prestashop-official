@@ -34,7 +34,7 @@
     "scripts": {
         "phpcs":  "@php vendor/bin/phpcs -s --standard=phpcs.xml .",
         "phpcbf": "@php vendor/bin/phpcbf --standard=phpcs.xml .",
-        "phpunit": "@php vendor/bin/phpunit --testsuite prestashop-unit-tests",
+        "phpunit": "@php vendor/bin/phpunit --testsuite prestashop-unit-tests --coverage-clover=coverage.xml",
         "grumphp": "@php vendor/bin/grumphp run",
         "phpstan": "_PS_ROOT_DIR_=./../../ vendor/bin/phpstan analyse --configuration=tests/phpstan/phpstan.neon --memory-limit 1G --error-format github"
     }

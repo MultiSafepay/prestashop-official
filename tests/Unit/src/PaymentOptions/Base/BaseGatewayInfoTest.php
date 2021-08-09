@@ -19,37 +19,23 @@
  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
  */
 
-namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
+namespace MultiSafepay\Tests\PaymentOptions\Base;
 
-use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BaseGatewayInfo;
+use PHPUnit\Framework\TestCase;
 
-class MultiSafepay extends BasePaymentOption
+class BaseGatewayInfoTest extends TestCase
 {
 
-    public function getPaymentOptionName(): string
+    /**
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\Base\BaseGatewayInfo::getData
+     */
+    public function testGetData()
     {
-        return 'MultiSafepay';
-    }
-
-    public function getPaymentOptionDescription(): string
-    {
-        return '';
-    }
-
-    public function getPaymentOptionGatewayCode(): string
-    {
-        return '';
-    }
-
-    public function getTransactionType(): string
-    {
-        return 'redirect';
-    }
-
-    public function getPaymentOptionLogo(): string
-    {
-        return 'multisafepay.png';
+        $this->isEmpty((new BaseGatewayInfo())->getData());
+        $this->assertIsArray((new BaseGatewayInfo())->getData());
     }
 }

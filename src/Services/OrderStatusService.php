@@ -85,7 +85,7 @@ class OrderStatusService
      *
      * @return array
      */
-    private function getMultiSafepayOrderStatuses(): array
+    public function getMultiSafepayOrderStatuses(): array
     {
         return array(
             'initialized' => array(

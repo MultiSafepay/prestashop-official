@@ -19,37 +19,23 @@
  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
  */
 
-namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
+namespace MultiSafepay\Tests\Services;
 
-use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
+use PHPUnit\Framework\TestCase;
+use MultiSafepay\PrestaShop\Helper\MoneyHelper;
+use MultiSafepay\ValueObject\Money;
 
-class MultiSafepay extends BasePaymentOption
+class MoneyHelperTest extends TestCase
 {
-
-    public function getPaymentOptionName(): string
+    /**
+     * @covers \MultiSafepay\PrestaShop\Helper\MoneyHelper::createMoney
+     */
+    public function testCreateMoneyReturnInstanceOfMoney()
     {
-        return 'MultiSafepay';
-    }
-
-    public function getPaymentOptionDescription(): string
-    {
-        return '';
-    }
-
-    public function getPaymentOptionGatewayCode(): string
-    {
-        return '';
-    }
-
-    public function getTransactionType(): string
-    {
-        return 'redirect';
-    }
-
-    public function getPaymentOptionLogo(): string
-    {
-        return 'multisafepay.png';
+        $output = MoneyHelper::createMoney(525);
+        $this->assertInstanceOf(Money::class, $output);
     }
 }

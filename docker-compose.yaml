@@ -60,6 +60,7 @@ services:
       - PS_FOLDER_INSTALL=${PS_FOLDER_INSTALL}
       - ADMIN_MAIL=${ADMIN_MAIL}
       - ADMIN_PASSWD=${ADMIN_PASSWD}
+      - MULTISAFEPAY_API_KEY=${MULTISAFEPAY_API_KEY}
 volumes:
   prestashop-1-7-data:
   db-data:
