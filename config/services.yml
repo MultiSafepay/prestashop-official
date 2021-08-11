@@ -1,0 +1,31 @@
+services:
+  _defaults:
+    public: true
+
+  multisafepay:
+    class: MultiSafepay
+    factory: ['Module', 'getInstanceByName']
+    arguments:
+      - 'multisafepay'
+
+  multisafepay.sdk_service:
+    class: MultiSafepay\PrestaShop\Services\SdkService
+
+  multisafepay.customer_service:
+    class: MultiSafepay\PrestaShop\Services\CustomerService
+
+  multisafepay.issuer_service:
+    class: MultiSafepay\PrestaShop\Services\IssuerService
+    arguments:
+      - "@multisafepay.sdk_service"
+
+  multisafepay.payment_option_service:
+    class: MultiSafepay\PrestaShop\Services\PaymentOptionService
+    arguments:
+      - "@multisafepay"
+
+  multisafepay.order_service:
+    class: MultiSafepay\PrestaShop\Services\OrderService
+    arguments:
+      - "@multisafepay"
+      - "@multisafepay.customer_service"

@@ -48,6 +48,9 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
             die();
         }
 
+        /** @var SdkService $sdkService */
+        $sdkService = $this->module->get('multisafepay.sdk_service');
+        $transactionManager = $sdkService->getSdk()->getTransactionManager();
         $orderReference  = Tools::getValue('transactionid');
         $orderCollection = PrestaShopOrder::getByReference($orderReference);
 
@@ -65,7 +68,7 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
             }
 
             try {
-                $transaction = (new SdkService())->getSdk()->getTransactionManager()->get($orderReference);
+                $transaction = $transactionManager->get($orderReference);
             } catch (ApiException $apiException) {
                 LoggerHelper::logError($apiException->getMessage());
                 header('Content-Type: text/plain');

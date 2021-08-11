@@ -24,53 +24,26 @@
 
 namespace MultiSafepay\Tests\Services;
 
-use PHPUnit\Framework\TestCase;
+use MultiSafepay\Tests\BaseMultiSafepayTest;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\Sdk;
-use Configuration;
 
-class SdkServiceTest extends TestCase
+class SdkServiceTest extends BaseMultiSafepayTest
 {
+    protected $sdkService;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->currentApiKey   = Configuration::get('MULTISAFEPAY_TEST_API_KEY');
-        $this->currentTestMode = Configuration::get('MULTISAFEPAY_TEST_MODE');
-        $this->apiKey = getenv('MULTISAFEPAY_API_KEY');
-        Configuration::updateValue('MULTISAFEPAY_TEST_API_KEY', $this->apiKey);
-        Configuration::updateValue('MULTISAFEPAY_TEST_MODE', 1);
-    }
 
-    /**
-     * @covers \MultiSafepay\PrestaShop\Services\SdkService::getApiKey
-     */
-    public function testGetApiKey()
-    {
-        $sdk = new SdkService();
-        $output = $sdk->getApiKey();
-        $this->assertEquals($this->apiKey, $output);
-    }
+        // Please set an API Key in your env file
+        $apiKey = getenv('MULTISAFEPAY_API_KEY') ?: '';
 
-    /**
-     * @covers \MultiSafepay\PrestaShop\Services\SdkService::getTestMode
-     */
-    public function testGetTestModeAsTrue()
-    {
-        $sdk = new SdkService();
-        $output = $sdk->getTestMode();
-        $this->assertTrue($output);
-    }
+        $mockSdkService = $this->createPartialMock(SdkService::class, ['getApiKey', 'getTestMode']);
+        $mockSdkService->expects(self::atLeastOnce())->method('getApiKey')->willReturn($apiKey);
+        $mockSdkService->expects(self::atLeastOnce())->method('getTestMode')->willReturn(true);
 
-    /**
-     * @covers \MultiSafepay\PrestaShop\Services\SdkService::getTestMode
-     */
-    public function testGetTestModeAsFalse()
-    {
-        Configuration::updateValue('MULTISAFEPAY_TEST_MODE', 0);
-        $sdk = new SdkService();
-        $output = $sdk->getTestMode();
-        $this->assertFalse($output);
+        $this->sdkService = $mockSdkService;
     }
 
     /**
@@ -78,15 +51,7 @@ class SdkServiceTest extends TestCase
      */
     public function testGetSdk()
     {
-        $sdk = new SdkService();
-        $output = $sdk->getSdk();
+        $output = $this->sdkService->getSdk();
         $this->assertInstanceOf(Sdk::class, $output);
-    }
-
-    public function tearDown(): void
-    {
-        Configuration::updateValue('MULTISAFEPAY_TEST_API_KEY', $this->currentApiKey);
-        Configuration::updateValue('MULTISAFEPAY_TEST_MODE', $this->currentTestMode);
-        parent::tearDown();
     }
 }

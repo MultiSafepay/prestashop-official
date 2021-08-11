@@ -27,6 +27,8 @@ if (!defined('_PS_VERSION_')) {
 
 require __DIR__ . '/vendor/autoload.php';
 
+use MultiSafepay\PrestaShop\Helper\OrderStatusInstaller;
+use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use MultiSafepay\PrestaShop\PaymentOptions\Gateways;
 use MultiSafepay\PrestaShop\Services\OrderStatusService;
@@ -89,9 +91,12 @@ class Multisafepay extends PaymentModule
             LoggerHelper::logInfo('Default values has been set in database');
         }
 
-        (new OrderStatusService())->registerMultiSafepayOrderStatuses();
+        $install = parent::install();
 
-        return parent::install() &&
+        $orderStatusInstaller = new OrderStatusInstaller();
+        $orderStatusInstaller->registerMultiSafepayOrderStatuses();
+
+        return $install &&
             $this->registerHook('header') &&
             $this->registerHook('backOfficeHeader') &&
             $this->registerHook('paymentReturn') &&
@@ -279,8 +284,10 @@ class Multisafepay extends PaymentModule
             return null;
         }
 
+        /** @var PaymentOptionService $paymentOptionService */
+        $paymentOptionService = $this->get('multisafepay.payment_option_service');
         $paymentOptions = array();
-        $paymentMethods = Gateways::getMultiSafepayPaymentOptions();
+        $paymentMethods = $paymentOptionService->getMultiSafepayPaymentOptions();
 
         foreach ($paymentMethods as $paymentMethod) {
             $option = new PaymentOption();

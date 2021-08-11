@@ -24,21 +24,33 @@
 
 namespace MultiSafepay\Tests\Services;
 
-use PHPUnit\Framework\TestCase;
+use MultiSafepay\Api\IssuerManager;
+use MultiSafepay\Api\Issuers\Issuer;
+use MultiSafepay\PrestaShop\Services\SdkService;
+use MultiSafepay\Sdk;
+use MultiSafepay\Tests\BaseMultiSafepayTest;
 use MultiSafepay\PrestaShop\Services\IssuerService;
-use Configuration;
 
-class IssuerServiceTest extends TestCase
+class IssuerServiceTest extends BaseMultiSafepayTest
 {
+    protected $issuerService;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->currentApiKey   = Configuration::get('MULTISAFEPAY_TEST_API_KEY');
-        $this->currentTestMode = Configuration::get('MULTISAFEPAY_TEST_MODE');
-        $apiKey = getenv('MULTISAFEPAY_API_KEY');
-        Configuration::updateValue('MULTISAFEPAY_TEST_API_KEY', $apiKey);
-        Configuration::updateValue('MULTISAFEPAY_TEST_MODE', 1);
+
+        $mockIssuerManager = $this->getMockBuilder(IssuerManager::class)->disableOriginalConstructor()->getMock();
+        $mockIssuerManager->expects(self::once())->method('getIssuersByGatewayCode')->willReturn(
+            [new Issuer('IDEAL', '1234', 'Test description')]
+        );
+
+        $mockSdk = $this->getMockBuilder(Sdk::class)->disableOriginalConstructor()->getMock();
+        $mockSdk->expects(self::once())->method('getIssuerManager')->willReturn($mockIssuerManager);
+
+        $mockSdkService = $this->getMockBuilder(SdkService::class)->getMock();
+        $mockSdkService->expects(self::once())->method('getSdk')->willReturn($mockSdk);
+
+        $this->issuerService = new IssuerService($mockSdkService);
     }
 
     /**
@@ -46,19 +58,12 @@ class IssuerServiceTest extends TestCase
      */
     public function testGetIssuers()
     {
-        $output = IssuerService::getIssuers('IDEAL');
-        $this->assertIsArray($output);
+        $output = $this->issuerService->getIssuers('IDEAL');
+        self::assertIsArray($output);
         foreach ($output as $value) {
-            $this->assertIsArray($value);
-            $this->assertArrayHasKey('value', $value);
-            $this->assertArrayHasKey('name', $value);
+            self::assertIsArray($value);
+            self::assertArrayHasKey('value', $value);
+            self::assertArrayHasKey('name', $value);
         }
-    }
-
-    public function tearDown(): void
-    {
-        Configuration::updateValue('MULTISAFEPAY_TEST_API_KEY', $this->currentApiKey);
-        Configuration::updateValue('MULTISAFEPAY_TEST_MODE', $this->currentTestMode);
-        parent::tearDown();
     }
 }

@@ -21,42 +21,68 @@
  *
  */
 
-namespace MultiSafepay\PrestaShop\PaymentOptions;
+namespace MultiSafepay\PrestaShop\Services;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
+use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay;
-use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic;
-use MultiSafepay\PrestaShop\Services\IssuerService;
-use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
-use Media;
+use Multisafepay as MultiSafepayModule;
+use PaymentModule; // This line is here to prevent this PHPStan error: Internal error: Class 'PaymentModuleCore' not found
 
-class Gateways
+/**
+ * This class holds all the MultiSafepay payment methods
+ *
+ * @since      4.0.0
+ */
+class PaymentOptionService
 {
-
-    const MULTISAFEPAY_PAYMENT_OPTIONS = array(
+    public const MULTISAFEPAY_PAYMENT_OPTIONS = [
         Ideal::class,
         MultiSafepay::class,
-        Generic::class
-    );
+        Generic::class,
+    ];
 
-    public static function getMultiSafepayPaymentOptions(): array
+    /**
+     * @var MultiSafepayModule
+     */
+    private $module;
+
+    /**
+     * SdkService constructor.
+     */
+    public function __construct(MultiSafepayModule $module)
+    {
+        $this->module = $module;
+    }
+
+    /**
+     * Get all MultiSafepay payment options
+     *
+     * @return array
+     */
+    public function getMultiSafepayPaymentOptions(): array
     {
         $paymentOptions = array();
         foreach (self::MULTISAFEPAY_PAYMENT_OPTIONS as $paymentOption) {
-            $paymentOptions[] = new $paymentOption();
+            $paymentOptions[] = new $paymentOption($this->module);
         }
         return $paymentOptions;
     }
 
-    public static function getMultiSafepayPaymentOption(string $gatewayCode): BasePaymentOption
+    /**
+     * @param string $gatewayCode
+     *
+     * @return BasePaymentOption
+     */
+    public function getMultiSafepayPaymentOption(string $gatewayCode): BasePaymentOption
     {
         foreach (self::MULTISAFEPAY_PAYMENT_OPTIONS as $paymentOptionClassname) {
-            $paymentOption = new $paymentOptionClassname();
+            $paymentOption = new $paymentOptionClassname($this->module);
             if ($paymentOption->getPaymentOptionGatewayCode() == $gatewayCode) {
                 return $paymentOption;
             }
         }
-        return new MultiSafepay();
+        return new MultiSafepay($this->module);
     }
 }

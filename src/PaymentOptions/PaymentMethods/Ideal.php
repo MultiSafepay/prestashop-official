@@ -27,6 +27,7 @@ use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\IssuerService;
 use Tools;
+use PaymentModule;
 
 class Ideal extends BasePaymentOption
 {
@@ -64,13 +65,15 @@ class Ideal extends BasePaymentOption
 
     public function getInputFields(): array
     {
+        /** @var IssuerService $issuerService */
+        $issuerService        = $this->module->get('multisafepay.issuer_service');
         $parentInputs        = parent::getInputFields();
         $paymentMethodInput = array(
             'select' => array(
                 array(
-                    'name'          => 'issuer_id',
-                    'placeholder'   => 'Select bank',
-                    'options'       => IssuerService::getIssuers($this->getPaymentOptionGatewayCode())
+                    'name'        => 'issuer_id',
+                    'placeholder' => 'Select bank',
+                    'options'     => $issuerService->getIssuers($this->getPaymentOptionGatewayCode()),
                 ),
             ),
         );

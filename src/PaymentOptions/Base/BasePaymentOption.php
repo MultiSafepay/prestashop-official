@@ -23,8 +23,10 @@
 
 namespace MultiSafepay\PrestaShop\PaymentOptions\Base;
 
+use Multisafepay;
 use Context as PrestaShopContext;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
+use PaymentModule;
 
 abstract class BasePaymentOption implements BasePaymentOptionInterface
 {
@@ -74,17 +76,28 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      */
     public $action;
 
-    public function __construct()
+    /**
+     * @var Multisafepay
+     */
+    public $module;
+
+    public function __construct(Multisafepay $module)
     {
-        $this->name                 = $this->getPaymentOptionName();
-        $this->description          = $this->getPaymentOptionDescription();
-        $this->gatewayCode          = $this->getPaymentOptionGatewayCode();
-        $this->type                 = $this->getTransactionType();
-        $this->inputs               = $this->getInputFields();
-        $this->callToActionText     = $this->getPaymentOptionName();
-        $this->icon                 = $this->getPaymentOptionLogo();
-        $this->paymentForm          = $this->getPaymentOptionForm();
-        $this->action               = PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'payment', array(), true);
+        $this->module           = $module;
+        $this->name             = $this->getPaymentOptionName();
+        $this->description      = $this->getPaymentOptionDescription();
+        $this->gatewayCode      = $this->getPaymentOptionGatewayCode();
+        $this->type             = $this->getTransactionType();
+        $this->inputs           = $this->getInputFields();
+        $this->callToActionText = $this->getPaymentOptionName();
+        $this->icon             = $this->getPaymentOptionLogo();
+        $this->paymentForm      = $this->getPaymentOptionForm();
+        $this->action           = PrestaShopContext::getContext()->link->getModuleLink(
+            'multisafepay',
+            'payment',
+            [],
+            true
+        );
     }
 
     public function getPaymentOptionLogo(): string
@@ -109,18 +122,18 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
     public function getInputFields(): array
     {
-        return array(
-            'hidden' => array(
-                array(
+        return [
+            'hidden' => [
+                [
                     'name'  => 'gateway',
                     'value' => $this->getPaymentOptionGatewayCode(),
-                ),
-                array(
+                ],
+                [
                     'name'  => 'type',
                     'value' => $this->getTransactionType(),
-                )
-            )
-        );
+                ],
+            ],
+        ];
     }
 
     public function getGatewayInfo(array $data = []): GatewayInfoInterface

@@ -22,20 +22,20 @@
  *
  */
 
-namespace MultiSafepay\Tests\Services;
+namespace MultiSafepay\Tests\Helper;
 
+use MultiSafepay\PrestaShop\Helper\OrderStatusInstaller;
 use PHPUnit\Framework\TestCase;
-use MultiSafepay\PrestaShop\Services\OrderStatusService;
 
-class OrderStatusServiceTest extends TestCase
+class OrderStatusInstallerTest extends TestCase
 {
 
     /**
-     * @covers \MultiSafepay\PrestaShop\Services\OrderStatusService::getMultiSafepayOrderStatuses
+     * @covers \MultiSafepay\PrestaShop\Helper\OrderStatusInstaller::getMultiSafepayOrderStatuses
      */
     public function testGetMultiSafepayOrderStatuses()
     {
-        $output = (new OrderStatusService())->getMultiSafepayOrderStatuses();
+        $output = (new OrderStatusInstaller())->getMultiSafepayOrderStatuses();
         $this->assertIsArray($output);
         $this->assertArrayHasKey('initialized', $output);
         $this->assertArrayHasKey('uncleared', $output);

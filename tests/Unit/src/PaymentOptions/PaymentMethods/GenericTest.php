@@ -24,20 +24,34 @@
 
 namespace MultiSafepay\Tests\PaymentOptions;
 
+use Multisafepay;
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic;
-use PHPUnit\Framework\TestCase;
+use MultiSafepay\Tests\BaseMultiSafepayTest;
 
-class GenericTest extends TestCase
+class GenericTest extends BaseMultiSafepayTest
 {
+    protected $genericPaymentMethod;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        /** @var Multisafepay $multisafepay */
+        $multisafepay = $this->container->get('multisafepay');
+
+        $this->genericPaymentMethod = new Generic($multisafepay);
+    }
+
 
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic::getPaymentOptionName
      */
     public function testGetPaymentOptionName()
     {
-        $output = (new Generic())->name;
-        $this->assertEquals('Generic Gateway', $output);
-        $this->assertIsString($output);
+        $output = $this->genericPaymentMethod->name;
+        self::assertEquals('Generic Gateway', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -45,7 +59,7 @@ class GenericTest extends TestCase
      */
     public function testGetPaymentOptionDescription()
     {
-        $output = (new Generic())->description;
+        $output = $this->genericPaymentMethod->description;
         $this->assertEquals('', $output);
         $this->assertIsString($output);
     }
@@ -55,7 +69,7 @@ class GenericTest extends TestCase
      */
     public function testGetPaymentOptionGatewayCode()
     {
-        $output = (new Generic())->gatewayCode;
+        $output = $this->genericPaymentMethod->gatewayCode;
         $this->assertEquals('', $output);
         $this->assertIsString($output);
     }
@@ -65,7 +79,7 @@ class GenericTest extends TestCase
      */
     public function testGetTransactionType()
     {
-        $output = (new Generic())->type;
+        $output = $this->genericPaymentMethod->type;
         $this->assertEquals('redirect', $output);
         $this->assertIsString($output);
     }
@@ -75,7 +89,7 @@ class GenericTest extends TestCase
      */
     public function testGetPaymentOptionLogo()
     {
-        $output = (new Generic())->icon;
+        $output = $this->genericPaymentMethod->icon;
         $this->assertEquals('', $output);
         $this->assertIsString($output);
     }
@@ -85,7 +99,7 @@ class GenericTest extends TestCase
      */
     public function testGetInputFields()
     {
-        $output = (new Generic())->inputs;
+        $output = $this->genericPaymentMethod->inputs;
         $this->assertIsArray($output);
         $this->assertArrayHasKey('hidden', $output);
     }

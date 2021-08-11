@@ -24,18 +24,31 @@
 
 namespace MultiSafepay\Tests\PaymentOptions;
 
-use PHPUnit\Framework\TestCase;
-use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay;
+use Multisafepay;
+use MultiSafepay\Tests\BaseMultiSafepayTest;
+use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay as MultiSafepayPaymentMethod;
 
-class MultiSafepayTest extends TestCase
+class MultiSafepayTest extends BaseMultiSafepayTest
 {
+    protected $multiSafepayPaymentMethod;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        /** @var Multisafepay $multisafepay */
+        $multisafepay = $this->container->get('multisafepay');
+
+        $this->multiSafepayPaymentMethod = new MultiSafepayPaymentMethod($multisafepay);
+    }
+
 
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getPaymentOptionName
      */
     public function testGetPaymentOptionName()
     {
-        $output = (new MultiSafepay())->name;
+        $output = $this->multiSafepayPaymentMethod->name;
         $this->assertEquals('MultiSafepay', $output);
         $this->assertIsString($output);
     }
@@ -45,7 +58,7 @@ class MultiSafepayTest extends TestCase
      */
     public function testGetPaymentOptionDescription()
     {
-        $output = (new MultiSafepay())->description;
+        $output = $this->multiSafepayPaymentMethod->description;
         $this->assertEquals('', $output);
         $this->assertIsString($output);
     }
@@ -55,7 +68,7 @@ class MultiSafepayTest extends TestCase
      */
     public function testGetPaymentOptionGatewayCode()
     {
-        $output = (new MultiSafepay())->gatewayCode;
+        $output = $this->multiSafepayPaymentMethod->gatewayCode;
         $this->assertEmpty($output);
         $this->assertIsString($output);
     }
@@ -65,7 +78,7 @@ class MultiSafepayTest extends TestCase
      */
     public function testGetTransactionType()
     {
-        $output = (new MultiSafepay())->type;
+        $output = $this->multiSafepayPaymentMethod->type;
         $this->assertEquals('redirect', $output);
         $this->assertIsString($output);
     }
@@ -75,7 +88,7 @@ class MultiSafepayTest extends TestCase
      */
     public function testGetPaymentOptionLogo()
     {
-        $output = (new MultiSafepay())->icon;
+        $output = $this->multiSafepayPaymentMethod->icon;
         $this->assertEquals('multisafepay.png', $output);
         $this->assertIsString($output);
     }
@@ -85,7 +98,7 @@ class MultiSafepayTest extends TestCase
      */
     public function testGetInputFields()
     {
-        $output = (new MultiSafepay())->inputs;
+        $output = $this->multiSafepayPaymentMethod->inputs;
         $this->assertIsArray($output);
         $this->assertArrayHasKey('hidden', $output);
     }

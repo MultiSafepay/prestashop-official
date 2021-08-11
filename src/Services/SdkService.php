@@ -38,39 +38,9 @@ class SdkService
 {
 
     /**
-     * @var     string      The API Key
-     */
-    private $apiKey;
-
-    /**
-     * @var   boolean       The environment.
-     */
-    private $testMode;
-
-    /**
      * @var   Sdk       Sdk.
      */
     private $sdk = null;
-
-
-    /**
-     * SdkService constructor.
-     *
-     * @param  string  $apiKey
-     * @param  boolean $testMode
-     */
-    public function __construct(string $apiKey = null, bool $testMode = null)
-    {
-        $this->apiKey   = $apiKey ?? $this->getApiKey();
-        $this->testMode = $testMode ?? $this->getTestMode();
-        $psrFactory     = new Psr17Factory();
-        $client         = new Curl($psrFactory);
-        try {
-            $this->sdk = new Sdk($this->apiKey, ( $this->testMode ) ? false : true, $client, $psrFactory, $psrFactory);
-        } catch (InvalidApiKeyException $invalidApiKeyException) {
-            // log
-        }
-    }
 
     /**
      * Returns if test mode is enable
@@ -79,7 +49,7 @@ class SdkService
      */
     public function getTestMode(): bool
     {
-        return (bool) Configuration::get('MULTISAFEPAY_TEST_MODE');
+        return (bool)Configuration::get('MULTISAFEPAY_TEST_MODE');
     }
 
     /**
@@ -93,6 +63,7 @@ class SdkService
         if ($this->getTestMode()) {
             return Configuration::get('MULTISAFEPAY_TEST_API_KEY');
         }
+
         return Configuration::get('MULTISAFEPAY_TEST_API_KEY');
     }
 
@@ -101,6 +72,31 @@ class SdkService
      */
     public function getSdk(): Sdk
     {
+        if (!isset($this->sdk)) {
+            $this->initSdk();
+        }
+
         return $this->sdk;
+    }
+
+    /**
+     * Initiate the sdk
+     */
+    private function initSdk(): void
+    {
+        $psrFactory = new Psr17Factory();
+        $client     = new Curl($psrFactory);
+
+        try {
+            $this->sdk = new Sdk(
+                $this->getApiKey(),
+                !$this->getTestMode(),
+                $client,
+                $psrFactory,
+                $psrFactory
+            );
+        } catch (InvalidApiKeyException $invalidApiKeyException) {
+            // log
+        }
     }
 }

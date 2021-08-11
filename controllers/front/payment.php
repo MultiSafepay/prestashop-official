@@ -21,12 +21,13 @@
  *
  */
 
-use MultiSafepay\PrestaShop\Services\SdkService;
-use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+use MultiSafepay\PrestaShop\Services\OrderService;
+use MultiSafepay\PrestaShop\Services\PaymentOptionService;
+use MultiSafepay\PrestaShop\Services\SdkService;
 use PaymentModule;
 
 class MultisafepayPaymentModuleFrontController extends ModuleFrontController
@@ -74,8 +75,11 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
             LoggerHelper::logInfo('Order with Cart ID:' . $this->context->cart->id . ' has been validated and as result the following orders IDS: ' . implode(',', $ordersIds) . ' has been registered.');
         }
 
-        $orderService  = new OrderService($this->module->id, $this->context->customer->secure_key);
-        $paymentOption = \MultiSafepay\PrestaShop\PaymentOptions\Gateways::getMultiSafepayPaymentOption(Tools::getValue('gateway'));
+        /** @var OrderService $orderService */
+        $orderService                  = $this->get('multisafepay.order_service');
+        /** @var PaymentOptionService $paymentOptionService */
+        $paymentOptionService           = $this->get('multisafepay.payment_option_service');
+        $paymentOption = $paymentOptionService->getMultiSafepayPaymentOption(Tools::getValue('gateway'));
 
         $orderRequest = $orderService->createOrderRequest($orderCollection, $paymentOption);
 
@@ -101,7 +105,9 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
      */
     private function createMultiSafepayTransaction(OrderRequest $orderRequest): TransactionResponse
     {
-        $transactionManager    = ((new SdkService())->getSdk())->getTransactionManager();
+        /** @var SdkService $sdkService */
+        $sdkService = $this->module->get('multisafepay.sdk_service');
+        $transactionManager    = $sdkService->getSdk()->getTransactionManager();
         try {
             $transaction = $transactionManager->create($orderRequest);
         } catch (ApiException $apiException) {

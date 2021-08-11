@@ -24,21 +24,34 @@
 
 namespace MultiSafepay\Tests\PaymentOptions;
 
+use Multisafepay;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal;
-use PHPUnit\Framework\TestCase;
+use MultiSafepay\PrestaShop\Services\IssuerService;
+use MultiSafepay\Tests\BaseMultiSafepayTest;
 use Configuration;
 
-class IdealTest extends TestCase
+class IdealTest extends BaseMultiSafepayTest
 {
+    protected $idealPaymentOption;
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->currentApiKey   = Configuration::get('MULTISAFEPAY_TEST_API_KEY');
-        $this->currentTestMode = Configuration::get('MULTISAFEPAY_TEST_MODE');
-        $apiKey = getenv('MULTISAFEPAY_API_KEY');
-        Configuration::updateValue('MULTISAFEPAY_TEST_API_KEY', $apiKey);
-        Configuration::updateValue('MULTISAFEPAY_TEST_MODE', 1);
+
+        $mockIssuerService = $this->getMockBuilder(IssuerService::class)->disableOriginalConstructor()->getMock();
+        $mockIssuerService->expects($this->once())->method('getIssuers')->willReturn(
+            [
+                'value' => 1234,
+                'name'  => 'Test Issuer',
+            ]
+        );
+
+        $mockMultisafepay = $this->getMockBuilder(Multisafepay::class)->getMock();
+        $mockMultisafepay->expects($this->once())->method('get')->willReturn(
+            $mockIssuerService
+        );
+
+        $this->idealPaymentOption = new Ideal($mockMultisafepay);
     }
 
     /**
@@ -46,7 +59,7 @@ class IdealTest extends TestCase
      */
     public function testGetPaymentOptionName()
     {
-        $output = (new Ideal())->name;
+        $output = $this->idealPaymentOption->name;
         $this->assertEquals('iDEAL', $output);
         $this->assertIsString($output);
     }
@@ -56,7 +69,7 @@ class IdealTest extends TestCase
      */
     public function testGetPaymentOptionDescription()
     {
-        $output = (new Ideal())->description;
+        $output = $this->idealPaymentOption->description;
         $this->assertEquals('', $output);
         $this->assertIsString($output);
     }
@@ -66,7 +79,7 @@ class IdealTest extends TestCase
      */
     public function testGetPaymentOptionGatewayCode()
     {
-        $output = (new Ideal())->gatewayCode;
+        $output = $this->idealPaymentOption->gatewayCode;
         $this->assertEquals('IDEAL', $output);
         $this->assertIsString($output);
     }
@@ -76,7 +89,7 @@ class IdealTest extends TestCase
      */
     public function testGetTransactionType()
     {
-        $output = (new Ideal())->type;
+        $output = $this->idealPaymentOption->type;
         $this->assertEquals('redirect', $output);
         $this->assertIsString($output);
     }
@@ -86,7 +99,7 @@ class IdealTest extends TestCase
      */
     public function testGetPaymentOptionLogo()
     {
-        $output = (new Ideal())->icon;
+        $output = $this->idealPaymentOption->icon;
         $this->assertEquals('ideal.png', $output);
         $this->assertIsString($output);
     }
@@ -96,16 +109,9 @@ class IdealTest extends TestCase
      */
     public function testGetInputFields()
     {
-        $output = (new Ideal())->inputs;
+        $output = $this->idealPaymentOption->inputs;
         $this->assertIsArray($output);
         $this->assertArrayHasKey('hidden', $output);
         $this->assertArrayHasKey('select', $output);
-    }
-
-    public function tearDown(): void
-    {
-        Configuration::updateValue('MULTISAFEPAY_TEST_API_KEY', $this->currentApiKey);
-        Configuration::updateValue('MULTISAFEPAY_TEST_MODE', $this->currentTestMode);
-        parent::tearDown();
     }
 }

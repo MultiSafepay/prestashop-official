@@ -21,7 +21,7 @@
  *
  */
 
-namespace MultiSafepay\PrestaShop\Services;
+namespace MultiSafepay\PrestaShop\Helper;
 
 use OrderState;
 use Configuration;
@@ -29,10 +29,10 @@ use Tools;
 use Language;
 
 /**
- * Class OrderStatusHelper
+ * Class OrderStatusInstaller
  *
  */
-class OrderStatusService
+class OrderStatusInstaller
 {
 
     /**

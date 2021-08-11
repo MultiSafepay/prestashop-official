@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 /**
  *
  * DISCLAIMER
@@ -21,36 +22,29 @@
  *
  */
 
-namespace MultiSafepay\PrestaShop\Services;
+namespace MultiSafepay\Tests;
 
-/**
- * This class returns the SDK object.
- *
- * @since      4.0.0
- */
-class IssuerService
+use Configuration;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+
+abstract class BaseMultiSafepayTest extends TestCase
 {
     /**
-     * @var SdkService
+     * @var ContainerBuilder
      */
-    private $sdkService;
+    protected $container;
 
-    public function __construct(SdkService $sdkService)
+    public function setUp(): void
     {
-        $this->sdkService = $sdkService;
-    }
+        parent::setUp();
 
-    public function getIssuers(string $gatewayCode): array
-    {
-        $issuers = $this->sdkService->getSdk()->getIssuerManager()->getIssuersByGatewayCode($gatewayCode);
-
-        $options = array();
-        foreach ($issuers as $issuer) {
-            $options[] = array(
-                'value' => $issuer->getCode(),
-                'name'  => $issuer->getDescription()
-            );
-        }
-        return $options;
+        $this->container = new ContainerBuilder();
+        $locator = new FileLocator(_PS_MODULE_DIR_ . 'multisafepay/config');
+        $loader = new YamlFileLoader($this->container, $locator);
+        $loader->load('services.yml');
+        $this->container->compile();
     }
 }
