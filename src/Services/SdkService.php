@@ -28,6 +28,7 @@ use MultiSafepay\Sdk;
 use Buzz\Client\Curl;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Configuration;
+use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 
 /**
  * This class returns the SDK object.
@@ -40,7 +41,7 @@ class SdkService
     /**
      * @var   Sdk       Sdk.
      */
-    private $sdk = null;
+    private $sdk;
 
     /**
      * Returns if test mode is enable
@@ -61,21 +62,19 @@ class SdkService
     public function getApiKey(): string
     {
         if ($this->getTestMode()) {
-            return Configuration::get('MULTISAFEPAY_TEST_API_KEY');
+            return (string)Configuration::get('MULTISAFEPAY_TEST_API_KEY');
         }
-
-        return Configuration::get('MULTISAFEPAY_TEST_API_KEY');
+        return (string)Configuration::get('MULTISAFEPAY_TEST_API_KEY');
     }
 
     /**
      * @return Sdk
      */
-    public function getSdk(): Sdk
+    public function getSdk()
     {
         if (!isset($this->sdk)) {
             $this->initSdk();
         }
-
         return $this->sdk;
     }
 
@@ -86,7 +85,6 @@ class SdkService
     {
         $psrFactory = new Psr17Factory();
         $client     = new Curl($psrFactory);
-
         try {
             $this->sdk = new Sdk(
                 $this->getApiKey(),
@@ -96,7 +94,7 @@ class SdkService
                 $psrFactory
             );
         } catch (InvalidApiKeyException $invalidApiKeyException) {
-            // log
+            LoggerHelper::logError($invalidApiKeyException->getMessage());
         }
     }
 }

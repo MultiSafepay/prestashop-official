@@ -42,14 +42,17 @@ class IssuerService
 
     public function getIssuers(string $gatewayCode): array
     {
-        $issuers = $this->sdkService->getSdk()->getIssuerManager()->getIssuersByGatewayCode($gatewayCode);
-
+        $sdk = $this->sdkService->getSdk();
+        if (is_null($sdk)) {
+            return [];
+        }
+        $issuers = $sdk->getIssuerManager()->getIssuersByGatewayCode($gatewayCode);
         $options = array();
         foreach ($issuers as $issuer) {
-            $options[] = array(
+            $options[] = [
                 'value' => $issuer->getCode(),
                 'name'  => $issuer->getDescription()
-            );
+            ];
         }
         return $options;
     }
