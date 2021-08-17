@@ -23,6 +23,7 @@
 
 namespace MultiSafepay\PrestaShop\PaymentOptions\Base;
 
+use Configuration;
 use Multisafepay;
 use Context as PrestaShopContext;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
@@ -92,12 +93,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         $this->callToActionText = $this->getPaymentOptionName();
         $this->icon             = $this->getPaymentOptionLogo();
         $this->paymentForm      = $this->getPaymentOptionForm();
-        $this->action           = PrestaShopContext::getContext()->link->getModuleLink(
-            'multisafepay',
-            'payment',
-            [],
-            true
-        );
+        $this->action           = PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'payment', array(), true);
     }
 
     public function getPaymentOptionLogo(): string
@@ -136,6 +132,47 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         ];
     }
 
+    /**
+     * @return string
+     */
+    public function getUniqueName(): string
+    {
+        return $this->getPaymentOptionGatewayCode();
+    }
+
+    /**
+     * @return array
+     */
+    public function getGatewaySettings(): array
+    {
+        return [
+            'MULTISAFEPAY_GATEWAY_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_GATEWAY_'.$this->getUniqueName()),
+            'MULTISAFEPAY_MAX_AMOUNT_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_MAX_AMOUNT_'.$this->getUniqueName()),
+            'MULTISAFEPAY_MIN_AMOUNT_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_MIN_AMOUNT_'.$this->getUniqueName()),
+            'MULTISAFEPAY_COUNTRIES_'.$this->getUniqueName() => $this->settingToArray(Configuration::get('MULTISAFEPAY_COUNTRIES_'.$this->getUniqueName())),
+            'MULTISAFEPAY_CURRENCIES_'.$this->getUniqueName() => $this->settingToArray(Configuration::get('MULTISAFEPAY_CURRENCIES_'.$this->getUniqueName())),
+            'MULTISAFEPAY_CUSTOMER_GROUPS_'.$this->getUniqueName() => $this->settingToArray(Configuration::get('MULTISAFEPAY_CUSTOMER_GROUPS_'.$this->getUniqueName())),
+        ];
+    }
+
+    /**
+     * @param string $setting
+     *
+     * @return array
+     */
+    protected function settingToArray($setting): array
+    {
+        if (is_string($setting) && !empty($setting)) {
+            return json_decode($setting);
+        }
+        return [];
+    }
+
+    /**
+     * @param array $data
+     *
+     * @return GatewayInfoInterface
+     */
     public function getGatewayInfo(array $data = []): GatewayInfoInterface
     {
         return new BaseGatewayInfo();

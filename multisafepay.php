@@ -29,11 +29,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 use MultiSafepay\PrestaShop\Helper\OrderStatusInstaller;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
-use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
-use MultiSafepay\PrestaShop\PaymentOptions\Gateways;
-use MultiSafepay\PrestaShop\Services\OrderStatusService;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
-use Cart as PrestaShopCart;
 
 class Multisafepay extends PaymentModule
 {
@@ -85,16 +81,12 @@ class Multisafepay extends PaymentModule
             return false;
         }
 
-        Configuration::updateValue('MULTISAFEPAY_TEST_MODE', false);
-
-        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
-            LoggerHelper::logInfo('Default values has been set in database');
-        }
-
         $install = parent::install();
 
         $orderStatusInstaller = new OrderStatusInstaller();
         $orderStatusInstaller->registerMultiSafepayOrderStatuses();
+
+        (new \MultiSafepay\PrestaShop\Helper\Installer())->install();
 
         return $install &&
             $this->registerHook('header') &&
@@ -111,9 +103,8 @@ class Multisafepay extends PaymentModule
      */
     public function uninstall(): bool
     {
-        Configuration::deleteByName('MULTISAFEPAY_TEST_MODE');
-        Configuration::deleteByName('MULTISAFEPAY_API_KEY');
-        Configuration::deleteByName('MULTISAFEPAY_TEST_API_KEY');
+        (new \MultiSafepay\PrestaShop\Helper\Uninstaller($this))->uninstall();
+
         return parent::uninstall();
     }
 
@@ -124,123 +115,13 @@ class Multisafepay extends PaymentModule
      */
     public function getContent(): string
     {
+        $settingsBuilder = new \MultiSafepay\PrestaShop\Builder\SettingsBuilder($this);
+
         if (((bool)Tools::isSubmit('submitMultisafepayModule')) == true) {
-            $this->postProcess();
+            $settingsBuilder->postProcess();
         }
 
-        return $this->renderForm();
-    }
-
-    /**
-     * Create the form that will be displayed in the configuration
-     *
-     * @return string
-     */
-    protected function renderForm(): string
-    {
-        $helper = new HelperForm();
-
-        $helper->show_toolbar = false;
-        $helper->table = $this->table;
-        $helper->module = $this;
-        $helper->default_form_language = $this->context->language->id;
-        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG', 0);
-
-        $helper->identifier = $this->identifier;
-        $helper->submit_action = 'submitMultisafepayModule';
-        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false)
-            .'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
-        $helper->token = Tools::getAdminTokenLite('AdminModules');
-
-        $helper->tpl_vars = array(
-            'fields_value' => $this->getConfigFormValues(),
-            'languages' => $this->context->controller->getLanguages(),
-            'id_language' => $this->context->language->id,
-        );
-
-        return $helper->generateForm(array($this->getConfigForm()));
-    }
-
-    /**
-     * Create the structure of your form.
-     *
-     * @return array
-     */
-    protected function getConfigForm(): array
-    {
-        return array(
-            'form' => array(
-                'legend' => array(
-                'title' => $this->l('Settings'),
-                'icon' => 'icon-cogs',
-                ),
-                'input' => array(
-                    array(
-                        'type' => 'switch',
-                        'label' => $this->l('Test mode'),
-                        'name' => 'MULTISAFEPAY_TEST_MODE',
-                        'is_bool' => true,
-                        'desc' => $this->l('Use this module in test mode'),
-                        'values' => array(
-                            array(
-                                'id' => 'active_on',
-                                'value' => true,
-                                'label' => $this->l('Enabled')
-                            ),
-                            array(
-                                'id' => 'active_off',
-                                'value' => false,
-                                'label' => $this->l('Disabled')
-                            )
-                        ),
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'text',
-                        'desc' => $this->l('Enter a valid live API key'),
-                        'name' => 'MULTISAFEPAY_API_KEY',
-                        'label' => $this->l('Live API key'),
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'text',
-                        'desc' => $this->l('Enter a valid test API key'),
-                        'name' => 'MULTISAFEPAY_TEST_API_KEY',
-                        'label' => $this->l('Test API key'),
-                    ),
-                ),
-                'submit' => array(
-                    'title' => $this->l('Save'),
-                ),
-            ),
-        );
-    }
-
-    /**
-     * Set values for the inputs
-     *
-     * @return array
-     */
-    protected function getConfigFormValues(): array
-    {
-        return array(
-            'MULTISAFEPAY_TEST_MODE' => Configuration::get('MULTISAFEPAY_TEST_MODE'),
-            'MULTISAFEPAY_API_KEY' => Configuration::get('MULTISAFEPAY_API_KEY'),
-            'MULTISAFEPAY_TEST_API_KEY' => Configuration::get('MULTISAFEPAY_TEST_API_KEY'),
-        );
-    }
-
-    /**
-     * Save form data.
-     *
-     * @return void
-     */
-    protected function postProcess(): void
-    {
-        $formValues = $this->getConfigFormValues();
-        foreach (array_keys($formValues) as $key) {
-            Configuration::updateValue($key, Tools::getValue($key));
-        }
+        return $settingsBuilder->renderForm();
     }
 
     /**
@@ -250,8 +131,8 @@ class Multisafepay extends PaymentModule
     */
     public function hookBackOfficeHeader(): void
     {
-        if (Tools::getValue('module_name') == $this->name) {
-            $this->context->controller->addJS($this->_path.'views/js/back.js');
+        if ('multisafepay' === $this->name) {
+            $this->context->controller->addJS($this->_path.'views/js/admin.js');
             $this->context->controller->addCSS($this->_path.'views/css/back.css');
         }
     }
@@ -286,27 +167,7 @@ class Multisafepay extends PaymentModule
 
         /** @var PaymentOptionService $paymentOptionService */
         $paymentOptionService = $this->get('multisafepay.payment_option_service');
-        $paymentOptions = array();
-        $paymentMethods = $paymentOptionService->getMultiSafepayPaymentOptions();
-
-        foreach ($paymentMethods as $paymentMethod) {
-            $option = new PaymentOption();
-            $option->setCallToActionText($paymentMethod->callToActionText);
-            $option->setAction($paymentMethod->action);
-            $option->setForm($this->getMultiSafepayPaymentOptionForm($paymentMethod->gatewayCode, $paymentMethod->inputs));
-
-            if ($paymentMethod->icon && file_exists(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $paymentMethod->icon)) {
-                $option->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->name . '/views/img/' . $paymentMethod->icon));
-            }
-
-            if ($paymentMethod->description) {
-                $option->setAdditionalInformation($paymentMethod->description);
-            }
-
-            $paymentOptions[] = $option;
-        }
-
-        return $paymentOptions;
+        return $paymentOptionService->getFilteredMultiSafepayPaymentOptions($params['cart']);
     }
 
     /**
@@ -343,10 +204,10 @@ class Multisafepay extends PaymentModule
     }
 
     /**
-     * @param PrestaShopCart $cart
+     * @param Cart $cart
      * @return bool
      */
-    public function checkCurrency(PrestaShopCart $cart): bool
+    public function checkCurrency(Cart $cart): bool
     {
         $currencyOrder = new Currency($cart->id_currency);
         $currenciesModule = $this->getCurrency($cart->id_currency);

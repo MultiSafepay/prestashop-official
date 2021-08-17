@@ -28,6 +28,11 @@ use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay;
 use Multisafepay as MultiSafepayModule;
+use Cart;
+use Address;
+use Customer;
+use Media;
+use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use PaymentModule; // This line is here to prevent this PHPStan error: Internal error: Class 'PaymentModuleCore' not found
 
 /**
@@ -84,5 +89,83 @@ class PaymentOptionService
             }
         }
         return new MultiSafepay($this->module);
+    }
+
+    /**
+     * Return  an array of MultiSafepay PaymentOptions
+     *
+     * @return array
+     */
+    public function getFilteredMultiSafepayPaymentOptions(Cart $cart): array
+    {
+        $paymentOptions = array();
+        $paymentMethods = $this->getMultiSafepayPaymentOptions();
+        foreach ($paymentMethods as $paymentMethod) {
+            if ($this->excludePaymentOptionByPaymentOptionSettings($paymentMethod, $cart)) {
+                continue;
+            }
+            $option = new PaymentOption();
+            $option->setCallToActionText($paymentMethod->callToActionText);
+            $option->setAction($paymentMethod->action);
+            $option->setForm($this->module->getMultiSafepayPaymentOptionForm($paymentMethod->gatewayCode, $paymentMethod->inputs));
+            if ($paymentMethod->icon && file_exists(_PS_MODULE_DIR_ . $this->module->name . '/views/img/' . $paymentMethod->icon)) {
+                $option->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/' . $paymentMethod->icon));
+            }
+            if ($paymentMethod->description) {
+                $option->setAdditionalInformation($paymentMethod->description);
+            }
+            $paymentOptions[] = $option;
+        }
+        return $paymentOptions;
+    }
+
+    /**
+     * Filter the payment option according with their settings and the cart properties
+     *
+     * @param BasePaymentOption $paymentMethod
+     * @param Cart $cart
+     * @return bool
+     */
+    private function excludePaymentOptionByPaymentOptionSettings(BasePaymentOption $paymentMethod, Cart $cart)
+    {
+        $orderTotal             = $cart->getOrderTotal();
+        $orderCountryId         = (new Address($cart->id_address_invoice))->id_country;
+        $orderCurrencyId        = $cart->id_currency;
+        $orderCustomerGroups    = (new Customer($cart->id_customer))->id_default_group;
+
+        $paymentMethodSettings = $paymentMethod->getGatewaySettings();
+
+        $paymentMethodStatus         = (bool) $paymentMethodSettings['MULTISAFEPAY_GATEWAY_' . $paymentMethod->getUniqueName()];
+        $paymentMethodMinAmount      = (float) $paymentMethodSettings['MULTISAFEPAY_MIN_AMOUNT_' . $paymentMethod->getUniqueName()];
+        $paymentMethodMaxAmount      = (float) $paymentMethodSettings['MULTISAFEPAY_MAX_AMOUNT_' . $paymentMethod->getUniqueName()];
+        $paymentMethodCountries      = $paymentMethodSettings['MULTISAFEPAY_COUNTRIES_' . $paymentMethod->getUniqueName()];
+        $paymentMethodCurrencies     = $paymentMethodSettings['MULTISAFEPAY_CURRENCIES_' . $paymentMethod->getUniqueName()];
+        $paymentMethodCustomerGroups = $paymentMethodSettings['MULTISAFEPAY_CUSTOMER_GROUPS_' . $paymentMethod->getUniqueName()];
+
+        if (!$paymentMethodStatus) {
+            return true;
+        }
+
+        if (!empty($paymentMethodMinAmount) && $orderTotal < $paymentMethodMinAmount) {
+            return true;
+        }
+
+        if (!empty($paymentMethodMaxAmount) && $orderTotal > $paymentMethodMaxAmount) {
+            return true;
+        }
+
+        if (!empty($paymentMethodCountries) && !in_array($orderCountryId, $paymentMethodCountries, true)) {
+            return true;
+        }
+
+        if (!empty($paymentMethodCurrencies) && !in_array($orderCurrencyId, $paymentMethodCurrencies, true)) {
+            return true;
+        }
+
+        if (!empty($paymentMethodCustomerGroups) && !in_array($orderCustomerGroups, $paymentMethodCustomerGroups, true)) {
+            return true;
+        }
+
+        return false;
     }
 }

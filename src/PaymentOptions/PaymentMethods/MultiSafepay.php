@@ -52,4 +52,9 @@ class MultiSafepay extends BasePaymentOption
     {
         return 'multisafepay.png';
     }
+
+    public function getUniqueName(): string
+    {
+        return 'MULTISAFEPAY';
+    }
 }

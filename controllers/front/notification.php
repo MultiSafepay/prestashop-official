@@ -109,7 +109,7 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
     private function getOrderStatusId(string $transactionStatus): string
     {
         $orderStatus = array(
-            'initialized'      => Configuration::get('MULTISAFEPAY_OS_AWAITING_BANK_TRANSFER_PAYMENT'),
+            'initialized'      => Configuration::get('MULTISAFEPAY_OS_INITIALIZED'),
             'declined'         => Configuration::get('PS_OS_CANCELED'),
             'cancelled'        => Configuration::get('PS_OS_CANCELED'),
             'completed'        => Configuration::get('PS_OS_PAYMENT'),

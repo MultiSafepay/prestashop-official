@@ -58,7 +58,16 @@ interface BasePaymentOptionInterface
     public function getPaymentOptionLogo(): string;
 
     /**
-     * @param array $data
+     * @return string
+     */
+    public function getUniqueName(): string;
+
+    /**
+     * @return array
+     */
+    public function getGatewaySettings(): array;
+
+     /** @param array $data
      *
      * @return GatewayInfoInterface
      */

@@ -19,67 +19,104 @@
  *
  */
 
-#content .tab-pane:first-child .panel {
-    border-top-left-radius: 0;
+.multisafepay-payment-methods .panel-group .panel {
+    margin: 0px 0px 30px 0px !important;
+    padding: 0px !important;;
 }
-
-.multisafepay-header .text-branded,
-.multisafepay-content .text-branded {
-    color: #00aff0;
+.multisafepay-payment-methods .panel-group .panel .panel-heading {
+    margin: 0px !important;
+    padding: 5px 10px !important;
+    height: auto !important;
 }
-
-.multisafepay-header h4,
-.multisafepay-content h4,
-.multisafepay-content h5 {
-    margin: 2px 0;
-    color: #00aff0;
-    font-size: 1.8em;
+.multisafepay-payment-methods .panel-group .panel .panel-heading a {
+    display: block;
 }
-
-.multisafepay-header h4 {
-    margin-top: 5px;
+.multisafepay-payment-methods .panel-group .panel .panel-heading a:hover {
+    text-decoration: none;
 }
-
-.multisafepay-header .col-md-6 {
-    margin-top: 18px;
-}
-
-.multisafepay-content h4 {
-    margin-bottom: 10px;
-}
-
-.multisafepay-content h5 {
-    font-size: 1.4em;
-    margin-bottom: 10px;
-}
-
-.multisafepay-content h6 {
-    font-size: 1.3em;
-    margin: 1px 0 4px 0;
-}
-
-.multisafepay-header > .col-md-4 {
-    height: 65px;
+.multisafepay-payment-methods .panel-group .panel .panel-heading a.collapsed:after {
+    font-family: 'FontAwesome';
+    content: "\f067";
+    float: right;
+    font-size: 14px;
+    line-height: 40px;
     vertical-align: middle;
-    border-left: 1px solid #ddd;
+}
+.multisafepay-payment-methods .panel-group .panel .panel-heading a.collapsed {
+    background-color: #f6f6f6;
+    border-color: #dcdcdc;
+    color: #4c4d5a;
+}
+.multisafepay-payment-methods .panel-group .panel .panel-heading a:after {
+    font-family: 'FontAwesome';
+    content: "\f068";
+    float: right;
+    font-size: 14px;
+    line-height: 40px;
+    vertical-align: middle;
 }
 
-.multisafepay-header > .col-md-4:first-child {
-    border-left: none;
+.multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status {
+    display: block;
+    background-color: #f6f6f6;
+    border: 1px solid #dcdcdc;
+}
+.multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status {
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    padding: 0;
+    margin: 5px 15px 5px 0px;
+    text-align: center;
+    border: 1px solid #DDDDDD;
+}
+.multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status:after {
+    font-size: 14px;
+    line-height: 30px;
+    text-align: center;
+    content: "\f00d";
+    font-family: 'FontAwesome';
+    color: darkred;
+}
+.multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status.active:after {
+    content: "\f00c" !important;
+    font-family: 'FontAwesome';
+    color: forestgreen;
 }
 
-.multisafepay-header #create-account-btn {
-    margin-top: 14px;
-}
 
-.multisafepay-content dd + dt {
-    margin-top: 5px;
+#multisafepay-support .account-list {
+    padding-left: 10px;
+    margin-left: 10px;
 }
-
-.multisafepay-content ul {
-    padding-left: 15px;
+#multisafepay-support .account-list li {
+    list-style-type: circle;
 }
+#multisafepay-support .multisafepay-sales-contact-list {
+    padding-left: 10px;
+    padding-top: 10px;
+}
+#multisafepay-support .multisafepay-sales-contact-list li strong {
+    display: block;
+    padding-bottom: 5px;
+}
+#multisafepay-support .multisafepay-sales-contact-list li:first-child {
+    padding-top: 8px;
+}
+#multisafepay-support .multisafepay-sales-contact-list li {
+    padding-top: 22px;
+    list-style-type: none;
+}
+#multisafepay-support .multisafepay-sales-contact-list li ul {
+    padding-left: 25px;
 
-.multisafepay-content .ul-spaced li {
-    margin-bottom: 5px;
+}
+#multisafepay-support .multisafepay-sales-contact-list li ul li {
+    padding-top: 0;
+    list-style-type: square;
+}
+#multisafepay-support .multisafepay-sales-contact-list li ul li:first-child {
+    padding-top: 0;
 }
