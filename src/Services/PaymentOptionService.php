@@ -72,6 +72,9 @@ class PaymentOptionService
         foreach (self::MULTISAFEPAY_PAYMENT_OPTIONS as $paymentOption) {
             $paymentOptions[] = new $paymentOption($this->module);
         }
+        usort($paymentOptions, function ($a, $b) {
+            return strcmp($a->sortOrderPosition, $b->sortOrderPosition);
+        });
         return $paymentOptions;
     }
 

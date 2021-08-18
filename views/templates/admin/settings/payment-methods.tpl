@@ -112,6 +112,14 @@
                                     <p class="help-block">{l s='Leave blank to support all customer groups' mod='multisafepay'}.</p>
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <label class="control-label col-lg-3">
+                                    {l s='Sort order' mod='multisafepay'}
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" name="MULTISAFEPAY_SORT_ORDER_{$name}" id="MULTISAFEPAY_SORT_ORDER_{$name}" value="{$options["MULTISAFEPAY_SORT_ORDER_`$name`"]}" class="">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

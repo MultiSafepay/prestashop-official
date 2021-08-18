@@ -82,6 +82,11 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      */
     public $module;
 
+    /**
+     * @var int
+     */
+    public $sortOrderPosition;
+
     public function __construct(Multisafepay $module)
     {
         $this->module           = $module;
@@ -94,6 +99,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         $this->icon             = $this->getPaymentOptionLogo();
         $this->paymentForm      = $this->getPaymentOptionForm();
         $this->action           = PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'payment', array(), true);
+        $this->sortOrderPosition = (int) Configuration::get('MULTISAFEPAY_SORT_ORDER_'.$this->getUniqueName());
     }
 
     public function getFrontEndPaymentOptionName(): string
@@ -158,6 +164,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             'MULTISAFEPAY_COUNTRIES_'.$this->getUniqueName() => $this->settingToArray(Configuration::get('MULTISAFEPAY_COUNTRIES_'.$this->getUniqueName())),
             'MULTISAFEPAY_CURRENCIES_'.$this->getUniqueName() => $this->settingToArray(Configuration::get('MULTISAFEPAY_CURRENCIES_'.$this->getUniqueName())),
             'MULTISAFEPAY_CUSTOMER_GROUPS_'.$this->getUniqueName() => $this->settingToArray(Configuration::get('MULTISAFEPAY_CUSTOMER_GROUPS_'.$this->getUniqueName())),
+            'MULTISAFEPAY_SORT_ORDER_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_SORT_ORDER_'.$this->getUniqueName()),
         ];
     }
 
