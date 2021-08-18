@@ -50,6 +50,15 @@
                             {/if}
                             <div class="form-group">
                                 <label class="control-label col-lg-3">
+                                    {l s='Title' mod='multisafepay'}
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" name="MULTISAFEPAY_TITLE_{$name}" id="MULTISAFEPAY_TITLE_{$name}" value="{$options["MULTISAFEPAY_TITLE_`$name`"]}" class="">
+                                    <p class="help-block">{l s='The title will be shown to the customer at the checkout page' mod='multisafepay'}.</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-lg-3">
                                     {l s='Minimum amount' mod='multisafepay'}
                                 </label>
                                 <div class="col-lg-9">
@@ -74,7 +83,7 @@
                                             <option value="{$country.id_country}" {if {$country.id_country|in_array:$options["MULTISAFEPAY_COUNTRIES_$name"]}} selected {/if}>{$country.name}</option>
                                         {/foreach}
                                     </select>
-                                    <p class="help-block">{l s='Leave blank to support all countries' mod='multisafepay'}</p>
+                                    <p class="help-block">{l s='Leave blank to support all countries' mod='multisafepay'}.</p>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -87,7 +96,7 @@
                                             <option value="{$currency.id}" {if {$currency.id|in_array:$options["MULTISAFEPAY_CURRENCIES_$name"]}} selected {/if}>{$currency.name}</option>
                                         {/foreach}
                                     </select>
-                                    <p class="help-block">{l s='Leave blank to support all currencies' mod='multisafepay'}</p>
+                                    <p class="help-block">{l s='Leave blank to support all currencies' mod='multisafepay'}.</p>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -100,7 +109,7 @@
                                             <option value="{$customer_group.id_group}" {if {$customer_group.id_group|in_array:$options["MULTISAFEPAY_CURRENCIES_$name"]}} selected {/if}>{$customer_group.name}</option>
                                         {/foreach}
                                     </select>
-                                    <p class="help-block">{l s='Leave blank to support all customer groups' mod='multisafepay'}</p>
+                                    <p class="help-block">{l s='Leave blank to support all customer groups' mod='multisafepay'}.</p>
                                 </div>
                             </div>
                         </div>

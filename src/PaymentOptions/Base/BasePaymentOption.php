@@ -90,10 +90,15 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         $this->gatewayCode      = $this->getPaymentOptionGatewayCode();
         $this->type             = $this->getTransactionType();
         $this->inputs           = $this->getInputFields();
-        $this->callToActionText = $this->getPaymentOptionName();
+        $this->callToActionText = $this->getFrontEndPaymentOptionName();
         $this->icon             = $this->getPaymentOptionLogo();
         $this->paymentForm      = $this->getPaymentOptionForm();
         $this->action           = PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'payment', array(), true);
+    }
+
+    public function getFrontEndPaymentOptionName(): string
+    {
+        return (Configuration::get('MULTISAFEPAY_TITLE_'.$this->getUniqueName()) ? Configuration::get('MULTISAFEPAY_TITLE_'.$this->getUniqueName()) : $this->getPaymentOptionName());
     }
 
     public function getPaymentOptionLogo(): string
@@ -147,6 +152,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     {
         return [
             'MULTISAFEPAY_GATEWAY_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_GATEWAY_'.$this->getUniqueName()),
+            'MULTISAFEPAY_TITLE_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_TITLE_'.$this->getUniqueName()),
             'MULTISAFEPAY_MAX_AMOUNT_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_MAX_AMOUNT_'.$this->getUniqueName()),
             'MULTISAFEPAY_MIN_AMOUNT_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_MIN_AMOUNT_'.$this->getUniqueName()),
             'MULTISAFEPAY_COUNTRIES_'.$this->getUniqueName() => $this->settingToArray(Configuration::get('MULTISAFEPAY_COUNTRIES_'.$this->getUniqueName())),
