@@ -59,6 +59,15 @@
                             </div>
                             <div class="form-group">
                                 <label class="control-label col-lg-3">
+                                    {l s='Description' mod='multisafepay'}
+                                </label>
+                                <div class="col-lg-9">
+                                    <input type="text" name="MULTISAFEPAY_DESCRIPTION_{$name}" id="MULTISAFEPAY_DESCRIPTION_{$name}" value="{$options["MULTISAFEPAY_DESCRIPTION_`$name`"]}" class="">
+                                    <p class="help-block">{l s='The description will be shown to the customer at the checkout page' mod='multisafepay'}.</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-lg-3">
                                     {l s='Minimum amount' mod='multisafepay'}
                                 </label>
                                 <div class="col-lg-9">

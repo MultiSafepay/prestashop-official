@@ -33,11 +33,6 @@ class MultiSafepay extends BasePaymentOption
         return 'MultiSafepay';
     }
 
-    public function getPaymentOptionDescription(): string
-    {
-        return '';
-    }
-
     public function getPaymentOptionGatewayCode(): string
     {
         return '';

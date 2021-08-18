@@ -34,11 +34,6 @@ class Generic extends BasePaymentOption
         return 'Generic Gateway';
     }
 
-    public function getPaymentOptionDescription(): string
-    {
-        return (Configuration::get('MULTISAFEPAY_GENERIC_DESCRIPTION') ? Configuration::get('MULTISAFEPAY_GENERIC_DESCRIPTION') : '');
-    }
-
     public function getPaymentOptionGatewayCode(): string
     {
         return (Configuration::get('MULTISAFEPAY_GATEWAY_CODE_GENERIC') ? Configuration::get('MULTISAFEPAY_GATEWAY_CODE_GENERIC') : '');

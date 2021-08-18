@@ -124,7 +124,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
     public function getPaymentOptionDescription(): string
     {
-        return '';
+        return (Configuration::get('MULTISAFEPAY_DESCRIPTION_'.$this->getUniqueName()) ? Configuration::get('MULTISAFEPAY_DESCRIPTION_'.$this->getUniqueName()) : '');
     }
 
     public function getInputFields(): array
@@ -159,6 +159,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         return [
             'MULTISAFEPAY_GATEWAY_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_GATEWAY_'.$this->getUniqueName()),
             'MULTISAFEPAY_TITLE_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_TITLE_'.$this->getUniqueName()),
+            'MULTISAFEPAY_DESCRIPTION_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_DESCRIPTION_'.$this->getUniqueName()),
             'MULTISAFEPAY_MAX_AMOUNT_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_MAX_AMOUNT_'.$this->getUniqueName()),
             'MULTISAFEPAY_MIN_AMOUNT_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_MIN_AMOUNT_'.$this->getUniqueName()),
             'MULTISAFEPAY_COUNTRIES_'.$this->getUniqueName() => $this->settingToArray(Configuration::get('MULTISAFEPAY_COUNTRIES_'.$this->getUniqueName())),
