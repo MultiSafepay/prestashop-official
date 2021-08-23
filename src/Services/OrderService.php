@@ -23,6 +23,7 @@
 
 namespace MultiSafepay\PrestaShop\Services;
 
+use Cart;
 use Configuration as PrestaShopConfiguration;
 use Context;
 use Currency as PrestaShopCurrency;
@@ -58,15 +59,25 @@ class OrderService
     private $customerService;
 
     /**
+     * @var ShoppingCartService
+     */
+    private $shoppingCartService;
+
+    /**
      * OrderService constructor.
      *
      * @param Multisafepay $module
      * @param CustomerService $customerService
+     * @param ShoppingCartService $shoppingCartService
      */
-    public function __construct(Multisafepay $module, CustomerService $customerService)
-    {
-        $this->module          = $module;
-        $this->customerService = $customerService;
+    public function __construct(
+        Multisafepay $module,
+        CustomerService $customerService,
+        ShoppingCartService $shoppingCartService
+    ) {
+        $this->module              = $module;
+        $this->customerService     = $customerService;
+        $this->shoppingCartService = $shoppingCartService;
     }
 
     /**
@@ -75,8 +86,17 @@ class OrderService
      *
      * @return OrderRequest
      */
-    public function createOrderRequest(PrestaShopCollection $orderCollection, BasePaymentOption $paymentOption): OrderRequest
-    {
+    public function createOrderRequest(
+        PrestaShopCollection $orderCollection,
+        BasePaymentOption $paymentOption
+    ): OrderRequest {
+
+        /** @var PrestaShopOrder $firstOrder */
+        $firstOrder = $orderCollection->getFirst();
+
+        /** @var Cart $shoppingCart */
+        $shoppingCart = Cart::getCartByOrderId($firstOrder->id);
+
         $orderRequestArguments = $this->getOrderRequestArgumentsByOrderCollection($orderCollection);
         $orderRequest          = new OrderRequest();
         $orderRequest
@@ -91,13 +111,23 @@ class OrderService
             ->addType($paymentOption->getTransactionType())
             ->addPluginDetails($this->createPluginDetails())
             ->addDescriptionText($this->getOrderDescriptionText($orderRequestArguments['order_id']))
-            ->addCustomer($this->customerService->createCustomerDetails($orderCollection->getFirst()))
-            ->addPaymentOptions($this->createPaymentOptions($orderCollection->getFirst()))
+            ->addCustomer($this->customerService->createCustomerDetails($firstOrder))
+            ->addPaymentOptions($this->createPaymentOptions($firstOrder))
             ->addSecondsActive($this->getTimeActive())
-            ->addSecondChance(( new SecondChance() )->addSendEmail((bool) PrestaShopConfiguration::get('MULTISAFEPAY_SECOND_CHANCE')));
+            ->addSecondChance(
+                (new SecondChance())->addSendEmail((bool)PrestaShopConfiguration::get('MULTISAFEPAY_SECOND_CHANCE'))
+            )
+            ->addShoppingCart(
+                $this->shoppingCartService->createShoppingCart(
+                    $shoppingCart,
+                    $orderRequestArguments['currency_code'],
+                    $orderRequestArguments['round_type'],
+                    $orderRequestArguments['weight_unit']
+                )
+            );
 
         if ($orderRequestArguments['shipping_total'] > 0) {
-            $orderRequest->addDelivery((new CustomerService())->createDeliveryDetails($orderCollection->getFirst()));
+            $orderRequest->addDelivery((new CustomerService())->createDeliveryDetails($firstOrder));
         }
 
         if (PrestaShopConfiguration::get('MULTISAFEPAY_GOOGLE_ANALYTICS_ID')) {
@@ -125,13 +155,17 @@ class OrderService
      */
     public function getOrderRequestArgumentsByOrderCollection(PrestaShopCollection $orderCollection): array
     {
+        /** @var PrestaShopOrder $order */
         $order = $orderCollection->getFirst();
-        return array(
+
+        return [
             'order_id'       => $order->reference,
             'order_total'    => $this->getOrderTotalByOrderCollection($orderCollection),
             'shipping_total' => $this->getShippingTotalByOrderCollection($orderCollection),
             'currency_code'  => PrestaShopCurrency::getIsoCodeById((int)$order->id_currency),
-        );
+            'round_type'     => (int)$order->round_type,
+            'weight_unit'    => PrestaShopConfiguration::get('PS_WEIGHT_UNIT'),
+        ];
     }
 
     /**
@@ -147,6 +181,7 @@ class OrderService
         foreach ($orderCollection->getResults() as $order) {
             $orderTotal = $orderTotal + $order->total_paid;
         }
+
         return $orderTotal;
     }
 
@@ -163,6 +198,7 @@ class OrderService
         foreach ($orderCollection->getResults() as $order) {
             $shippingTotal = $shippingTotal + $order->total_shipping;
         }
+
         return $shippingTotal;
     }
 
@@ -173,7 +209,7 @@ class OrderService
      */
     private function getTimeActive(): int
     {
-        $timeActive     = (int) PrestaShopConfiguration::get('MULTISAFEPAY_TIME_ACTIVE_VALUE');
+        $timeActive     = (int)PrestaShopConfiguration::get('MULTISAFEPAY_TIME_ACTIVE_VALUE');
         $timeActiveUnit = PrestaShopConfiguration::get('MULTISAFEPAY_TIME_ACTIVE_UNIT');
         if ((string)$timeActiveUnit === 'days') {
             $timeActive = $timeActive * 24 * 60 * 60;
@@ -181,6 +217,7 @@ class OrderService
         if ((string)$timeActiveUnit === 'hours') {
             $timeActive = $timeActive * 60 * 60;
         }
+
         return $timeActive;
     }
 
@@ -190,6 +227,7 @@ class OrderService
     private function createPluginDetails()
     {
         $pluginDetails = new PluginDetails();
+
         return $pluginDetails
             ->addApplicationName('PrestaShop ')
             ->addApplicationVersion('PrestaShop: '._PS_VERSION_)
@@ -204,25 +242,46 @@ class OrderService
      */
     private function createPaymentOptions(PrestaShopOrder $order): PaymentOptions
     {
-        $paymentOptions        = new PaymentOptions();
+        $paymentOptions = new PaymentOptions();
+
         return $paymentOptions
             ->addNotificationMethod('GET')
-            ->addNotificationUrl(Context::getContext()->link->getModuleLink('multisafepay', 'notification', array(), true))
-            ->addCancelUrl(Context::getContext()->link->getModuleLink('multisafepay', 'cancel', array('id_cart' => $order->id_cart, 'id_reference' => $order->reference), true))
-            ->addRedirectUrl(Context::getContext()->link->getPageLink('order-confirmation', null, Context::getContext()->language->id, 'id_cart=' . $order->id_cart . '&id_order=' . $order->id . '&id_module=' . $this->module->id . '&key=' . Context::getContext()->customer->secure_key));
+            ->addNotificationUrl(Context::getContext()->link->getModuleLink('multisafepay', 'notification', [], true))
+            ->addCancelUrl(
+                Context::getContext()->link->getModuleLink(
+                    'multisafepay',
+                    'cancel',
+                    ['id_cart' => $order->id_cart, 'id_reference' => $order->reference],
+                    true
+                )
+            )
+            ->addRedirectUrl(
+                Context::getContext()->link->getPageLink(
+                    'order-confirmation',
+                    null,
+                    Context::getContext()->language->id,
+                    'id_cart='.$order->id_cart.'&id_order='.$order->id.'&id_module='.$this->module->id.'&key='.Context::getContext(
+                    )->customer->secure_key
+                )
+            );
     }
 
     /**
      * Return the order description.
      *
-     * @param   string   $orderReference
+     * @param string $orderReference
      */
     private function getOrderDescriptionText(string $orderReference): string
     {
         $orderDescription = sprintf('Payment for order: %s', $orderReference);
         if (PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION')) {
-            $orderDescription = str_replace('{order_reference}', $orderReference, PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION'));
+            $orderDescription = str_replace(
+                '{order_reference}',
+                $orderReference,
+                PrestaShopConfiguration::get('MULTISAFEPAY_ORDER_DESCRIPTION')
+            );
         }
+
         return $orderDescription;
     }
 }

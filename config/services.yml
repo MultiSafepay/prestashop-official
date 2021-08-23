@@ -24,8 +24,14 @@ services:
     arguments:
       - "@multisafepay"
 
+  multisafepay.shopping_cart_service:
+    class: MultiSafepay\PrestaShop\Services\ShoppingCartService
+    arguments:
+      - "@multisafepay"
+
   multisafepay.order_service:
     class: MultiSafepay\PrestaShop\Services\OrderService
     arguments:
       - "@multisafepay"
       - "@multisafepay.customer_service"
+      - "@multisafepay.shopping_cart_service"
