@@ -36,7 +36,6 @@ use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use Multisafepay;
 use Order as PrestaShopOrder;
-use PaymentModule;
 use PrestaShopCollection;
 use Tools;
 

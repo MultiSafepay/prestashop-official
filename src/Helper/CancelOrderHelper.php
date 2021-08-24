@@ -21,35 +21,33 @@
  *
  */
 
-use MultiSafepay\PrestaShop\Helper\CancelOrderHelper;
-use MultiSafepay\PrestaShop\Helper\DuplicateCartHelper;
-use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+namespace MultiSafepay\PrestaShop\Helper;
 
-class MultisafepayCancelModuleFrontController extends ModuleFrontController
+use Configuration;
+use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+use OrderHistory;
+use PrestaShopCollection;
+
+class CancelOrderHelper
 {
     /**
+     * Cancel the orders for the given Order Collection
      *
-     * @return string|void
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
+     * @param PrestaShopCollection $orderCollection
+     * @return void
      */
-    public function postProcess()
+    public static function cancelOrder(PrestaShopCollection $orderCollection): void
     {
-        if ($this->module->active == false || !Tools::getValue('id_reference') || !Tools::getValue('id_cart')) {
+        foreach ($orderCollection->getResults() as $order) {
+            $history  = new OrderHistory();
+            $history->id_order = (int)$order->id;
+            $history->id_order_state = (int)$order->id;
+            $history->changeIdOrderState((int) Configuration::get('PS_OS_CANCELED'), $order->id);
+            $history->addWithemail(true, array('dont_send_email' => true));
+
             if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
-                LoggerHelper::logWarning('Warning: It seems postProcess method of MultiSafepay cancel controller is being called without the required parameters.');
+                LoggerHelper::logInfo('Order ID: ' . $order->id . ' has been canceled');
             }
-            header('HTTP/1.0 400 Bad request');
-            die();
         }
-
-        // Cancel orders
-        CancelOrderHelper::cancelOrder((Order::getByReference(Tools::getValue('id_reference'))));
-
-        // Duplicate cart
-        DuplicateCartHelper::duplicateCart((new Cart(Tools::getValue('id_cart'))));
-
-        // Redirect to checkout page
-        Tools::redirect($this->context->link->getPageLink('order', true, null, array('step' => '3')));
     }
 }

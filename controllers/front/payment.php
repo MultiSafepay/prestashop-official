@@ -1,5 +1,4 @@
 <?php declare(strict_types=1);
-
 /**
  *
  * DISCLAIMER
@@ -30,20 +29,21 @@ use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use PaymentModule;
+use MultiSafepay\PrestaShop\Helper\CancelOrderHelper;
+use MultiSafepay\PrestaShop\Helper\DuplicateCartHelper;
 
 class MultisafepayPaymentModuleFrontController extends ModuleFrontController
 {
 
     /**
-     * Process checkout form and register the order.
+     * Process the payment
      *
-     * @return void
+     * @return mixed
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    public function postProcess(): void
+    public function postProcess()
     {
-
         if (!$this->isContextSetUp()) {
             LoggerHelper::logWarning(
                 'Warning: It seems postProcess method of MultiSafepay is being called out of context.'
@@ -113,43 +113,34 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
             );
         }
 
-        $transaction = $this->createMultiSafepayTransaction($orderRequest);
-
-        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
-            LoggerHelper::logInfo(
-                'Ending payment process. A transaction has been created for Cart ID: '.$this->context->cart->id.' with payment link '.$transaction->getPaymentUrl(
-                )
-            );
-        }
-
-        Tools::redirectLink($transaction->getPaymentUrl());
-    }
-
-
-    /**
-     * Create a MultiSafepay Transaction
-     *
-     * @param OrderRequest $orderRequest
-     *
-     * @return TransactionResponse
-     */
-    private function createMultiSafepayTransaction(OrderRequest $orderRequest): TransactionResponse
-    {
-        /** @var SdkService $sdkService */
-        $sdkService = $this->module->get('multisafepay.sdk_service');
-        $transactionManager = $sdkService->getSdk()->getTransactionManager();
         try {
+            $transactionManager    = ((new SdkService())->getSdk())->getTransactionManager();
             $transaction = $transactionManager->create($orderRequest);
         } catch (ApiException $apiException) {
-            LoggerHelper::logError(
-                'Error when try to create a MultiSafepay transaction using the following OrderRequest data: '.json_encode(
-                    $orderRequest->getData()
+            LoggerHelper::logError('Error when try to create a MultiSafepay transaction using the following OrderRequest data: ' . json_encode($orderRequest->getData()));
+            LoggerHelper::logError($apiException->getMessage());
+
+            // Cancel orders
+            CancelOrderHelper::cancelOrder($orderCollection);
+
+            // Duplicate cart
+            DuplicateCartHelper::duplicateCart((new Cart($this->context->cart->id)));
+
+            $this->context->smarty->assign(
+                array(
+                    'layout'         => 'full-width-template',
+                    'error_message'  => $apiException->getMessage()
                 )
             );
-            LoggerHelper::logError($apiException->getMessage());
+
+            return $this->setTemplate('module:multisafepay/views/templates/front/error.tpl');
         }
 
-        return $transaction;
+        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+            LoggerHelper::logInfo('Ending payment process. A transaction has been created for Cart ID: ' . $this->context->cart->id . ' with payment link ' . $transaction->getPaymentUrl());
+        }
+
+        Tools::redirect($transaction->getPaymentUrl());
     }
 
     /**
@@ -166,7 +157,6 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
                 break;
             }
         }
-
         return $isValid;
     }
 
@@ -191,7 +181,6 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
     }
 
     /**
-     *
      * Return an array of Orders IDs for the given PrestaShopCollection
      *
      * @param PrestaShopCollection $orderCollection

@@ -186,6 +186,7 @@ class Multisafepay extends PaymentModule
         $this->context->smarty->assign(
             array(
                 'action'       => $this->context->link->getModuleLink($this->name, 'payment', array(), true),
+                'gateway'      => (!empty($gatewayCode)) ? strtolower($gatewayCode) : 'multisafepay',
                 'inputs'       => $inputs
             )
         );

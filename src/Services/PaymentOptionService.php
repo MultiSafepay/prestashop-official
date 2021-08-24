@@ -24,6 +24,7 @@
 namespace MultiSafepay\PrestaShop\Services;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
+use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Dirdeb;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay;
@@ -43,6 +44,7 @@ use PaymentModule; // This line is here to prevent this PHPStan error: Internal 
 class PaymentOptionService
 {
     public const MULTISAFEPAY_PAYMENT_OPTIONS = [
+        Dirdeb::class,
         Ideal::class,
         MultiSafepay::class,
         Generic::class,
