@@ -30,6 +30,8 @@ require __DIR__ . '/vendor/autoload.php';
 use MultiSafepay\PrestaShop\Helper\OrderStatusInstaller;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+use MultiSafepay\PrestaShop\Services\SdkService;
+use MultiSafepay\Api\Transactions\UpdateRequest;
 
 class Multisafepay extends PaymentModule
 {
@@ -93,6 +95,7 @@ class Multisafepay extends PaymentModule
             $this->registerHook('backOfficeHeader') &&
             $this->registerHook('paymentReturn') &&
             $this->registerHook('paymentOptions') &&
+            $this->registerHook('actionOrderStatusPostUpdate') &&
             $this->registerHook('actionEmailSendBefore');
     }
 
@@ -219,5 +222,40 @@ class Multisafepay extends PaymentModule
             }
         }
         return false;
+    }
+
+    /**
+     * Set MultiSafepay transaction as shipped
+     *
+     * @param array $params
+     * @return void
+     */
+    public function hookActionOrderStatusPostUpdate(array $params): void
+    {
+
+        if ((int)Configuration::get('MULTISAFEPAY_OS_TRIGGER_SHIPPED') !== $params['newOrderStatus']->id) {
+            return;
+        }
+
+        $order = new Order((int)$params['id_order']);
+
+        if (!$order->module || $order->module !== 'multisafepay') {
+            return;
+        }
+
+        // Update order with invoice shipping information
+        /** @var SdkService $sdkService */
+        $sdkService = $this->get('multisafepay.sdk_service');
+        $transactionManager = $sdkService->getSdk()->getTransactionManager();
+        $updateOrder       = new UpdateRequest();
+        $updateOrder->addData(
+            [
+                'status' => 'shipped',
+                'tracktrace_code' => $order->getWsShippingNumber(),
+                'carrier' => (new Carrier((int)$order->id_carrier))->name,
+                'ship_date' => date('Y-m-d H:i:s')
+            ]
+        );
+        $transactionManager->update((string) $order->reference, $updateOrder);
     }
 }

@@ -53,6 +53,7 @@ class SettingsBuilder
             'MULTISAFEPAY_TIME_ACTIVE_UNIT'    => ['default' => self::DAYS],
             'MULTISAFEPAY_GOOGLE_ANALYTICS_ID' => ['default' => ''],
             'MULTISAFEPAY_ORDER_DESCRIPTION'   => ['default' => 'Payment for order: {order_reference}'],
+            'MULTISAFEPAY_OS_TRIGGER_SHIPPED'  => ['default' => Configuration::get('PS_OS_SHIPPING')],
             'MULTISAFEPAY_DEBUG_MODE'          => ['default' => '0'],
             'MULTISAFEPAY_SECOND_CHANCE'       => ['default' => '1'],
             'MULTISAFEPAY_OS_INITIALIZED'      => ['default' => Configuration::get('MULTISAFEPAY_OS_INITIALIZED')],
@@ -206,6 +207,15 @@ class SettingsBuilder
                         'desc'  => $this->module->l('A text which will be shown with the order in MultiSafepay Control. If the customer’s bank supports it this description will also be shown on the customer’s bank statement. You can include the order number using {order_reference}'),
                         'name'  => 'MULTISAFEPAY_ORDER_DESCRIPTION',
                         'label' => $this->module->l('Order description'),
+                        'section' => 'default'
+                    ],
+                    [
+                        'tab'   => 'general_settings',
+                        'type'  => 'select',
+                        'desc'  => $this->module->l('When the order reaches this status, a notification will be sent to MultiSafepay to set the transaction as shipped'),
+                        'name'  => 'MULTISAFEPAY_OS_TRIGGER_SHIPPED',
+                        'label' => $this->module->l('Set transaction as shipped'),
+                        'options' => $this->getPrestaShopOrderStatusesOptions(),
                         'section' => 'default'
                     ],
                     [
