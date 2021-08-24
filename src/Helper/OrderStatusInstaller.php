@@ -46,8 +46,8 @@ class OrderStatusInstaller
         $multisafepayOrderStatuses = $this->getMultiSafepayOrderStatuses();
         foreach ($multisafepayOrderStatuses as $multisafepayOrderStatusKey => $multisafepayOrderStatusValues) {
             if (!Configuration::get('MULTISAFEPAY_OS_' . Tools::strtoupper($multisafepayOrderStatusKey))) {
-                $orderState = $this->createOrderStatus($multisafepayOrderStatusKey, $multisafepayOrderStatusValues);
-                Configuration::updateValue('MULTISAFEPAY_OS_' . Tools::strtoupper($multisafepayOrderStatusKey), (int) $orderState->id);
+                $orderState = $this->createOrderStatus($multisafepayOrderStatusValues);
+                Configuration::updateGlobalValue('MULTISAFEPAY_OS_' . Tools::strtoupper($multisafepayOrderStatusKey), (int) $orderState->id);
             }
         }
     }
@@ -55,13 +55,12 @@ class OrderStatusInstaller
     /**
      * Creates the Order Statuses
      *
-     * @param string $multisafepayOrderStatusKey
      * @param array $multisafepayOrderStatusValues
      * @return OrderState
      * @throws \PrestaShopDatabaseException
      * @throws \PrestaShopException
      */
-    private function createOrderStatus(string $multisafepayOrderStatusKey, array $multisafepayOrderStatusValues): OrderState
+    private function createOrderStatus(array $multisafepayOrderStatusValues): OrderState
     {
         $orderState              = new OrderState();
         foreach (Language::getLanguages() as $language) {
@@ -76,6 +75,7 @@ class OrderStatusInstaller
         $orderState->invoice     = $multisafepayOrderStatusValues['invoice'];
         $orderState->template    = $multisafepayOrderStatusValues['template'];
         $orderState->paid        = $multisafepayOrderStatusValues['paid'];
+        $orderState->module_name = 'multisafepay';
         $orderState->add();
         return $orderState;
     }
