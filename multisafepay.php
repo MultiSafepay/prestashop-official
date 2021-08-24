@@ -32,6 +32,7 @@ use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\Api\Transactions\UpdateRequest;
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Multisafepay extends PaymentModule
 {
@@ -95,6 +96,7 @@ class Multisafepay extends PaymentModule
             $this->registerHook('backOfficeHeader') &&
             $this->registerHook('paymentReturn') &&
             $this->registerHook('paymentOptions') &&
+            $this->registerHook('actionSetInvoice') &&
             $this->registerHook('actionOrderStatusPostUpdate') &&
             $this->registerHook('actionEmailSendBefore');
     }
@@ -226,6 +228,41 @@ class Multisafepay extends PaymentModule
     }
 
     /**
+     * Set MultiSafepay transaction as invoiced
+     *
+     * @param array $params
+     * @return void
+     */
+    public function hookActionSetInvoice(array $params): void
+    {
+        if (!(bool)Configuration::get('PS_INVOICE')) {
+            return;
+        }
+
+        /** @var Order $order */
+        $order = $params['Order'];
+
+        if (!$order->module || $order->module !== 'multisafepay') {
+            return;
+        }
+
+        if (!$order->hasInvoice()) {
+            return;
+        }
+
+        /** @var OrderInvoice $orderInvoice */
+        $orderInvoice = $params['OrderInvoice'];
+
+        // Update order with invoice shipping information
+        /** @var SdkService $sdkService */
+        $sdkService         = $this->get('multisafepay.sdk_service');
+        $transactionManager = $sdkService->getSdk()->getTransactionManager();
+        $updateOrder        = new UpdateRequest();
+        $updateOrder->addData(['invoice_id'  => (string)$orderInvoice->id]);
+        $transactionManager->update((string) $order->reference, $updateOrder);
+    }
+
+    /**
      * Set MultiSafepay transaction as shipped
      *
      * @param array $params
@@ -246,9 +283,9 @@ class Multisafepay extends PaymentModule
 
         // Update order with invoice shipping information
         /** @var SdkService $sdkService */
-        $sdkService = $this->get('multisafepay.sdk_service');
+        $sdkService         = $this->get('multisafepay.sdk_service');
         $transactionManager = $sdkService->getSdk()->getTransactionManager();
-        $updateOrder       = new UpdateRequest();
+        $updateOrder        = new UpdateRequest();
         $updateOrder->addData(
             [
                 'status' => 'shipped',
