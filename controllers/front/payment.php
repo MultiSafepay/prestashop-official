@@ -127,10 +127,10 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
             DuplicateCartHelper::duplicateCart((new Cart($this->context->cart->id)));
 
             $this->context->smarty->assign(
-                array(
+                [
                     'layout'         => 'full-width-template',
                     'error_message'  => $apiException->getMessage()
-                )
+                ]
             );
 
             return $this->setTemplate('module:multisafepay/views/templates/front/error.tpl');

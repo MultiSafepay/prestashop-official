@@ -50,6 +50,6 @@ class MultisafepayCancelModuleFrontController extends ModuleFrontController
         DuplicateCartHelper::duplicateCart((new Cart(Tools::getValue('id_cart'))));
 
         // Redirect to checkout page
-        Tools::redirect($this->context->link->getPageLink('order', true, null, array('step' => '3')));
+        Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
     }
 }

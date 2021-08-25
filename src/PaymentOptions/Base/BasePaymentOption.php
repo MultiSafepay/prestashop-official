@@ -103,7 +103,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         $this->callToActionText = $this->getFrontEndPaymentOptionName();
         $this->icon             = $this->getPaymentOptionLogo();
         $this->paymentForm      = $this->getPaymentOptionForm();
-        $this->action           = PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'payment', array(), true);
+        $this->action           = PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'payment', [], true);
         $this->sortOrderPosition = (int) Configuration::get('MULTISAFEPAY_SORT_ORDER_'.$this->getUniqueName());
     }
 

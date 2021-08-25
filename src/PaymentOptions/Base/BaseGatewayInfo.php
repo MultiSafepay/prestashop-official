@@ -37,6 +37,6 @@ class BaseGatewayInfo implements GatewayInfoInterface
      */
     public function getData(): array
     {
-        return array();
+        return [];
     }
 }

@@ -69,7 +69,7 @@ class PaymentOptionService
      */
     public function getMultiSafepayPaymentOptions(): array
     {
-        $paymentOptions = array();
+        $paymentOptions = [];
         foreach (self::MULTISAFEPAY_PAYMENT_OPTIONS as $paymentOption) {
             $paymentOptions[] = new $paymentOption($this->module);
         }
@@ -102,7 +102,7 @@ class PaymentOptionService
      */
     public function getFilteredMultiSafepayPaymentOptions(Cart $cart): array
     {
-        $paymentOptions = array();
+        $paymentOptions = [];
         $paymentMethods = $this->getMultiSafepayPaymentOptions();
         foreach ($paymentMethods as $paymentMethod) {
             if ($this->excludePaymentOptionByPaymentOptionSettings($paymentMethod, $cart)) {

@@ -88,11 +88,11 @@ class SettingsBuilder
                                  .'&configure='.$this->module->name.'&tab_module='.$this->module->tab.'&module_name='.$this->module->name;
         $helper->token         = Tools::getAdminTokenLite('AdminModules');
 
-        $helper->tpl_vars = array(
+        $helper->tpl_vars = [
             'fields_value' => $this::getConfigFormValues(),
             'languages'    => $context->controller->getLanguages(),
             'id_language'  => $context->language->id
-        );
+        ];
 
         return $helper->generateForm($this->getConfigForm());
     }
@@ -234,18 +234,18 @@ class SettingsBuilder
                         'label'   => $this->module->l('Lifetime of payment link unit'),
                         'options' => [
                             'query' => [
-                                array(
+                                [
                                     'id'   => self::SECONDS,
                                     'name' => $this->module->l('Seconds'),
-                                ),
-                                array(
+                                ],
+                                [
                                     'id'   => self::HOURS,
                                     'name' => $this->module->l('Hours'),
-                                ),
-                                array(
+                                ],
+                                [
                                     'id'   => self::DAYS,
                                     'name' => $this->module->l('Days'),
-                                ),
+                                ],
                             ],
                             'id' => 'id',
                             'name' => 'name',
@@ -291,14 +291,14 @@ class SettingsBuilder
         $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
         $groups = Group::getGroups((int)Context::getContext()->language->id);
         Context::getContext()->smarty->assign(
-            array(
+            [
                 'payment_options' => $paymentOptionService->getMultiSafepayPaymentOptions(),
                 'languages'       => Context::getContext()->controller->getLanguages(),
                 'id_language'     => Context::getContext()->language->id,
                 'countries'       => Country::getCountries((int)Context::getContext()->language->id, true),
                 'currencies'      => Currency::getCurrencies(false, true, true),
                 'customer_groups' => $groups
-            )
+            ]
         );
         return Context::getContext()->smarty->fetch('module:multisafepay/views/templates/admin/settings/payment-methods.tpl');
     }
@@ -343,7 +343,7 @@ class SettingsBuilder
     private function getPrestaShopOrderStatusesOptions(): array
     {
         $prestaShopOrderStatuses = OrderState::getOrderStates(Context::getContext()->language->id);
-        $prestaShopOrderStatusesOptions = array();
+        $prestaShopOrderStatusesOptions = [];
         foreach ($prestaShopOrderStatuses as $prestaShopOrderStatus) {
             $prestaShopOrderStatusesOptions['query'][] = [
                 'id'   => $prestaShopOrderStatus['id_order_state'],
@@ -361,7 +361,7 @@ class SettingsBuilder
      */
     private function getOrderStatusesSettingFields(): array
     {
-        $orderStatusesSettingsFields = array();
+        $orderStatusesSettingsFields = [];
         $orderStatuses =  $this->getMultiSafepayTransactionStatus();
         foreach ($orderStatuses as $orderStatus) {
             $orderStatusesSettingsFields['form']['input'][] = [
@@ -385,7 +385,7 @@ class SettingsBuilder
      */
     private function getMultiSafepayTransactionStatus(): array
     {
-        return array(
+        return [
             'initialized',
             'declined',
             'cancelled',
@@ -397,7 +397,7 @@ class SettingsBuilder
             'void',
             'chargeback',
             'shipped',
-        );
+        ];
     }
 
     /**

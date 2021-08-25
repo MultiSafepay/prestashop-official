@@ -13,4 +13,5 @@
         <exclude name="PSR2.Classes.PropertyDeclaration.Underscore"/>
     </rule>
     <rule ref="Squiz.NamingConventions.ValidVariableName.NotCamelCaps"/>
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax.Found"/>
 </ruleset>

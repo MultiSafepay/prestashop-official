@@ -87,8 +87,8 @@ class OrderStatusInstaller
      */
     public function getMultiSafepayOrderStatuses(): array
     {
-        return array(
-            'initialized' => array(
+        return [
+            'initialized' => [
                 'name'      => 'initialized',
                 'send_mail' => false,
                 'color'     => '#4169E1',
@@ -96,8 +96,8 @@ class OrderStatusInstaller
                 'template'  => '',
                 'paid'      => false,
                 'logable'   => false
-            ),
-            'uncleared' => array(
+            ],
+            'uncleared' => [
                 'name'      => 'uncleared',
                 'send_mail' => false,
                 'color'     => '#ec2e15',
@@ -105,8 +105,8 @@ class OrderStatusInstaller
                 'template'  => '',
                 'paid'      => false,
                 'logable'   => false
-            ),
-            'partial_refunded' => array(
+            ],
+            'partial_refunded' => [
                 'name'      => 'partial refunded',
                 'send_mail' => true,
                 'color'     => '#ec2e15',
@@ -114,8 +114,8 @@ class OrderStatusInstaller
                 'template'  => '',
                 'paid'      => false,
                 'logable'   => false
-            ),
-            'chargeback' => array(
+            ],
+            'chargeback' => [
                 'name'      => 'chargeback',
                 'send_mail' => true,
                 'color'     => '#ec2e15',
@@ -123,8 +123,8 @@ class OrderStatusInstaller
                 'template'  => '',
                 'paid'      => false,
                 'logable'   => false
-            ),
-            'awaiting_bank_transfer_payment' => array(
+            ],
+            'awaiting_bank_transfer_payment' => [
                 'name' => 'awaiting bank transfer payment',
                 'send_mail' => false,
                 'color' => '#4169E1',
@@ -132,7 +132,7 @@ class OrderStatusInstaller
                 'template' => '',
                 'paid' => false,
                 'logable' => false
-            ),
-        );
+            ],
+        ];
     }
 }

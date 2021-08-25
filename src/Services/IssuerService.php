@@ -46,7 +46,7 @@ class IssuerService
             return [];
         }
         $issuers = $sdk->getIssuerManager()->getIssuersByGatewayCode($gatewayCode);
-        $options = array();
+        $options = [];
         foreach ($issuers as $issuer) {
             $options[] = [
                 'value' => $issuer->getCode(),

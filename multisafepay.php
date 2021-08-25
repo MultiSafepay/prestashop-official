@@ -58,7 +58,7 @@ class Multisafepay extends PaymentModule
         $this->displayName            = $this->l('MultiSafepay');
         $this->description            = $this->l('MultiSafepay payment plugin for PrestaShop');
         $this->confirmUninstall       = $this->l('Are you sure you want to uninstall MultiSafepay?');
-        $this->ps_versions_compliancy = array('min' => '1.7.0', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = ['min' => '1.7.0', 'max' => _PS_VERSION_];
     }
 
     /**
@@ -184,14 +184,14 @@ class Multisafepay extends PaymentModule
      * @return false|string
      * @throws SmartyException
      */
-    public function getMultiSafepayPaymentOptionForm(string $gatewayCode, array $inputs = array())
+    public function getMultiSafepayPaymentOptionForm(string $gatewayCode, array $inputs = [])
     {
         $this->context->smarty->assign(
-            array(
-                'action'       => $this->context->link->getModuleLink($this->name, 'payment', array(), true),
+            [
+                'action'       => $this->context->link->getModuleLink($this->name, 'payment', [], true),
                 'gateway'      => (!empty($gatewayCode)) ? strtolower($gatewayCode) : 'multisafepay',
                 'inputs'       => $inputs
-            )
+            ]
         );
         return $this->context->smarty->fetch('module:multisafepay/views/templates/front/form.tpl');
     }

@@ -108,7 +108,7 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
      */
     private function getOrderStatusId(string $transactionStatus): string
     {
-        $orderStatus = array(
+        $orderStatus = [
             'initialized'      => Configuration::get('MULTISAFEPAY_OS_INITIALIZED'),
             'declined'         => Configuration::get('PS_OS_CANCELED'),
             'cancelled'        => Configuration::get('PS_OS_CANCELED'),
@@ -120,7 +120,7 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
             'void'             => Configuration::get('PS_OS_CANCELED'),
             'chargedback'      => Configuration::get('MULTISAFEPAY_OS_CHARGEBACK'),
             'shipped'          => Configuration::get('PS_OS_SHIPPING')
-        );
+        ];
         return isset($orderStatus[$transactionStatus]) ? $orderStatus[$transactionStatus] : Configuration::get('PS_OS_ERROR');
     }
 }
