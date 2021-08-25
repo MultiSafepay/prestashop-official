@@ -37,9 +37,6 @@ use State as PrestaShopState;
 
 /**
  * Class CustomerService
- *
- * @todo Check for customer IP addresses and user agent arguments
- *
  * @package MultiSafepay\PrestaShop\Services
  */
 class CustomerService
@@ -67,8 +64,8 @@ class CustomerService
             $invoiceAddress->phone,
             $invoiceAddress->firstname,
             $invoiceAddress->lastname,
-            '',
-            '',
+            $_SERVER['REMOTE_ADDR'] ?? null,
+            $_SERVER['HTTP_USER_AGENT'] ?? null,
             $order->id_lang,
             $invoiceAddress->company
         );
@@ -97,8 +94,8 @@ class CustomerService
             $shippingAddress->phone,
             $shippingAddress->firstname,
             $shippingAddress->lastname,
-            '',
-            '',
+            $_SERVER['REMOTE_ADDR'] ?? null,
+            $_SERVER['HTTP_USER_AGENT'] ?? null,
             $order->id_lang,
             $shippingAddress->company
         );
@@ -123,8 +120,8 @@ class CustomerService
         string $phoneNumber,
         string $firstName,
         string $lastName,
-        string $ipAddress,
-        string $userAgent,
+        ?string $ipAddress,
+        ?string $userAgent,
         string $langId,
         string $companyName = null
     ): CustomerDetails {
