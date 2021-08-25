@@ -1,0 +1,12 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg">
+<metadata>Copyright (C) 2021 by original authors @ fontello.com</metadata>
+<defs>
+<font id="fontello" horiz-adv-x="1000" >
+<font-face font-family="fontello" font-weight="400" font-stretch="normal" units-per-em="1000" ascent="850" descent="-150" />
+<missing-glyph horiz-adv-x="1000" />
+<glyph glyph-name="msp-logo-font" unicode="&#xe800;" d="M0 850v-1000h1000v1000z m796-797c-63 0-83 0-134-3l-5 5c-1 106-1 119-3 236l-2 226-65-276c-21-93-31-135-40-183l-6-5c-44 0-58 0-103-3l-5 5c-12 54-27 119-40 178l-63 277-5-194c-5-175-5-193-5-258l-4-5c-46 0-61 0-112-3l-4 5c8 138 9 154 14 245l7 185c3 79 4 119 5 158l5 5c75 0 98 0 181 2l5-5c9-45 10-47 30-136l56-239 53 233c17 66 19 80 31 139l5 6c73-1 94 0 177 2l6-5c0-70 1-88 6-180l5-131c7-158 9-195 14-276z" horiz-adv-x="1000" />
+</font>
+</defs>
+</svg>

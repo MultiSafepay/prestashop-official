@@ -36,7 +36,7 @@ class Installer
         $tab->id_parent = $idParent;
         $tab->module = 'MultiSafepay';
         $tab->active = true;
-        $tab->icon = '';
+        $tab->icon = 'multisafepay icon-multisafepay';
         $languages = Language::getLanguages(true);
         foreach ($languages as $language) {
             $tab->name[$language['id_lang']] = 'MultiSafepay';

@@ -137,6 +137,7 @@ class Multisafepay extends PaymentModule
     */
     public function hookBackOfficeHeader(): void
     {
+        $this->context->controller->addCSS($this->_path.'views/icons/css/multisafepay-icon.css');
         if ('multisafepay' === $this->name) {
             $this->context->controller->addJS($this->_path.'views/js/admin.js');
             $this->context->controller->addCSS($this->_path.'views/css/back.css');
