@@ -31,6 +31,7 @@ use PaymentModule;
 
 class Ideal extends BasePaymentOption
 {
+    public $hasConfigurableDirect = true;
 
     public function getPaymentOptionName(): string
     {
@@ -58,21 +59,19 @@ class Ideal extends BasePaymentOption
         return true;
     }
 
-    public function getInputFields(): array
+    public function getDirectTransactionInputFields(): array
     {
         /** @var IssuerService $issuerService */
         $issuerService        = $this->module->get('multisafepay.issuer_service');
-        $parentInputs        = parent::getInputFields();
-        $paymentMethodInput = array(
-            'select' => array(
-                array(
+        return [
+            'select' => [
+                [
                     'name'        => 'issuer_id',
                     'placeholder' => 'Select bank',
                     'options'     => $issuerService->getIssuers($this->getPaymentOptionGatewayCode()),
-                ),
-            ),
-        );
-        return array_merge($parentInputs, $paymentMethodInput);
+                ],
+            ],
+        ];
     }
 
     public function getGatewayInfo(array $data = []): GatewayInfoInterface

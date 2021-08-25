@@ -39,7 +39,7 @@ class IdealTest extends BaseMultiSafepayTest
         parent::setUp();
 
         $mockIssuerService = $this->getMockBuilder(IssuerService::class)->disableOriginalConstructor()->getMock();
-        $mockIssuerService->expects($this->once())->method('getIssuers')->willReturn(
+        $mockIssuerService->method('getIssuers')->willReturn(
             [
                 'value' => 1234,
                 'name'  => 'Test Issuer',
@@ -47,7 +47,7 @@ class IdealTest extends BaseMultiSafepayTest
         );
 
         $mockMultisafepay = $this->getMockBuilder(Multisafepay::class)->getMock();
-        $mockMultisafepay->expects($this->once())->method('get')->willReturn(
+        $mockMultisafepay->method('get')->willReturn(
             $mockIssuerService
         );
 
@@ -109,9 +109,12 @@ class IdealTest extends BaseMultiSafepayTest
      */
     public function testGetInputFields()
     {
-        $output = $this->idealPaymentOption->inputs;
+        $output = $this->idealPaymentOption->getDirectTransactionInputFields();
+        $this->assertIsArray($output);
+        $this->assertArrayHasKey('select', $output);
+
+        $output = $this->idealPaymentOption->getInputFields();
         $this->assertIsArray($output);
         $this->assertArrayHasKey('hidden', $output);
-        $this->assertArrayHasKey('select', $output);
     }
 }

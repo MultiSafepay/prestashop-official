@@ -30,6 +30,24 @@
                                     </span>
                                 </div>
                             </div>
+                            {if isset($options["MULTISAFEPAY_DIRECT_`$name`"])}
+                                {assign var="direct" value=$options["MULTISAFEPAY_DIRECT_`$name`"]}
+                                <div class="form-group">
+                                    <label class="control-label col-lg-3">
+                                        {l s='Enable direct' mod='multisafepay'}
+                                    </label>
+                                    <div class="col-lg-9">
+                                    <span class="multisafepay-payment-methods-list-switch switch prestashop-switch fixed-width-lg">
+                                        <input type="radio" class="" name="MULTISAFEPAY_DIRECT_{$name}" id="MULTISAFEPAY_DIRECT_{$name}_on" value="1" {if ($direct == 1)}checked="checked"{/if} >
+                                        <label for="MULTISAFEPAY_DIRECT_{$name}_on">{l s='Enabled' mod='multisafepay'}</label>
+                                        <input type="radio" class="" name="MULTISAFEPAY_DIRECT_{$name}" id="MULTISAFEPAY_DIRECT_{$name}_off" value="0" {if (empty($direct))}checked="checked"{/if}>
+                                        <label for="MULTISAFEPAY_DIRECT_{$name}_off">{l s='Disabled' mod='multisafepay'}</label>
+                                        <a class="slide-button btn"></a>
+                                    </span>
+                                    <p class="help-block">{l s='If enabled, additional information can be entered during checkout. If disabled, additional information will be requested on the MultiSafepay payment page.' mod='multisafepay'}</p>
+                                    </div>
+                                </div>
+                            {/if}
                             {if $name === 'GENERIC'}
                                 <div class="form-group">
                                     <label class="control-label col-lg-3">

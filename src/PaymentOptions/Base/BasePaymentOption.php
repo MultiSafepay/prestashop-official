@@ -87,6 +87,11 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      */
     public $sortOrderPosition;
 
+    /**
+     * @var bool
+     */
+    public $hasConfigurableDirect = false;
+
     public function __construct(Multisafepay $module)
     {
         $this->module           = $module;
@@ -114,7 +119,11 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
     public function getTransactionType(): string
     {
-        return 'redirect';
+        $transactionType = 'redirect';
+        if ($this->isDirect()) {
+            $transactionType = 'direct';
+        }
+        return $transactionType;
     }
 
     public function getPaymentOptionForm(): bool
@@ -129,7 +138,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
     public function getInputFields(): array
     {
-        return [
+        $inputFields = [
             'hidden' => [
                 [
                     'name'  => 'gateway',
@@ -141,6 +150,22 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 ],
             ],
         ];
+
+        if ($this->isDirect()) {
+            $inputFields = array_merge($inputFields, $this->getDirectTransactionInputFields());
+        }
+
+        return $inputFields;
+    }
+
+    /**
+     * Override this function if you need input fields for a direct payment method, also set $hasConfigurableDirect to true
+     *
+     * @return array
+     */
+    public function getDirectTransactionInputFields(): array
+    {
+        return [];
     }
 
     /**
@@ -156,7 +181,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      */
     public function getGatewaySettings(): array
     {
-        return [
+        $settings = [
             'MULTISAFEPAY_GATEWAY_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_GATEWAY_'.$this->getUniqueName()),
             'MULTISAFEPAY_TITLE_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_TITLE_'.$this->getUniqueName()),
             'MULTISAFEPAY_DESCRIPTION_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_DESCRIPTION_'.$this->getUniqueName()),
@@ -167,6 +192,11 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             'MULTISAFEPAY_CUSTOMER_GROUPS_'.$this->getUniqueName() => $this->settingToArray(Configuration::get('MULTISAFEPAY_CUSTOMER_GROUPS_'.$this->getUniqueName())),
             'MULTISAFEPAY_SORT_ORDER_'.$this->getUniqueName() => Configuration::get('MULTISAFEPAY_SORT_ORDER_'.$this->getUniqueName()),
         ];
+
+        if (true === $this->hasConfigurableDirect) {
+            $settings['MULTISAFEPAY_DIRECT_'.$this->getUniqueName()] = Configuration::get('MULTISAFEPAY_DIRECT_'.$this->getUniqueName());
+        }
+        return $settings;
     }
 
     /**
@@ -190,5 +220,18 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     public function getGatewayInfo(array $data = []): GatewayInfoInterface
     {
         return new BaseGatewayInfo();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDirect(): bool
+    {
+        $isDirect = false;
+        if (true === $this->hasConfigurableDirect) {
+            $isDirect = (bool)Configuration::get('MULTISAFEPAY_DIRECT_'.$this->getUniqueName());
+        }
+
+        return $isDirect;
     }
 }

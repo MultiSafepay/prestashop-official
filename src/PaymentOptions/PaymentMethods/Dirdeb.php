@@ -34,6 +34,7 @@ use PaymentModule;
 
 class Dirdeb extends BasePaymentOption
 {
+    public $hasConfigurableDirect = true;
 
     public function getPaymentOptionName(): string
     {
@@ -66,10 +67,9 @@ class Dirdeb extends BasePaymentOption
         return true;
     }
 
-    public function getInputFields(): array
+    public function getDirectTransactionInputFields(): array
     {
-        $parentInputs        = parent::getInputFields();
-        $paymentMethodInput = [
+        return [
             'text' => [
                 [
                     'name'          => 'account_holder_name',
@@ -90,7 +90,6 @@ class Dirdeb extends BasePaymentOption
                 ]
             ]
         ];
-        return array_merge_recursive($parentInputs, $paymentMethodInput);
     }
 
     public function getGatewayInfo(array $data = []): GatewayInfoInterface

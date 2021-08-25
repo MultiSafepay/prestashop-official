@@ -39,7 +39,7 @@ class PaymentOptionServiceTest extends BaseMultiSafepayTest
         parent::setUp();
 
         $mockIssuerService = $this->getMockBuilder(IssuerService::class)->disableOriginalConstructor()->getMock();
-        $mockIssuerService->expects(self::once())->method('getIssuers')->willReturn(
+        $mockIssuerService->method('getIssuers')->willReturn(
             [
                 'value' => 1234,
                 'name'  => 'Test Issuer',
@@ -47,7 +47,7 @@ class PaymentOptionServiceTest extends BaseMultiSafepayTest
         );
 
         $mockMultisafepay = $this->getMockBuilder(Multisafepay::class)->getMock();
-        $mockMultisafepay->expects(self::once())->method('get')->willReturn(
+        $mockMultisafepay->method('get')->willReturn(
             $mockIssuerService
         );
 
