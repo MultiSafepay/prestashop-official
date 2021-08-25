@@ -31,9 +31,8 @@ use Configuration;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 
 /**
- * This class returns the SDK object.
- *
- * @since      4.0.0
+ * Class SdkService
+ * @package MultiSafepay\PrestaShop\Services
  */
 class SdkService
 {

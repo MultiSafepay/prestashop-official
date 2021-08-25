@@ -24,9 +24,8 @@
 namespace MultiSafepay\PrestaShop\Services;
 
 /**
- * This class returns the SDK object.
- *
- * @since      4.0.0
+ * Class IssuerService
+ * @package MultiSafepay\PrestaShop\Services
  */
 class IssuerService
 {

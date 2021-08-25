@@ -37,9 +37,8 @@ use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use PaymentModule; // This line is here to prevent this PHPStan error: Internal error: Class 'PaymentModuleCore' not found
 
 /**
- * This class holds all the MultiSafepay payment methods
- *
- * @since      4.0.0
+ * Class PaymentOptionService
+ * @package MultiSafepay\PrestaShop\Services
  */
 class PaymentOptionService
 {

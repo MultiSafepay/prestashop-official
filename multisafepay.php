@@ -27,17 +27,19 @@ if (!defined('_PS_VERSION_')) {
 
 require __DIR__ . '/vendor/autoload.php';
 
+use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
+use MultiSafepay\PrestaShop\Helper\Installer;
 use MultiSafepay\PrestaShop\Helper\OrderStatusInstaller;
+use MultiSafepay\PrestaShop\Helper\Uninstaller;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\Api\Transactions\UpdateRequest;
-use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Multisafepay extends PaymentModule
 {
 
-    const MULTISAFEPAY_MODULE_VERSION = '5.0.0';
+    public const MULTISAFEPAY_MODULE_VERSION = '5.0.0';
 
     /**
      * Multisafepay plugin constructor.
@@ -68,9 +70,9 @@ class Multisafepay extends PaymentModule
     }
 
     /**
-     * Install method
-     *
-     * @return boolean
+     * @return bool
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function install(): bool
     {
@@ -78,7 +80,7 @@ class Multisafepay extends PaymentModule
             LoggerHelper::logInfo('Begin install process');
         }
 
-        if (extension_loaded('curl') == false) {
+        if (false === extension_loaded('curl')) {
             LoggerHelper::logAlert('cURL extension is not enabled.');
             $this->_errors[] = $this->l('You have to enable the cURL extension on your server to install this module');
             return false;
@@ -89,7 +91,7 @@ class Multisafepay extends PaymentModule
         $orderStatusInstaller = new OrderStatusInstaller();
         $orderStatusInstaller->registerMultiSafepayOrderStatuses();
 
-        (new \MultiSafepay\PrestaShop\Helper\Installer())->install();
+        (new Installer())->install();
 
         return $install &&
             $this->registerHook('header') &&
@@ -108,21 +110,20 @@ class Multisafepay extends PaymentModule
      */
     public function uninstall(): bool
     {
-        (new \MultiSafepay\PrestaShop\Helper\Uninstaller($this))->uninstall();
+        (new Uninstaller($this))->uninstall();
 
         return parent::uninstall();
     }
 
     /**
-     * Load the configuration form or process the submitted data
-     *
      * @return string
+     * @throws PrestaShopException
      */
     public function getContent(): string
     {
-        $settingsBuilder = new \MultiSafepay\PrestaShop\Builder\SettingsBuilder($this);
+        $settingsBuilder = new SettingsBuilder($this);
 
-        if (((bool)Tools::isSubmit('submitMultisafepayModule')) == true) {
+        if (true === Tools::isSubmit('submitMultisafepayModule')) {
             $settingsBuilder->postProcess();
         }
 
@@ -155,12 +156,11 @@ class Multisafepay extends PaymentModule
 
     /**
      * Return payment options available
-     * @todo Check according with each setting if the PaymentOption should be loaded. Filters like currency, total, group, etc
      *
      * @param array $params
      * @return array|null
      */
-    public function hookPaymentOptions(array $params)
+    public function hookPaymentOptions(array $params): ?array
     {
         if (!$this->active) {
             return null;
@@ -203,10 +203,7 @@ class Multisafepay extends PaymentModule
      */
     public function hookActionEmailSendBefore(array $params): bool
     {
-        if (isset($params['templateVars']['dont_send_email']) &&  $params['templateVars']['dont_send_email'] === true) {
-            return false;
-        }
-        return true;
+        return !(isset($params['templateVars']['dont_send_email']) && $params['templateVars']['dont_send_email'] === true);
     }
 
     /**
@@ -231,7 +228,8 @@ class Multisafepay extends PaymentModule
      * Set MultiSafepay transaction as invoiced
      *
      * @param array $params
-     * @return void
+     *
+     * @throws \Psr\Http\Client\ClientExceptionInterface
      */
     public function hookActionSetInvoice(array $params): void
     {
@@ -266,7 +264,10 @@ class Multisafepay extends PaymentModule
      * Set MultiSafepay transaction as shipped
      *
      * @param array $params
-     * @return void
+     *
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws \Psr\Http\Client\ClientExceptionInterface
      */
     public function hookActionOrderStatusPostUpdate(array $params): void
     {

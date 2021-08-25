@@ -109,7 +109,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
     public function getFrontEndPaymentOptionName(): string
     {
-        return (Configuration::get('MULTISAFEPAY_TITLE_'.$this->getUniqueName()) ? Configuration::get('MULTISAFEPAY_TITLE_'.$this->getUniqueName()) : $this->getPaymentOptionName());
+        return (Configuration::get('MULTISAFEPAY_TITLE_'.$this->getUniqueName()) ?: $this->getPaymentOptionName());
     }
 
     public function getPaymentOptionLogo(): string
@@ -133,7 +133,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
     public function getPaymentOptionDescription(): string
     {
-        return (Configuration::get('MULTISAFEPAY_DESCRIPTION_'.$this->getUniqueName()) ? Configuration::get('MULTISAFEPAY_DESCRIPTION_'.$this->getUniqueName()) : '');
+        return (Configuration::get('MULTISAFEPAY_DESCRIPTION_'.$this->getUniqueName()) ?: '');
     }
 
     public function getInputFields(): array

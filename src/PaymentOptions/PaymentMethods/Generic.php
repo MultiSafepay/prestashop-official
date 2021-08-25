@@ -36,7 +36,7 @@ class Generic extends BasePaymentOption
 
     public function getPaymentOptionGatewayCode(): string
     {
-        return (Configuration::get('MULTISAFEPAY_GATEWAY_CODE_GENERIC') ? Configuration::get('MULTISAFEPAY_GATEWAY_CODE_GENERIC') : '');
+        return (Configuration::get('MULTISAFEPAY_GATEWAY_CODE_'.$this->getUniqueName()) ?: '');
     }
 
     public function getTransactionType(): string
@@ -46,7 +46,7 @@ class Generic extends BasePaymentOption
 
     public function getPaymentOptionLogo(): string
     {
-        return (Configuration::get('MULTISAFEPAY_GATEWAY_IMAGE_GENERIC') ? Configuration::get('MULTISAFEPAY_GATEWAY_IMAGE_GENERIC') : '');
+        return (Configuration::get('MULTISAFEPAY_GATEWAY_CODE_'.$this->getUniqueName()) ?: '');
     }
 
     public function getUniqueName(): string

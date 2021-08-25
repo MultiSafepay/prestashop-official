@@ -26,9 +26,8 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\Base;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 
 /**
- * This class returns the SDK object.
- *
- * @since      4.0.0
+ * Class BaseGatewayInfo
+ * @package MultiSafepay\PrestaShop\PaymentOptions\Base
  */
 class BaseGatewayInfo implements GatewayInfoInterface
 {

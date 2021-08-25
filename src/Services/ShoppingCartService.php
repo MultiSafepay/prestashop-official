@@ -37,8 +37,8 @@ use Tools;
 use PaymentModule;
 
 /**
- *
- * @since      4.0.0
+ * Class ShoppingCartService
+ * @package MultiSafepay\PrestaShop\Services
  */
 class ShoppingCartService
 {
