@@ -8,6 +8,7 @@ use Multisafepay;
 use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use Tab;
+use PaymentModule;
 
 /**
  * Class Installer
@@ -75,9 +76,6 @@ class Installer
             foreach ($paymentOption->getGatewaySettings() as $settingKey => $settings) {
                 Configuration::updateGlobalValue($settingKey, $settings['default']);
             }
-        }
-        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
-            LoggerHelper::logInfo('Default values has been set in database');
         }
     }
 }
