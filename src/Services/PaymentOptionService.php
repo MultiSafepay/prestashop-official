@@ -139,12 +139,12 @@ class PaymentOptionService
 
         $paymentMethodSettings = $paymentMethod->getGatewaySettings();
 
-        $paymentMethodStatus         = (bool) $paymentMethodSettings['MULTISAFEPAY_GATEWAY_' . $paymentMethod->getUniqueName()];
-        $paymentMethodMinAmount      = (float) $paymentMethodSettings['MULTISAFEPAY_MIN_AMOUNT_' . $paymentMethod->getUniqueName()];
-        $paymentMethodMaxAmount      = (float) $paymentMethodSettings['MULTISAFEPAY_MAX_AMOUNT_' . $paymentMethod->getUniqueName()];
-        $paymentMethodCountries      = $paymentMethodSettings['MULTISAFEPAY_COUNTRIES_' . $paymentMethod->getUniqueName()];
-        $paymentMethodCurrencies     = $paymentMethodSettings['MULTISAFEPAY_CURRENCIES_' . $paymentMethod->getUniqueName()];
-        $paymentMethodCustomerGroups = $paymentMethodSettings['MULTISAFEPAY_CUSTOMER_GROUPS_' . $paymentMethod->getUniqueName()];
+        $paymentMethodStatus         = (bool) $paymentMethodSettings['MULTISAFEPAY_GATEWAY_' . $paymentMethod->getUniqueName()]['value'];
+        $paymentMethodMinAmount      = (float) $paymentMethodSettings['MULTISAFEPAY_MIN_AMOUNT_' . $paymentMethod->getUniqueName()]['value'];
+        $paymentMethodMaxAmount      = (float) $paymentMethodSettings['MULTISAFEPAY_MAX_AMOUNT_' . $paymentMethod->getUniqueName()]['value'];
+        $paymentMethodCountries      = $paymentMethodSettings['MULTISAFEPAY_COUNTRIES_' . $paymentMethod->getUniqueName()]['value'];
+        $paymentMethodCurrencies     = $paymentMethodSettings['MULTISAFEPAY_CURRENCIES_' . $paymentMethod->getUniqueName()]['value'];
+        $paymentMethodCustomerGroups = $paymentMethodSettings['MULTISAFEPAY_CUSTOMER_GROUPS_' . $paymentMethod->getUniqueName()]['value'];
 
         if (!$paymentMethodStatus) {
             return true;
