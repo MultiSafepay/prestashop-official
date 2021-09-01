@@ -48,8 +48,7 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
             LoggerHelper::logWarning(
                 'Warning: It seems postProcess method of MultiSafepay is being called out of context.'
             );
-            Tools::redirect('index.php?controller=order&step=1');
-
+            Tools::redirect('/index.php?controller=order&step=1');
             return;
         }
 
@@ -61,8 +60,7 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
             LoggerHelper::logWarning(
                 'The customer address changed just before the end of the checkout process method and now this method is not available any more.'
             );
-            Tools::redirect('index.php?controller=order&step=1');
-
+            Tools::redirect('/index.php?controller=order&step=1');
             return;
         }
 
