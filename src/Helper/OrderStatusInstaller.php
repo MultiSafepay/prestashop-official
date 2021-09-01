@@ -124,15 +124,6 @@ class OrderStatusInstaller
                 'paid'      => false,
                 'logable'   => false
             ],
-            'awaiting_bank_transfer_payment' => [
-                'name' => 'awaiting bank transfer payment',
-                'send_mail' => false,
-                'color' => '#4169E1',
-                'invoice' => false,
-                'template' => '',
-                'paid' => false,
-                'logable' => false
-            ],
         ];
     }
 }

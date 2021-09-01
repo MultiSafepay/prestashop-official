@@ -41,7 +41,6 @@ class OrderStatusInstallerTest extends TestCase
         $this->assertArrayHasKey('uncleared', $output);
         $this->assertArrayHasKey('partial_refunded', $output);
         $this->assertArrayHasKey('chargeback', $output);
-        $this->assertArrayHasKey('awaiting_bank_transfer_payment', $output);
         foreach ($output as $value) {
             $this->assertArrayHasKey('name', $value);
             $this->assertIsString($value['name']);
