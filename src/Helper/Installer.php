@@ -4,7 +4,9 @@ namespace MultiSafepay\PrestaShop\Helper;
 
 use Configuration;
 use Language;
+use Multisafepay;
 use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
+use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use Tab;
 
 /**
@@ -12,6 +14,20 @@ use Tab;
  */
 class Installer
 {
+    /**
+     * @var Multisafepay
+     */
+    private $module;
+
+    /**
+     * Uninstaller constructor.
+     *
+     * @param Multisafepay $module
+     */
+    public function __construct(Multisafepay $module)
+    {
+        $this->module = $module;
+    }
 
     /**
      * Call this function when installing the MultiSafepay module
@@ -31,13 +47,13 @@ class Installer
     {
         $idParent = Tab::getIdFromClassName('IMPROVE');
 
-        $tab = new Tab();
+        $tab             = new Tab();
         $tab->class_name = 'AdminMultiSafepay';
-        $tab->id_parent = $idParent;
-        $tab->module = 'MultiSafepay';
-        $tab->active = true;
-        $tab->icon = 'multisafepay icon-multisafepay';
-        $languages = Language::getLanguages(true);
+        $tab->id_parent  = $idParent;
+        $tab->module     = 'MultiSafepay';
+        $tab->active     = true;
+        $tab->icon       = 'multisafepay icon-multisafepay';
+        $languages       = Language::getLanguages(true);
         foreach ($languages as $language) {
             $tab->name[$language['id_lang']] = 'MultiSafepay';
         }
@@ -52,6 +68,13 @@ class Installer
     {
         foreach (SettingsBuilder::getConfigFieldsAndDefaultValues() as $configField => $configData) {
             Configuration::updateGlobalValue($configField, $configData['default']);
+        }
+
+        $paymentOptionService = new PaymentOptionService($this->module);
+        foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
+            foreach ($paymentOption->getGatewaySettings() as $settingKey => $settings) {
+                Configuration::updateGlobalValue($settingKey, $settings['default']);
+            }
         }
         if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
             LoggerHelper::logInfo('Default values has been set in database');

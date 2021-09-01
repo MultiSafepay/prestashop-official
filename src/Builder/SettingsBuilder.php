@@ -89,7 +89,7 @@ class SettingsBuilder
         $helper->token         = Tools::getAdminTokenLite('AdminModules');
 
         $helper->tpl_vars = [
-            'fields_value' => $this::getConfigFormValues(),
+            'fields_value' => $this->getConfigFormValues(),
             'languages'    => $context->controller->getLanguages(),
             'id_language'  => $context->language->id
         ];
@@ -321,7 +321,7 @@ class SettingsBuilder
      */
     public function postProcess(): void
     {
-        $formValues = $this::getConfigFormValues();
+        $formValues = $this->getConfigFormValues();
 
         foreach ($formValues as $key => $value) {
             if (is_array($value)) {
@@ -416,8 +416,8 @@ class SettingsBuilder
         $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
         /** @var BasePaymentOptionInterface $paymentOption */
         foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
-            foreach ($paymentOption->getGatewaySettings() as $settingKey => $settingValue) {
-                $configFormValues[$settingKey] = $settingValue;
+            foreach ($paymentOption->getGatewaySettings() as $settingKey => $settings) {
+                $configFormValues[$settingKey] = $settings['value'];
             }
         }
 

@@ -91,7 +91,7 @@ class Multisafepay extends PaymentModule
         $orderStatusInstaller = new OrderStatusInstaller();
         $orderStatusInstaller->registerMultiSafepayOrderStatuses();
 
-        (new Installer())->install();
+        (new Installer($this))->install();
 
         return $install &&
             $this->registerHook('header') &&

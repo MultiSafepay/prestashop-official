@@ -58,9 +58,24 @@ class Generic extends BasePaymentOption
     {
         $options = parent::getGatewaySettings();
 
-        $options['MULTISAFEPAY_GATEWAY_CODE_'.$this->getUniqueName()] = Configuration::get('MULTISAFEPAY_GATEWAY_CODE_'.$this->getUniqueName());
-        $options['MULTISAFEPAY_GATEWAY_IMAGE_'.$this->getUniqueName()] = Configuration::get('MULTISAFEPAY_GATEWAY_IMAGE_'.$this->getUniqueName());
+        $options['MULTISAFEPAY_GATEWAY_CODE_'.$this->getUniqueName()] = [
+            'type' => 'text',
+            'name' => $this->module->l('Gateway code'),
+            'value' => Configuration::get('MULTISAFEPAY_GATEWAY_CODE_'.$this->getUniqueName()),
+            'default' => '',
+            'order' => 31,
+        ];
+        $options['MULTISAFEPAY_GATEWAY_IMAGE_'.$this->getUniqueName()] = [
+            'type' => 'text',
+            'name' => $this->module->l('Gateway icon'),
+            'value' => Configuration::get('MULTISAFEPAY_GATEWAY_IMAGE_'.$this->getUniqueName()),
+            'default' => '',
+            'order' => 32,
+        ];
 
+        uasort($options, function ($a, $b) {
+            return $a['order'] - $b['order'];
+        });
         return $options;
     }
 }
