@@ -88,9 +88,6 @@ class Multisafepay extends PaymentModule
 
         $install = parent::install();
 
-        $orderStatusInstaller = new OrderStatusInstaller();
-        $orderStatusInstaller->registerMultiSafepayOrderStatuses();
-
         (new Installer($this))->install();
 
         return $install &&

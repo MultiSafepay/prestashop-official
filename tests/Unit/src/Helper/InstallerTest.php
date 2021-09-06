@@ -24,18 +24,27 @@
 
 namespace MultiSafepay\Tests\Helper;
 
-use MultiSafepay\PrestaShop\Helper\OrderStatusInstaller;
-use PHPUnit\Framework\TestCase;
+use MultiSafepay\PrestaShop\Helper\Installer;
+use MultiSafepay\Tests\BaseMultiSafepayTest;
 
-class OrderStatusInstallerTest extends TestCase
+class InstallerTest extends BaseMultiSafepayTest
 {
 
+    public $installer;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        $multisafepay = $this->container->get('multisafepay');
+        $this->installer = new Installer($multisafepay);
+    }
+
     /**
-     * @covers \MultiSafepay\PrestaShop\Helper\OrderStatusInstaller::getMultiSafepayOrderStatuses
+     * @covers \MultiSafepay\PrestaShop\Helper\Installer::getMultiSafepayOrderStatuses
      */
     public function testGetMultiSafepayOrderStatuses()
     {
-        $output = (new OrderStatusInstaller())->getMultiSafepayOrderStatuses();
+        $output = $this->installer->getMultiSafepayOrderStatuses();
         $this->assertIsArray($output);
         $this->assertArrayHasKey('initialized', $output);
         $this->assertArrayHasKey('uncleared', $output);
