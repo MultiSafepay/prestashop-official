@@ -233,7 +233,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             ],
             'MULTISAFEPAY_CURRENCIES_'.$this->getUniqueName() => [
                 'type' => 'multi-select',
-                'name' => $this->module->l('Select currenies'),
+                'name' => $this->module->l('Select currencies'),
                 'value' => $this->settingToArray(Configuration::get('MULTISAFEPAY_CURRENCIES_'.$this->getUniqueName())),
                 'options' => Currency::getCurrencies(false, true, true),
                 'helperText' => $this->module->l('Leave blank to support all currencies'),
