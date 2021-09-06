@@ -100,6 +100,22 @@ class MultiSafepayTest extends BaseMultiSafepayTest
     {
         $output = $this->multiSafepayPaymentMethod->inputs;
         $this->assertIsArray($output);
-        $this->assertArrayHasKey('hidden', $output);
+        $this->assertIsArray($output[0]);
+        $this->assertArrayHasKey('type', $output[0]);
+        $this->assertEquals('hidden', $output[0]['type']);
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getInputFields
+     */
+    public function testGetHiddenGatewayField()
+    {
+        $output = $this->multiSafepayPaymentMethod->getInputFields();
+        self::assertIsArray($output);
+        self::assertContains([
+            'type' => 'hidden',
+            'name'  => 'gateway',
+            'value' => '',
+        ], $output);
     }
 }

@@ -64,12 +64,11 @@ class Ideal extends BasePaymentOption
         /** @var IssuerService $issuerService */
         $issuerService        = $this->module->get('multisafepay.issuer_service');
         return [
-            'select' => [
-                [
-                    'name'        => 'issuer_id',
-                    'placeholder' => 'Select bank',
-                    'options'     => $issuerService->getIssuers($this->getPaymentOptionGatewayCode()),
-                ],
+            [
+                'type'        => 'select',
+                'name'        => 'issuer_id',
+                'placeholder' => $this->module->l('Select bank'),
+                'options'     => $issuerService->getIssuers($this->getPaymentOptionGatewayCode()),
             ],
         ];
     }

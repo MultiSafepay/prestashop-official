@@ -70,24 +70,23 @@ class Dirdeb extends BasePaymentOption
     public function getDirectTransactionInputFields(): array
     {
         return [
-            'text' => [
-                [
-                    'name'          => 'account_holder_name',
-                    'placeholder'   => $this->module->l('Account Holder Name'),
-                    'value'         => ''
-                ],
-                [
-                    'name'          => 'bankaccount',
-                    'placeholder'   => $this->module->l('Bank Account'),
-                    'value'         => ''
-                ]
+            [
+                'type'          => 'text',
+                'name'          => 'account_holder_name',
+                'placeholder'   => $this->module->l('Account Holder Name'),
+                'value'         => ''
             ],
-            'hidden' => [
-                [
-                    'name'          => 'emandate',
-                    'placeholder'   => '',
-                    'value'         => '1'
-                ]
+            [
+                'type'          => 'text',
+                'name'          => 'bankaccount',
+                'placeholder'   => $this->module->l('Bank Account'),
+                'value'         => ''
+            ],
+            [
+                'type'          => 'hidden',
+                'name'          => 'emandate',
+                'placeholder'   => '',
+                'value'         => '1'
             ]
         ];
     }

@@ -51,7 +51,12 @@ class IdealTest extends BaseMultiSafepayTest
             $mockIssuerService
         );
 
-        $this->idealPaymentOption = new Ideal($mockMultisafepay);
+        $mockIdeal = $this->getMockBuilder(Ideal::class)->setConstructorArgs([$mockMultisafepay])->onlyMethods(['isDirect'])->getMock();
+        $mockIdeal->method('isDirect')->willReturn(
+            false
+        );
+
+        $this->idealPaymentOption = $mockIdeal;
     }
 
     /**
@@ -105,16 +110,28 @@ class IdealTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getInputFields
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getDirectTransactionInputFields
      */
     public function testGetInputFields()
     {
         $output = $this->idealPaymentOption->getDirectTransactionInputFields();
         $this->assertIsArray($output);
-        $this->assertArrayHasKey('select', $output);
+        $this->assertCount(1, $output);
+        $this->assertArrayHasKey('type', $output[0]);
+        $this->assertEquals('select', $output[0]['type']);
+    }
 
+    /**
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getInputFields
+     */
+    public function testGetHiddenGatewayField()
+    {
         $output = $this->idealPaymentOption->getInputFields();
-        $this->assertIsArray($output);
-        $this->assertArrayHasKey('hidden', $output);
+        self::assertIsArray($output);
+        self::assertContains([
+            'type' => 'hidden',
+            'name'  => 'gateway',
+            'value' => 'IDEAL',
+        ], $output);
     }
 }

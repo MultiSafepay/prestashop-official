@@ -101,6 +101,8 @@ class GenericTest extends BaseMultiSafepayTest
     {
         $output = $this->genericPaymentMethod->inputs;
         $this->assertIsArray($output);
-        $this->assertArrayHasKey('hidden', $output);
+        $this->assertIsArray($output[0]);
+        $this->assertArrayHasKey('type', $output[0]);
+        $this->assertEquals('hidden', $output[0]['type']);
     }
 }
