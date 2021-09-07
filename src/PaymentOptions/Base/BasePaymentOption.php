@@ -23,12 +23,13 @@
 
 namespace MultiSafepay\PrestaShop\PaymentOptions\Base;
 
+use Carrier;
 use Configuration;
 use Country;
 use Currency;
 use Group;
 use Multisafepay;
-use Context as PrestaShopContext;
+use Context;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use PaymentModule;
 
@@ -106,7 +107,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         $this->callToActionText = $this->getFrontEndPaymentOptionName();
         $this->icon             = $this->getPaymentOptionLogo();
         $this->paymentForm      = $this->getPaymentOptionForm();
-        $this->action           = PrestaShopContext::getContext()->link->getModuleLink('multisafepay', 'payment', [], true);
+        $this->action           = Context::getContext()->link->getModuleLink('multisafepay', 'payment', [], true);
         $this->sortOrderPosition = (int) Configuration::get('MULTISAFEPAY_SORT_ORDER_'.$this->getUniqueName());
     }
 
@@ -249,6 +250,15 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'default' => '',
                 'order' => 80,
             ],
+            'MULTISAFEPAY_CARRIERS_'.$this->getUniqueName() => [
+                'type' => 'multi-select',
+                'name' => $this->module->l('Select carriers'),
+                'value' => $this->settingToArray(Configuration::get('MULTISAFEPAY_CARRIERS_'.$this->getUniqueName())),
+                'options' => $this->getCarrierForSettings(),
+                'helperText' => $this->module->l('Leave blank to support all carriers'),
+                'default' => '',
+                'order' => 80,
+            ],
             'MULTISAFEPAY_SORT_ORDER_'.$this->getUniqueName() => [
                 'type' => 'text',
                 'name' => $this->module->l('Sort order'),
@@ -293,7 +303,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     protected function getCountriesForSettings(): array
     {
         $returnArray = [];
-        $countries = Country::getCountries((int)PrestaShopContext::getContext()->language->id, true);
+        $countries = Country::getCountries((int)Context::getContext()->language->id, true);
         if (empty($countries)) {
             return [];
         }
@@ -310,10 +320,30 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     /**
      * @return array
      */
+    protected function getCarrierForSettings(): array
+    {
+        $returnArray = [];
+        $carriers = Carrier::getCarriers(Context::getContext()->language->id, false, false, false, null, Carrier::ALL_CARRIERS);
+        if (empty($carriers)) {
+            return [];
+        }
+
+        foreach ($carriers as $carrier) {
+            $returnArray[] = [
+                'id'   => $carrier['id_carrier'],
+                'name' => $carrier['name'],
+            ];
+        }
+        return $returnArray;
+    }
+
+    /**
+     * @return array
+     */
     protected function getGroupsForSettings(): array
     {
         $returnArray = [];
-        $groups = Group::getGroups((int)PrestaShopContext::getContext()->language->id);
+        $groups = Group::getGroups((int)Context::getContext()->language->id);
         if (empty($groups)) {
             return [];
         }

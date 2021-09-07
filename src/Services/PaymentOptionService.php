@@ -136,6 +136,9 @@ class PaymentOptionService
         $orderCountryId         = (new Address($cart->id_address_invoice))->id_country;
         $orderCurrencyId        = $cart->id_currency;
         $orderCustomerGroups    = (new Customer($cart->id_customer))->id_default_group;
+        $orderCarrierId         = $cart->id_carrier;
+        $isVirtual              = $cart->isVirtualCart();
+        $isCartSplitted         = ($cart->getNbOfPackages() > 1) ? true : false;
 
         $paymentMethodSettings = $paymentMethod->getGatewaySettings();
 
@@ -145,6 +148,7 @@ class PaymentOptionService
         $paymentMethodCountries      = $paymentMethodSettings['MULTISAFEPAY_COUNTRIES_' . $paymentMethod->getUniqueName()]['value'];
         $paymentMethodCurrencies     = $paymentMethodSettings['MULTISAFEPAY_CURRENCIES_' . $paymentMethod->getUniqueName()]['value'];
         $paymentMethodCustomerGroups = $paymentMethodSettings['MULTISAFEPAY_CUSTOMER_GROUPS_' . $paymentMethod->getUniqueName()]['value'];
+        $paymentMethodCarriers       = $paymentMethodSettings['MULTISAFEPAY_CARRIERS_' . $paymentMethod->getUniqueName()]['value'];
 
         if (!$paymentMethodStatus) {
             return true;
@@ -167,6 +171,10 @@ class PaymentOptionService
         }
 
         if (!empty($paymentMethodCustomerGroups) && !in_array($orderCustomerGroups, $paymentMethodCustomerGroups, true)) {
+            return true;
+        }
+
+        if (!$isCartSplitted && !$isVirtual && !empty($paymentMethodCarriers) && !in_array($orderCarrierId, $paymentMethodCarriers, true)) {
             return true;
         }
 
