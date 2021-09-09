@@ -25,6 +25,7 @@
 namespace MultiSafepay\Tests\Services;
 
 use Cart;
+use Carrier;
 use MultiSafepay\PrestaShop\Services\ShoppingCartService;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
 use Order;
@@ -240,12 +241,15 @@ class ShoppingCartServiceTest extends BaseMultiSafepayTest
         $totalWrapping = 0.0,
         $giftProducts = []
     ): array {
+        $mockCarrier = $this->getMockBuilder(Carrier::class)->getMock();
+        $mockCarrier->name = 'Shipping';
         return [
             'gift_products'          => $giftProducts,
             'total_discounts'        => $totalDiscounts,
             'total_wrapping'         => $totalWrapping,
             'total_shipping'         => $totalShipping,
             'total_shipping_tax_exc' => $totalShippingTaxExc,
+            'carrier'                => $mockCarrier,
         ];
     }
 
