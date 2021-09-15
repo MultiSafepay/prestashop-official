@@ -1,4 +1,6 @@
+<?php declare(strict_types=1);
 /**
+ *
  * DISCLAIMER
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
@@ -19,29 +21,12 @@
  *
  */
 
-#multisafepay_payment_button a {
-    padding: 10px;
-    background-color: #FBFBFB;
-}
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
 
-#multisafepay_payment_button a:hover {
-    background-color: #f6f6f6;
-}
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
 
-#multisafepay_payment_button a:after {
-    display: block;
-    content: "\f054";
-    position: absolute;
-    right: 15px;
-    margin-top: -11px;
-    top: 50%;
-    font-family: "FontAwesome";
-    font-size: 25px;
-    height: 22px;
-    width: 14px;
-    color: #777777;
-}
-
-#checkout-payment-step .payment-options div div.payment-option label img {
-    height: 30px;
-}
+header('Location: ../');
+exit;

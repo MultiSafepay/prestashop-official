@@ -19,29 +19,8 @@
  *
  */
 
-#multisafepay_payment_button a {
-    padding: 10px;
-    background-color: #FBFBFB;
-}
-
-#multisafepay_payment_button a:hover {
-    background-color: #f6f6f6;
-}
-
-#multisafepay_payment_button a:after {
-    display: block;
-    content: "\f054";
-    position: absolute;
-    right: 15px;
-    margin-top: -11px;
-    top: 50%;
-    font-family: "FontAwesome";
-    font-size: 25px;
-    height: 22px;
-    width: 14px;
-    color: #777777;
-}
-
-#checkout-payment-step .payment-options div div.payment-option label img {
-    height: 30px;
-}
+$(document).ready(function () {
+    $("[id^='multisafepay-form-']").each(function () {
+        $(this).parent().closest("div").prev("div").find("label img").css('height', '30px');
+    });
+});
