@@ -122,6 +122,7 @@ class Multisafepay extends PaymentModule
 
         if (true === Tools::isSubmit('submitMultisafepayModule')) {
             $settingsBuilder->postProcess();
+            return $settingsBuilder->renderForm(true);
         }
 
         return $settingsBuilder->renderForm();

@@ -72,10 +72,11 @@ class SettingsBuilder
     }
 
     /**
+     * @param bool $success
      * @return string
      * @throws \PrestaShopException
      */
-    public function renderForm()
+    public function renderForm(bool $success = false)
     {
         $helper = new HelperForm();
 
@@ -94,7 +95,13 @@ class SettingsBuilder
             'id_language'  => $context->language->id
         ];
 
-        return $helper->generateForm($this->getConfigForm());
+        $configForm = $this->getConfigForm();
+
+        if ($success) {
+            $configForm[0]['form'] = ['success' => $this->module->l('Settings updated')] + $configForm[0]['form'];
+        }
+
+        return $helper->generateForm($configForm);
     }
 
     /**
