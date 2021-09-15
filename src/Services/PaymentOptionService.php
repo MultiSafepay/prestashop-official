@@ -24,9 +24,6 @@
 namespace MultiSafepay\PrestaShop\Services;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
-use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Dirdeb;
-use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic;
-use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay;
 use Multisafepay as MultiSafepayModule;
 use Cart;
@@ -34,6 +31,7 @@ use Address;
 use Customer;
 use Media;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use Symfony\Component\Finder\Finder;
 use PaymentModule; // This line is here to prevent this PHPStan error: Internal error: Class 'PaymentModuleCore' not found
 
 /**
@@ -42,12 +40,8 @@ use PaymentModule; // This line is here to prevent this PHPStan error: Internal 
  */
 class PaymentOptionService
 {
-    public const MULTISAFEPAY_PAYMENT_OPTIONS = [
-        Dirdeb::class,
-        Ideal::class,
-        MultiSafepay::class,
-        Generic::class,
-    ];
+    public const PAYMENT_OPTIONS_NAMESPACE = "MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\\";
+    public const PAYMENT_OPTIONS_DIR = _PS_ROOT_DIR_.'/modules/multisafepay/src/PaymentOptions/PaymentMethods';
 
     /**
      * @var MultiSafepayModule
@@ -70,8 +64,8 @@ class PaymentOptionService
     public function getMultiSafepayPaymentOptions(): array
     {
         $paymentOptions = [];
-        foreach (self::MULTISAFEPAY_PAYMENT_OPTIONS as $paymentOption) {
-            $paymentOptions[] = new $paymentOption($this->module);
+        foreach ($this->getPaymentOptionClassNamesFromDirectory() as $className) {
+            $paymentOptions[] = new $className($this->module);
         }
         usort($paymentOptions, function ($a, $b) {
             return strcmp($a->sortOrderPosition, $b->sortOrderPosition);
@@ -86,9 +80,9 @@ class PaymentOptionService
      */
     public function getMultiSafepayPaymentOption(string $gatewayCode): BasePaymentOption
     {
-        foreach (self::MULTISAFEPAY_PAYMENT_OPTIONS as $paymentOptionClassname) {
-            $paymentOption = new $paymentOptionClassname($this->module);
-            if ($paymentOption->getPaymentOptionGatewayCode() == $gatewayCode) {
+        foreach ($this->getPaymentOptionClassNamesFromDirectory() as $className) {
+            $paymentOption = new $className($this->module);
+            if ($paymentOption->getPaymentOptionGatewayCode() === $gatewayCode) {
                 return $paymentOption;
             }
         }
@@ -179,5 +173,19 @@ class PaymentOptionService
         }
 
         return false;
+    }
+
+    /**
+     * @return array
+     */
+    private function getPaymentOptionClassNamesFromDirectory(): array
+    {
+        $classNames = [];
+        $finder = new Finder();
+        $files = $finder->files()->notName('index.php')->name('*.php')->in(self::PAYMENT_OPTIONS_DIR);
+        foreach ($files as $file) {
+            $classNames[] = str_replace(".php", "", self::PAYMENT_OPTIONS_NAMESPACE.$file->getFilename());
+        }
+        return $classNames;
     }
 }
