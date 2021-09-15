@@ -20,10 +20,10 @@ jobs:
         run:  docker-compose up -d
       - name: Install Composer dependencies PrestaShop 1.7
         run:  docker exec -e XDEBUG_MODE=off --workdir /var/www/html/modules/multisafepay prestashop-1.7 composer install
-      - name: Sleep for 30 seconds to let PrestaShop the script finish the installation process
+      - name: Sleep for 60 seconds to let PrestaShop installation script finish the process
         uses: kibertoad/wait-action@master
         with:
-          time: '30s'
+          time: '60s'
       - name: Run PHPUnit PrestaShop 1.7
         run:  docker exec -e XDEBUG_MODE=coverage -e MULTISAFEPAY_API_KEY=${{ secrets.MULTISAFEPAY_TEST_API_KEY }} --workdir /var/www/html/modules/multisafepay prestashop-1.7 composer run-script phpunit
       - name: Send coverage.xml to codecov
