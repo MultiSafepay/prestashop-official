@@ -137,7 +137,7 @@ class OrderService
 
         $gatewayInfoVars = Tools::getAllValues();
         if ($gatewayInfoVars && $paymentOption->isDirect()) {
-            $orderRequest->addGatewayInfo($paymentOption->getGatewayInfo($gatewayInfoVars));
+            $orderRequest->addGatewayInfo($paymentOption->getGatewayInfo($firstOrder, $gatewayInfoVars));
         }
 
         return $orderRequest;

@@ -26,31 +26,32 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BaseGatewayInfo;
-use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Account;
-use MultiSafepay\ValueObject\IbanNumber;
+use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Meta;
 use MultiSafepay\Exception\InvalidArgumentException;
 use Tools;
 use Order;
 use PaymentModule;
+use Address;
+use Context;
 
-class Dirdeb extends BasePaymentOption
+class PayAfterDelivery extends BasePaymentOption
 {
     public $hasConfigurableDirect = true;
 
     public function getPaymentOptionName(): string
     {
-        return 'SEPA Direct Debit';
+        return 'Pay After Delivery';
     }
 
     public function getTransactionType(): string
     {
         $checkoutVars = Tools::getAllValues();
-        return (empty($checkoutVars['bankaccount']) || empty($checkoutVars['account_holder_name'])) ? 'redirect' : 'direct';
+        return (empty($checkoutVars['bankaccount']) || empty($checkoutVars['birthday'])) ? 'redirect' : 'direct';
     }
 
     public function getPaymentOptionGatewayCode(): string
     {
-        return 'DIRDEB';
+        return 'PAYAFTER';
     }
 
     public function getPaymentOptionDescription(): string
@@ -60,7 +61,7 @@ class Dirdeb extends BasePaymentOption
 
     public function getPaymentOptionLogo(): string
     {
-        return 'dirdeb.png';
+        return 'payafter.png';
     }
 
     public function getPaymentOptionForm(): bool
@@ -72,42 +73,32 @@ class Dirdeb extends BasePaymentOption
     {
         return [
             [
-                'type'          => 'text',
-                'name'          => 'account_holder_name',
-                'placeholder'   => $this->module->l('Account Holder Name'),
-                'value'         => ''
+                'type'          => 'date',
+                'name'          => 'birthday',
+                'placeholder'   => $this->module->l('Birthday'),
+                'value'         => Context::getContext()->customer->birthday ?? '',
             ],
             [
                 'type'          => 'text',
                 'name'          => 'bankaccount',
                 'placeholder'   => $this->module->l('Bank Account'),
                 'value'         => ''
-            ],
-            [
-                'type'          => 'hidden',
-                'name'          => 'emandate',
-                'placeholder'   => '',
-                'value'         => '1'
             ]
         ];
     }
 
     public function getGatewayInfo(Order $order, array $data = []): GatewayInfoInterface
     {
-        if (empty($data['bankaccount']) && empty($data['account_holder_name'])) {
+        if (empty($data['bankaccount']) && empty($data['birthday'])) {
             return new BaseGatewayInfo();
         }
 
-        try {
-            $ibanNumber = new IbanNumber($data['bankaccount']);
-        } catch (InvalidArgumentException $invalidArgumentException) {
-            return new BaseGatewayInfo();
-        }
+        $gatewayInfo = new Meta();
 
-        $gatewayInfo = new Account();
-        $gatewayInfo->addAccountId($ibanNumber);
-        $gatewayInfo->addAccountHolderIban($ibanNumber);
-        $gatewayInfo->addAccountHolderName($data['account_holder_name']);
+        $gatewayInfo->addEmailAddressAsString($order->getCustomer()->email);
+        $gatewayInfo->addPhoneAsString((new Address($order->id_address_invoice))->phone);
+        $gatewayInfo->addBankAccountAsString($data['bankaccount']);
+        $gatewayInfo->addBirthdayAsString($data['birthday']);
         return $gatewayInfo;
     }
 }

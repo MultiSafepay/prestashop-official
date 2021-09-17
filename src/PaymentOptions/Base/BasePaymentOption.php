@@ -25,12 +25,13 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\Base;
 
 use Carrier;
 use Configuration;
+use Context;
 use Country;
 use Currency;
 use Group;
-use Multisafepay;
-use Context;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
+use Multisafepay;
+use Order;
 use PaymentModule;
 
 abstract class BasePaymentOption implements BasePaymentOptionInterface
@@ -363,11 +364,12 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     }
 
     /**
+     * @param Order $order
      * @param array $data
      *
      * @return GatewayInfoInterface
      */
-    public function getGatewayInfo(array $data = []): GatewayInfoInterface
+    public function getGatewayInfo(Order $order, array $data = []): GatewayInfoInterface
     {
         return new BaseGatewayInfo();
     }

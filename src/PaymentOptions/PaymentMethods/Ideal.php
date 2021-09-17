@@ -27,6 +27,7 @@ use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\IssuerService;
 use Tools;
+use Order;
 use PaymentModule;
 
 class Ideal extends BasePaymentOption
@@ -73,7 +74,7 @@ class Ideal extends BasePaymentOption
         ];
     }
 
-    public function getGatewayInfo(array $data = []): GatewayInfoInterface
+    public function getGatewayInfo(Order $order, array $data = []): GatewayInfoInterface
     {
         $gatewayInfo = new \MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Ideal();
         $gatewayInfo->addIssuerId($data['issuer_id']);

@@ -13,7 +13,7 @@
         {if $inputField.type == 'date'}
             <div class="form-group row">
                 <div class="col-md-12">
-                    <input type="text" name="{$inputField.name}" placeholder="{$inputField.placeholder}" value="{$inputField.value}" class="form-control" required pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}"/>
+                    <input type="date" name="{$inputField.name}" placeholder="{$inputField.placeholder}" value="{$inputField.value}" class="form-control" required pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}"/>
                 </div>
             </div>
         {/if}
