@@ -111,8 +111,8 @@ class MultiSafepayTest extends BaseMultiSafepayTest
     public function testGetHiddenGatewayField()
     {
         $output = $this->multiSafepayPaymentMethod->getInputFields();
-        self::assertIsArray($output);
-        self::assertContains([
+        $this->assertIsArray($output);
+        $this->assertContains([
             'type' => 'hidden',
             'name'  => 'gateway',
             'value' => '',

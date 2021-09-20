@@ -149,11 +149,6 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'name'  => 'gateway',
                 'value' => $this->getPaymentOptionGatewayCode(),
             ],
-            [
-                'type' => 'hidden',
-                'name'  => 'type',
-                'value' => $this->getTransactionType(),
-            ],
         ];
 
         if ($this->isDirect()) {

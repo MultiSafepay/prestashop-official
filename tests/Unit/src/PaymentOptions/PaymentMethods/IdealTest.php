@@ -127,8 +127,8 @@ class IdealTest extends BaseMultiSafepayTest
     public function testGetHiddenGatewayField()
     {
         $output = $this->idealPaymentOption->getInputFields();
-        self::assertIsArray($output);
-        self::assertContains([
+        $this->assertIsArray($output);
+        $this->assertContains([
             'type' => 'hidden',
             'name'  => 'gateway',
             'value' => 'IDEAL',
