@@ -251,7 +251,7 @@ class ShoppingCartService
         $shippingTaxRate  = $cartSummary['total_shipping'] > 0 ? ($totalShippingTax * 100) / ($cartSummary['total_shipping'] - $totalShippingTax) : 0;
 
         return $shippingItem
-            ->addName($cartSummary['carrier']->name)
+            ->addName(($cartSummary['carrier']->name ?? $this->module->l('Shipping')))
             ->addQuantity(1)
             ->addUnitPrice(
                 MoneyHelper::createMoney((float)$cartSummary['total_shipping_tax_exc'], $currencyIsoCode)
