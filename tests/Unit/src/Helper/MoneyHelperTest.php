@@ -36,6 +36,6 @@ class MoneyHelperTest extends TestCase
     public function testCreateMoneyReturnInstanceOfMoney()
     {
         $output = MoneyHelper::createMoney(525);
-        $this->assertInstanceOf(Money::class, $output);
+        self::assertInstanceOf(Money::class, $output);
     }
 }

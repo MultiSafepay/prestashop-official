@@ -52,6 +52,6 @@ class SdkServiceTest extends BaseMultiSafepayTest
     public function testGetSdk()
     {
         $output = $this->sdkService->getSdk();
-        $this->assertInstanceOf(Sdk::class, $output);
+        self::assertInstanceOf(Sdk::class, $output);
     }
 }

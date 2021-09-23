@@ -60,8 +60,8 @@ class GenericTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionDescription()
     {
         $output = $this->genericPaymentMethod->description;
-        $this->assertEquals('', $output);
-        $this->assertIsString($output);
+        self::assertEquals('', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -70,8 +70,8 @@ class GenericTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionGatewayCode()
     {
         $output = $this->genericPaymentMethod->gatewayCode;
-        $this->assertEquals('', $output);
-        $this->assertIsString($output);
+        self::assertEquals('', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -80,8 +80,8 @@ class GenericTest extends BaseMultiSafepayTest
     public function testGetTransactionType()
     {
         $output = $this->genericPaymentMethod->type;
-        $this->assertEquals('redirect', $output);
-        $this->assertIsString($output);
+        self::assertEquals('redirect', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -90,8 +90,8 @@ class GenericTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionLogo()
     {
         $output = $this->genericPaymentMethod->icon;
-        $this->assertEquals('', $output);
-        $this->assertIsString($output);
+        self::assertEquals('', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -100,9 +100,9 @@ class GenericTest extends BaseMultiSafepayTest
     public function testGetInputFields()
     {
         $output = $this->genericPaymentMethod->inputs;
-        $this->assertIsArray($output);
-        $this->assertIsArray($output[0]);
-        $this->assertArrayHasKey('type', $output[0]);
-        $this->assertEquals('hidden', $output[0]['type']);
+        self::assertIsArray($output);
+        self::assertIsArray($output[0]);
+        self::assertArrayHasKey('type', $output[0]);
+        self::assertEquals('hidden', $output[0]['type']);
     }
 }

@@ -65,8 +65,8 @@ class IdealTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionName()
     {
         $output = $this->idealPaymentOption->name;
-        $this->assertEquals('iDEAL', $output);
-        $this->assertIsString($output);
+        self::assertEquals('iDEAL', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -75,8 +75,8 @@ class IdealTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionDescription()
     {
         $output = $this->idealPaymentOption->description;
-        $this->assertEquals('', $output);
-        $this->assertIsString($output);
+        self::assertEquals('', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -85,8 +85,8 @@ class IdealTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionGatewayCode()
     {
         $output = $this->idealPaymentOption->gatewayCode;
-        $this->assertEquals('IDEAL', $output);
-        $this->assertIsString($output);
+        self::assertEquals('IDEAL', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -95,8 +95,8 @@ class IdealTest extends BaseMultiSafepayTest
     public function testGetTransactionType()
     {
         $output = $this->idealPaymentOption->type;
-        $this->assertEquals('redirect', $output);
-        $this->assertIsString($output);
+        self::assertEquals('redirect', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -105,8 +105,8 @@ class IdealTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionLogo()
     {
         $output = $this->idealPaymentOption->icon;
-        $this->assertEquals('ideal.png', $output);
-        $this->assertIsString($output);
+        self::assertEquals('ideal.png', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -115,10 +115,10 @@ class IdealTest extends BaseMultiSafepayTest
     public function testGetInputFields()
     {
         $output = $this->idealPaymentOption->getDirectTransactionInputFields();
-        $this->assertIsArray($output);
-        $this->assertCount(1, $output);
-        $this->assertArrayHasKey('type', $output[0]);
-        $this->assertEquals('select', $output[0]['type']);
+        self::assertIsArray($output);
+        self::assertCount(1, $output);
+        self::assertArrayHasKey('type', $output[0]);
+        self::assertEquals('select', $output[0]['type']);
     }
 
     /**
@@ -127,8 +127,8 @@ class IdealTest extends BaseMultiSafepayTest
     public function testGetHiddenGatewayField()
     {
         $output = $this->idealPaymentOption->getInputFields();
-        $this->assertIsArray($output);
-        $this->assertContains([
+        self::assertIsArray($output);
+        self::assertContains([
             'type' => 'hidden',
             'name'  => 'gateway',
             'value' => 'IDEAL',

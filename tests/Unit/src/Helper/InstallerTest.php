@@ -45,26 +45,26 @@ class InstallerTest extends BaseMultiSafepayTest
     public function testGetMultiSafepayOrderStatuses()
     {
         $output = $this->installer->getMultiSafepayOrderStatuses();
-        $this->assertIsArray($output);
-        $this->assertArrayHasKey('initialized', $output);
-        $this->assertArrayHasKey('uncleared', $output);
-        $this->assertArrayHasKey('partial_refunded', $output);
-        $this->assertArrayHasKey('chargeback', $output);
+        self::assertIsArray($output);
+        self::assertArrayHasKey('initialized', $output);
+        self::assertArrayHasKey('uncleared', $output);
+        self::assertArrayHasKey('partial_refunded', $output);
+        self::assertArrayHasKey('chargeback', $output);
         foreach ($output as $value) {
-            $this->assertArrayHasKey('name', $value);
-            $this->assertIsString($value['name']);
-            $this->assertArrayHasKey('send_mail', $value);
-            $this->assertIsBool($value['send_mail']);
-            $this->assertArrayHasKey('color', $value);
-            $this->assertIsString($value['color']);
-            $this->assertArrayHasKey('invoice', $value);
-            $this->assertIsBool($value['invoice']);
-            $this->assertArrayHasKey('template', $value);
-            $this->assertIsString($value['template']);
-            $this->assertArrayHasKey('paid', $value);
-            $this->assertIsBool($value['paid']);
-            $this->assertArrayHasKey('logable', $value);
-            $this->assertIsBool($value['logable']);
+            self::assertArrayHasKey('name', $value);
+            self::assertIsString($value['name']);
+            self::assertArrayHasKey('send_mail', $value);
+            self::assertIsBool($value['send_mail']);
+            self::assertArrayHasKey('color', $value);
+            self::assertIsString($value['color']);
+            self::assertArrayHasKey('invoice', $value);
+            self::assertIsBool($value['invoice']);
+            self::assertArrayHasKey('template', $value);
+            self::assertIsString($value['template']);
+            self::assertArrayHasKey('paid', $value);
+            self::assertIsBool($value['paid']);
+            self::assertArrayHasKey('logable', $value);
+            self::assertIsBool($value['logable']);
         }
     }
 }

@@ -49,8 +49,8 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionName()
     {
         $output = $this->payAfterDeliveryPaymentMethod->name;
-        $this->assertEquals('Pay After Delivery', $output);
-        $this->assertIsString($output);
+        self::assertEquals('Pay After Delivery', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -59,8 +59,8 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionDescription()
     {
         $output = $this->payAfterDeliveryPaymentMethod->description;
-        $this->assertEquals('', $output);
-        $this->assertIsString($output);
+        self::assertEquals('', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -69,8 +69,8 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionGatewayCode()
     {
         $output = $this->payAfterDeliveryPaymentMethod->gatewayCode;
-        $this->assertEquals('PAYAFTER', $output);
-        $this->assertIsString($output);
+        self::assertEquals('PAYAFTER', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -79,8 +79,8 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
     public function testGetTransactionType()
     {
         $output = $this->payAfterDeliveryPaymentMethod->type;
-        $this->assertEquals('redirect', $output);
-        $this->assertIsString($output);
+        self::assertEquals('redirect', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -89,8 +89,8 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionLogo()
     {
         $output = $this->payAfterDeliveryPaymentMethod->icon;
-        $this->assertEquals('payafter.png', $output);
-        $this->assertIsString($output);
+        self::assertEquals('payafter.png', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -99,14 +99,14 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
     public function testGetDirectTransactionInputFields()
     {
         $output = $this->payAfterDeliveryPaymentMethod->getDirectTransactionInputFields();
-        $this->assertIsArray($output);
-        $this->assertContains([
+        self::assertIsArray($output);
+        self::assertContains([
             'type' => 'date',
             'name'  => 'birthday',
             'placeholder' => '',
             'value' => ''
         ], $output);
-        $this->assertContains([
+        self::assertContains([
             'type' => 'text',
             'name'  => 'bankaccount',
             'placeholder' => '',
@@ -120,8 +120,8 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
     public function testGetHiddenGatewayField()
     {
         $output = $this->payAfterDeliveryPaymentMethod->getInputFields();
-        $this->assertIsArray($output);
-        $this->assertContains([
+        self::assertIsArray($output);
+        self::assertContains([
             'type' => 'hidden',
             'name'  => 'gateway',
             'value' => 'PAYAFTER',

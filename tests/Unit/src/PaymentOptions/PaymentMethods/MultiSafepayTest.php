@@ -49,8 +49,8 @@ class MultiSafepayTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionName()
     {
         $output = $this->multiSafepayPaymentMethod->name;
-        $this->assertEquals('MultiSafepay', $output);
-        $this->assertIsString($output);
+        self::assertEquals('MultiSafepay', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -59,8 +59,8 @@ class MultiSafepayTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionDescription()
     {
         $output = $this->multiSafepayPaymentMethod->description;
-        $this->assertEquals('', $output);
-        $this->assertIsString($output);
+        self::assertEquals('', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -69,8 +69,8 @@ class MultiSafepayTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionGatewayCode()
     {
         $output = $this->multiSafepayPaymentMethod->gatewayCode;
-        $this->assertEmpty($output);
-        $this->assertIsString($output);
+        self::assertEmpty($output);
+        self::assertIsString($output);
     }
 
     /**
@@ -79,8 +79,8 @@ class MultiSafepayTest extends BaseMultiSafepayTest
     public function testGetTransactionType()
     {
         $output = $this->multiSafepayPaymentMethod->type;
-        $this->assertEquals('redirect', $output);
-        $this->assertIsString($output);
+        self::assertEquals('redirect', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -89,8 +89,8 @@ class MultiSafepayTest extends BaseMultiSafepayTest
     public function testGetPaymentOptionLogo()
     {
         $output = $this->multiSafepayPaymentMethod->icon;
-        $this->assertEquals('multisafepay.png', $output);
-        $this->assertIsString($output);
+        self::assertEquals('multisafepay.png', $output);
+        self::assertIsString($output);
     }
 
     /**
@@ -99,10 +99,10 @@ class MultiSafepayTest extends BaseMultiSafepayTest
     public function testGetInputFields()
     {
         $output = $this->multiSafepayPaymentMethod->inputs;
-        $this->assertIsArray($output);
-        $this->assertIsArray($output[0]);
-        $this->assertArrayHasKey('type', $output[0]);
-        $this->assertEquals('hidden', $output[0]['type']);
+        self::assertIsArray($output);
+        self::assertIsArray($output[0]);
+        self::assertArrayHasKey('type', $output[0]);
+        self::assertEquals('hidden', $output[0]['type']);
     }
 
     /**
@@ -111,8 +111,8 @@ class MultiSafepayTest extends BaseMultiSafepayTest
     public function testGetHiddenGatewayField()
     {
         $output = $this->multiSafepayPaymentMethod->getInputFields();
-        $this->assertIsArray($output);
-        $this->assertContains([
+        self::assertIsArray($output);
+        self::assertContains([
             'type' => 'hidden',
             'name'  => 'gateway',
             'value' => '',

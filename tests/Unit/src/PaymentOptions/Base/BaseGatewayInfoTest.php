@@ -35,7 +35,7 @@ class BaseGatewayInfoTest extends TestCase
      */
     public function testGetData()
     {
-        $this->isEmpty((new BaseGatewayInfo())->getData());
-        $this->assertIsArray((new BaseGatewayInfo())->getData());
+        self::isEmpty((new BaseGatewayInfo())->getData());
+        self::assertIsArray((new BaseGatewayInfo())->getData());
     }
 }
