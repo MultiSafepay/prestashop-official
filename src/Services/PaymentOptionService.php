@@ -30,6 +30,7 @@ use Cart;
 use Address;
 use Customer;
 use Media;
+use Context;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use Symfony\Component\Finder\Finder;
 use PaymentModule; // This line is here to prevent this PHPStan error: Internal error: Class 'PaymentModuleCore' not found
@@ -102,19 +103,43 @@ class PaymentOptionService
             if ($this->excludePaymentOptionByPaymentOptionSettings($paymentMethod, $cart)) {
                 continue;
             }
+
             $option = new PaymentOption();
             $option->setCallToActionText($paymentMethod->callToActionText);
             $option->setAction($paymentMethod->action);
             $option->setForm($this->module->getMultiSafepayPaymentOptionForm($paymentMethod->gatewayCode, $paymentMethod->inputs));
-            if ($paymentMethod->icon && file_exists(_PS_MODULE_DIR_ . $this->module->name . '/views/img/' . $paymentMethod->icon)) {
-                $option->setLogo(Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/' . $paymentMethod->icon));
+            if (!empty($paymentMethod->icon)) {
+                $option->setLogo($this->getLogoByPaymentOption($paymentMethod->icon));
             }
             if ($paymentMethod->description) {
                 $option->setAdditionalInformation($paymentMethod->description);
             }
+
             $paymentOptions[] = $option;
         }
         return $paymentOptions;
+    }
+
+
+    /**
+     * @param string $paymentOptionLogo
+     * @return string
+     */
+    private function getLogoByPaymentOption(string $paymentOptionLogo): string
+    {
+
+        // Logo by language
+        $logoLocale = _PS_MODULE_DIR_ . $this->module->name . '/views/img/' . str_replace('.png', '', $paymentOptionLogo) . '-'. strtolower(substr(Context::getContext()->language->locale, 0, 2)).'.png';
+        if (file_exists($logoLocale)) {
+            return Media::getMediaPath($logoLocale);
+        }
+
+        // Default logo
+        if (file_exists(_PS_MODULE_DIR_ . $this->module->name . '/views/img/' . $paymentOptionLogo)) {
+            return Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/' . $paymentOptionLogo);
+        }
+
+        return '';
     }
 
     /**
