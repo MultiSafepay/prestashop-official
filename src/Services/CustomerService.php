@@ -67,7 +67,7 @@ class CustomerService
             $_SERVER['REMOTE_ADDR'] ?? null,
             $_SERVER['HTTP_USER_AGENT'] ?? null,
             $this->getLanguageCode(PrestaShopLanguage::getIsoById((int) $order->id_lang)),
-            $invoiceAddress->company,
+            $invoiceAddress->company
         );
     }
 
