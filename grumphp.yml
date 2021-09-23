@@ -1,6 +1,6 @@
 grumphp:
   git_hook_variables:
-    EXEC_GRUMPHP_COMMAND: 'docker exec -e XDEBUG_MODE=off --workdir /var/www/html/modules/multisafepay prestashop-1.7'
+    EXEC_GRUMPHP_COMMAND: 'docker-compose exec -T --workdir /var/www/html/modules/multisafepay app'
   hooks_dir: ~
   hooks_preset: local
   process_timeout: 500

@@ -1,0 +1,36 @@
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: prestashop
+      MYSQL_DATABASE: prestashop
+      MYSQL_USER: prestashop
+      MYSQL_PASSWORD: prestashop
+  mailhog:
+    image: 'mailhog/mailhog'
+    ports:
+      - 8025:8025
+  app:
+    volumes:
+      - ./:/var/www/html/modules/multisafepay
+    depends_on:
+      - db
+    ports:
+      - 80:80
+    build: .
+    environment:
+      PS_DEV_MODE: 1
+      DB_SERVER: db
+      DB_PASSWD: prestashop
+      PS_INSTALL_AUTO: 1
+      PS_FOLDER_ADMIN: admin-dev
+      PS_FOLDER_INSTALL: install-dev
+      PS_DOMAIN: ${APP_SUBDOMAIN}.${EXPOSE_HOST}
+      PS_ENABLE_SSL: 1
+  expose:
+    depends_on:
+      - app
+    build: https://github.com/beyondcode/expose.git
+    entrypoint: [ "/bin/sh", "-c" , "/src/expose token ${EXPOSE_TOKEN} && sed -i -E \"s/'dns'\\s?=>\\s?'.*'/'dns' => true/g\" /root/.expose/config.php  && /src/expose share app --server-host=${EXPOSE_HOST} --subdomain=${APP_SUBDOMAIN}" ]
+    ports:
+      - 4040:4040
