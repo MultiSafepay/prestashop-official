@@ -32,6 +32,7 @@ use MultiSafepay\PrestaShop\Helper\Installer;
 use MultiSafepay\PrestaShop\Helper\OrderStatusInstaller;
 use MultiSafepay\PrestaShop\Helper\Uninstaller;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
+use MultiSafepay\PrestaShop\Services\RefundService;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\Api\Transactions\UpdateRequest;
@@ -97,6 +98,7 @@ class Multisafepay extends PaymentModule
             $this->registerHook('paymentOptions') &&
             $this->registerHook('actionSetInvoice') &&
             $this->registerHook('actionOrderStatusPostUpdate') &&
+            $this->registerHook('actionOrderSlipAdd') &&
             $this->registerHook('actionEmailSendBefore');
     }
 
@@ -295,5 +297,27 @@ class Multisafepay extends PaymentModule
             ]
         );
         $transactionManager->update((string) $order->reference, $updateOrder);
+    }
+
+    /**
+     * Process the refund action
+     *
+     * @param array $params
+     * @throws Exception
+     */
+    public function hookActionOrderSlipAdd(array $params): bool
+    {
+        /** @var RefundService $refundService */
+        $refundService = $this->get('multisafepay.refund_service');
+
+        /** @var Order $order */
+        $order = $params['order'];
+        $productList = $params['productList'];
+
+        if (!$refundService->isAllowedToRefund($order, $productList)) {
+            return false;
+        }
+
+        return $refundService->processRefund($order, $productList);
     }
 }

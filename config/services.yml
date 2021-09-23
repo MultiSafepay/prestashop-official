@@ -35,3 +35,10 @@ services:
       - "@multisafepay"
       - "@multisafepay.customer_service"
       - "@multisafepay.shopping_cart_service"
+
+  multisafepay.refund_service:
+    class: MultiSafepay\PrestaShop\Services\RefundService
+    arguments:
+      - "@multisafepay"
+      - "@multisafepay.sdk_service"
+      - "@multisafepay.payment_option_service"

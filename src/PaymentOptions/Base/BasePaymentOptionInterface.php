@@ -74,4 +74,9 @@ interface BasePaymentOptionInterface
      * @return GatewayInfoInterface
      */
     public function getGatewayInfo(Order $order, array $data = []): GatewayInfoInterface;
+
+    /**
+     * @return bool
+     */
+    public function canProcessRefunds(): bool;
 }

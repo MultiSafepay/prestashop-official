@@ -381,4 +381,12 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
         return $isDirect;
     }
+
+    /**
+     * @return bool
+     */
+    public function canProcessRefunds(): bool
+    {
+        return true;
+    }
 }

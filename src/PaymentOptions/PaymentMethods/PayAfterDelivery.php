@@ -101,4 +101,9 @@ class PayAfterDelivery extends BasePaymentOption
         $gatewayInfo->addBirthdayAsString($data['birthday']);
         return $gatewayInfo;
     }
+
+    public function canProcessRefunds(): bool
+    {
+        return false;
+    }
 }
