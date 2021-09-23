@@ -38,6 +38,7 @@ use Multisafepay;
 use Order as PrestaShopOrder;
 use PrestaShopCollection;
 use Tools;
+use PaymentModule;
 
 /**
  * Class OrderService
@@ -223,7 +224,7 @@ class OrderService
     /**
      * @return PluginDetails
      */
-    private function createPluginDetails()
+    public function createPluginDetails()
     {
         $pluginDetails = new PluginDetails();
 

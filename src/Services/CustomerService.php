@@ -66,8 +66,8 @@ class CustomerService
             $invoiceAddress->lastname,
             $_SERVER['REMOTE_ADDR'] ?? null,
             $_SERVER['HTTP_USER_AGENT'] ?? null,
-            $order->id_lang,
-            $invoiceAddress->company
+            $this->getLanguageCode(PrestaShopLanguage::getIsoById((int) $order->id_lang)),
+            $invoiceAddress->company,
         );
     }
 
@@ -96,25 +96,25 @@ class CustomerService
             $shippingAddress->lastname,
             $_SERVER['REMOTE_ADDR'] ?? null,
             $_SERVER['HTTP_USER_AGENT'] ?? null,
-            $order->id_lang,
+            $this->getLanguageCode(PrestaShopLanguage::getIsoById((int) $order->id_lang)),
             $shippingAddress->company
         );
     }
 
     /**
-     * Return CustomerDetails object
-     *
      * @param Address $address
-     * @param string  $emailAddress
-     * @param string  $phoneNumber
-     * @param string  $firstName
-     * @param string  $lastName
-     * @param string  $ipAddress
-     * @param string  $userAgent
-     * @param string  $companyName
+     * @param string $emailAddress
+     * @param string $phoneNumber
+     * @param string $firstName
+     * @param string $lastName
+     * @param string|null $ipAddress
+     * @param string|null $userAgent
+     * @param string $languageCode
+     * @param string|null $companyName
+     *
      * @return CustomerDetails
      */
-    private function createCustomer(
+    public function createCustomer(
         Address $address,
         string $emailAddress,
         string $phoneNumber,
@@ -122,7 +122,7 @@ class CustomerService
         string $lastName,
         ?string $ipAddress,
         ?string $userAgent,
-        string $langId,
+        string $languageCode,
         string $companyName = null
     ): CustomerDetails {
         $customerDetails = new CustomerDetails();
@@ -132,7 +132,7 @@ class CustomerService
             ->addFirstName($firstName)
             ->addLastName($lastName)
             ->addPhoneNumber(new PhoneNumber($phoneNumber))
-            ->addLocale($this->getLanguageCode(PrestaShopLanguage::getIsoById((int) $langId)))
+            ->addLocale($languageCode)
             ->addCompanyName($companyName ? $companyName : '');
 
         if (! empty($ipAddress)) {
