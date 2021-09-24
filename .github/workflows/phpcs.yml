@@ -14,10 +14,7 @@ jobs:
           php-version: '7.3'
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Run docker compose
-        run:  docker-compose up -d
-      - name: Install Composer dependencies PrestaShop 1.7
-        run:  docker exec -e XDEBUG_MODE=off --workdir /var/www/html/modules/multisafepay prestashop-1.7 composer install
-      - name: Run PHPCS PrestaShop 1.7
-        run:  docker exec -e XDEBUG_MODE=off --workdir /var/www/html/modules/multisafepay prestashop-1.7 composer run-script phpcs
-
+      - name: Install composer dependencies
+        run:  composer install
+      - name: PHP Code Sniffer
+        run:  composer run-script phpcs
