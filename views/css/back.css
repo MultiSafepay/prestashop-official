@@ -19,22 +19,22 @@
  *
  */
 
-.multisafepay-payment-methods .panel-group .panel {
+.form-group-multisafepay-payment-methods .panel-group .panel {
     margin: 0px 0px 30px 0px !important;
     padding: 0px !important;;
 }
-.multisafepay-payment-methods .panel-group .panel .panel-heading {
+.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading {
     margin: 0px !important;
     padding: 5px 10px !important;
     height: auto !important;
 }
-.multisafepay-payment-methods .panel-group .panel .panel-heading a {
+.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading a {
     display: block;
 }
-.multisafepay-payment-methods .panel-group .panel .panel-heading a:hover {
+.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading a:hover {
     text-decoration: none;
 }
-.multisafepay-payment-methods .panel-group .panel .panel-heading a.collapsed:after {
+.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading a.collapsed:after {
     font-family: 'FontAwesome';
     content: "\f067";
     float: right;
@@ -42,12 +42,12 @@
     line-height: 40px;
     vertical-align: middle;
 }
-.multisafepay-payment-methods .panel-group .panel .panel-heading a.collapsed {
+.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading a.collapsed {
     background-color: #f6f6f6;
     border-color: #dcdcdc;
     color: #4c4d5a;
 }
-.multisafepay-payment-methods .panel-group .panel .panel-heading a:after {
+.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading a:after {
     font-family: 'FontAwesome';
     content: "\f068";
     float: right;
@@ -55,13 +55,12 @@
     line-height: 40px;
     vertical-align: middle;
 }
-
-.multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status {
+.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status {
     display: block;
     background-color: #f6f6f6;
     border: 1px solid #dcdcdc;
 }
-.multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status {
+.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status {
     position: relative;
     display: inline-block;
     width: 30px;
@@ -72,7 +71,7 @@
     text-align: center;
     border: 1px solid #DDDDDD;
 }
-.multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status:after {
+.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status:after {
     font-size: 14px;
     line-height: 30px;
     text-align: center;
@@ -80,13 +79,11 @@
     font-family: 'FontAwesome';
     color: darkred;
 }
-.multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status.active:after {
+.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status.active:after {
     content: "\f00c" !important;
     font-family: 'FontAwesome';
     color: forestgreen;
 }
-
-
 #multisafepay-support .account-list {
     padding-left: 10px;
     margin-left: 10px;

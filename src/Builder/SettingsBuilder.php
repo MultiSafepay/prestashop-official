@@ -86,7 +86,7 @@ class SettingsBuilder
 
         $helper->submit_action = 'submitMultisafepayModule';
         $helper->currentIndex  = $context->link->getAdminLink('AdminModules', false)
-                                 .'&configure='.$this->module->name.'&tab_module='.$this->module->tab.'&module_name='.$this->module->name;
+            .'&configure='.$this->module->name.'&tab_module='.$this->module->tab.'&module_name='.$this->module->name;
         $helper->token         = Tools::getAdminTokenLite('AdminModules');
 
         $helper->tpl_vars = [
@@ -260,20 +260,24 @@ class SettingsBuilder
                         'section' => 'default'
                     ],
                     [
-                        'col'            => '12',
-                        'name'           => 'Payment methods',
-                        'tab'            => 'payment_methods',
-                        'type'           => 'html',
-                        'html_content'   => $this->getPaymentMethodsHtmlContent(),
-                        'section'        => 'multisafepay-payment-methods',
+                        'col'              => '12',
+                        'label'            => '',
+                        'name'             => 'Payment methods',
+                        'tab'              => 'payment_methods',
+                        'type'             => 'html',
+                        'html_content'     => $this->getPaymentMethodsHtmlContent(),
+                        'section'          => 'multisafepay-payment-methods',
+                        'form_group_class' => 'form-group-multisafepay-payment-methods',
                     ],
                     [
                         'col'                 => '12',
+                        'label'               => '',
                         'name'                => 'Support',
                         'tab'                 => 'support',
                         'type'                => 'html',
                         'html_content'        => $this->getSupportHtmlContent(),
                         'section'             => 'multisafepay-support',
+                        'form_group_class'    => 'form-group-multisafepay-support',
                     ],
                 ],
                 'submit' => [
