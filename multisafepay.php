@@ -250,14 +250,15 @@ class Multisafepay extends PaymentModule
         }
 
         /** @var OrderInvoice $orderInvoice */
-        $orderInvoice = $params['OrderInvoice'];
+        $orderInvoice = OrderInvoice::getInvoiceByNumber($params['OrderInvoice']->id);
+        $orderInvoiceNumber = $orderInvoice->getInvoiceNumberFormatted($order->id_lang, $order->id_shop);
 
         // Update order with invoice shipping information
         /** @var SdkService $sdkService */
         $sdkService         = $this->get('multisafepay.sdk_service');
         $transactionManager = $sdkService->getSdk()->getTransactionManager();
         $updateOrder        = new UpdateRequest();
-        $updateOrder->addData(['invoice_id'  => (string)$orderInvoice->id]);
+        $updateOrder->addData(['invoice_id'  => (string)$orderInvoiceNumber]);
         $transactionManager->update((string) $order->reference, $updateOrder);
     }
 
