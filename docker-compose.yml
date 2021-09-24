@@ -1,3 +1,4 @@
+version: '3.3'
 services:
   db:
     image: mysql:5.7
@@ -27,6 +28,8 @@ services:
       PS_FOLDER_INSTALL: install-dev
       PS_DOMAIN: ${APP_SUBDOMAIN}.${EXPOSE_HOST}
       PS_ENABLE_SSL: 1
+    extra_hosts:
+      host.docker.internal: host-gateway
   expose:
     depends_on:
       - app
