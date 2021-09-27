@@ -11,6 +11,7 @@ use Order;
 class Ideal extends BasePaymentOption
 {
     public $hasConfigurableDirect = true;
+    public $hasConfigurableTokenization = true;
 
     public function getPaymentOptionName(): string
     {
@@ -54,6 +55,9 @@ class Ideal extends BasePaymentOption
 
     public function getGatewayInfo(Order $order, array $data = []): GatewayInfoInterface
     {
+        if (!isset($data['issuer_id'])) {
+            return parent::getGatewayInfo($order, $data);
+        }
         $gatewayInfo = new \MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Ideal();
         $gatewayInfo->addIssuerId($data['issuer_id']);
         return $gatewayInfo;

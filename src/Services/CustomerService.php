@@ -46,7 +46,8 @@ class CustomerService
             $_SERVER['REMOTE_ADDR'] ?? null,
             $_SERVER['HTTP_USER_AGENT'] ?? null,
             $this->getLanguageCode(PrestaShopLanguage::getIsoById((int) $order->id_lang)),
-            $invoiceAddress->company
+            $invoiceAddress->company,
+            (string)$order->id_customer
         );
     }
 
@@ -88,6 +89,7 @@ class CustomerService
      * @param string $lastName
      * @param string|null $ipAddress
      * @param string|null $userAgent
+     * @param string|null $reference
      * @param string $languageCode
      * @param string|null $companyName
      *
@@ -102,7 +104,8 @@ class CustomerService
         ?string $ipAddress,
         ?string $userAgent,
         string $languageCode,
-        string $companyName = null
+        string $companyName = null,
+        string $reference = null
     ): CustomerDetails {
         $customerDetails = new CustomerDetails();
         $customerDetails
@@ -124,6 +127,10 @@ class CustomerService
 
         if (! empty($userAgent)) {
             $customerDetails->addUserAgent($userAgent);
+        }
+
+        if (! empty($reference)) {
+            $customerDetails->addReference($reference);
         }
 
         return $customerDetails;

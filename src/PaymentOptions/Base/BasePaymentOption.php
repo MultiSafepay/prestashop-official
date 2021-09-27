@@ -9,6 +9,7 @@ use Country;
 use Currency;
 use Group;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
+use MultiSafepay\PrestaShop\Services\TokenizationService;
 use Multisafepay;
 use Order;
 
@@ -75,6 +76,11 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      */
     public $hasConfigurableDirect = false;
 
+    /**
+     * @var bool
+     */
+    public $hasConfigurableTokenization = false;
+
     public function __construct(Multisafepay $module)
     {
         $this->module           = $module;
@@ -106,6 +112,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         if ($this->isDirect()) {
             $transactionType = 'direct';
         }
+
         return $transactionType;
     }
 
@@ -131,6 +138,18 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
         if ($this->isDirect()) {
             $inputFields = array_merge($inputFields, $this->getDirectTransactionInputFields());
+        }
+
+        if (true === $this->allowTokenization()) {
+            /** @var TokenizationService $tokenizationService */
+            $tokenizationService = $this->module->get('multisafepay.tokenization_service');
+            $inputFields         = array_merge(
+                $inputFields,
+                $tokenizationService->createTokenizationCheckoutFields(
+                    (string)Context::getContext()->customer->id,
+                    $this
+                )
+            );
         }
 
         return $inputFields;
@@ -231,7 +250,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'options' => $this->getCarrierForSettings(),
                 'helperText' => $this->module->l('Leave blank to support all carriers'),
                 'default' => '',
-                'order' => 80,
+                'order' => 81,
             ],
             'MULTISAFEPAY_SORT_ORDER_'.$this->getUniqueName() => [
                 'type' => 'text',
@@ -252,9 +271,24 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'order' => 11,
             ];
         }
+
+        if (true === $this->hasConfigurableTokenization) {
+            $settings['MULTISAFEPAY_TOKENIZATION_'.$this->getUniqueName()] = [
+                'type'       => 'switch',
+                'name'       => $this->module->l('Enable tokenization'),
+                'value'      => Configuration::get('MULTISAFEPAY_TOKENIZATION_'.$this->getUniqueName()) ?? 0,
+                'helperText' => $this->module->l(
+                    'If enabled, payment details entered during checkout can be saved by the customer for future purchases.'
+                ),
+                'default'    => '0',
+                'order'      => 12,
+            ];
+        }
+
         uasort($settings, function ($a, $b) {
             return $a['order'] - $b['order'];
         });
+
         return $settings;
     }
 
@@ -268,6 +302,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         if (is_string($setting) && !empty($setting)) {
             return json_decode($setting);
         }
+
         return [];
     }
 
@@ -288,6 +323,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'name' => $country['name']
             ];
         }
+
         return $returnArray;
     }
 
@@ -328,6 +364,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'name' => $group['name']
             ];
         }
+
         return $returnArray;
     }
 
@@ -363,6 +400,17 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     /**
      * @return bool
      */
+    public function allowTokenization(): bool
+    {
+        $allowTokenization = false;
+        $customer          = Context::getContext()->customer;
+        if (true === $this->hasConfigurableTokenization && $customer !== null && !(bool)$customer->is_guest) {
+            $allowTokenization = (bool)Configuration::get('MULTISAFEPAY_TOKENIZATION_'.$this->getUniqueName());
+        }
+
+        return $allowTokenization;
+    }
+
     public function canProcessRefunds(): bool
     {
         return true;

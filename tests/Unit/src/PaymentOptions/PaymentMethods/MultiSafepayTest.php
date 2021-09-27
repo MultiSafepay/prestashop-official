@@ -17,7 +17,11 @@ class MultiSafepayTest extends BaseMultiSafepayTest
         /** @var Multisafepay $multisafepay */
         $multisafepay = $this->container->get('multisafepay');
 
-        $this->multiSafepayPaymentMethod = new MultiSafepayPaymentMethod($multisafepay);
+        $mockMultiSafepay = $this->getMockBuilder(MultiSafepayPaymentMethod::class)->setConstructorArgs([$multisafepay])->onlyMethods(['allowTokenization'])->getMock();
+        $mockMultiSafepay->method('allowTokenization')->willReturn(
+            false
+        );
+        $this->multiSafepayPaymentMethod = $mockMultiSafepay;
     }
 
 

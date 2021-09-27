@@ -25,12 +25,15 @@ class IdealTest extends BaseMultiSafepayTest
         );
 
         $mockMultisafepay = $this->getMockBuilder(Multisafepay::class)->getMock();
-        $mockMultisafepay->method('get')->willReturn(
+        $mockMultisafepay->method('get')->with('multisafepay.issuer_service')->willReturn(
             $mockIssuerService
         );
 
-        $mockIdeal = $this->getMockBuilder(Ideal::class)->setConstructorArgs([$mockMultisafepay])->onlyMethods(['isDirect'])->getMock();
+        $mockIdeal = $this->getMockBuilder(Ideal::class)->setConstructorArgs([$mockMultisafepay])->onlyMethods(['isDirect', 'allowTokenization'])->getMock();
         $mockIdeal->method('isDirect')->willReturn(
+            false
+        );
+        $mockIdeal->method('allowTokenization')->willReturn(
             false
         );
 

@@ -36,6 +36,11 @@ services:
       - "@multisafepay.customer_service"
       - "@multisafepay.shopping_cart_service"
 
+  multisafepay.tokenization_service:
+    class: MultiSafepay\PrestaShop\Services\TokenizationService
+    arguments:
+      - "@multisafepay"
+      - "@multisafepay.sdk_service"
   multisafepay.refund_service:
     class: MultiSafepay\PrestaShop\Services\RefundService
     arguments:

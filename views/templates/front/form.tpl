@@ -20,12 +20,27 @@
         {if $inputField.type == 'select'}
             <div class="form-group row">
                 <div class="col-md-12">
+                    {if isset($inputField.label)}
+                        <label for="{$inputField.name}">{$inputField.label}</label>
+                    {/if}
                     <select class="form-control form-control-select" name="{$inputField.name}" required>
-                        <option value="">{$inputField.placeholder}</option>
+                        <option value="" disabled selected>{$inputField.placeholder}</option>
                         {foreach from=$inputField.options item=option}
                             <option value="{$option.value}">{$option.name}</option>
                         {/foreach}
                     </select>
+                </div>
+            </div>
+        {/if}
+        {if $inputField.type == 'checkbox'}
+            <div class="form-group row">
+                <div class="col-md-12">
+                    <label class="left">
+                        <input type="checkbox" class="form-check-input" name="{$inputField.name}" > {$inputField.label}
+                    </label>
+                    {if isset($inputField.helperText)}
+                        <p class="help-block">{$inputField.helperText}</p>
+                    {/if}
                 </div>
             </div>
         {/if}

@@ -119,6 +119,16 @@ class OrderService
             $orderRequest->addGatewayInfo($paymentOption->getGatewayInfo($firstOrder, $gatewayInfoVars));
         }
 
+        if ($paymentOption->allowTokenization()) {
+            if ($this->shouldSaveToken()) {
+                $orderRequest->addRecurringModel('cardOnFile');
+            }
+            if ($this->getToken() !== null) {
+                $orderRequest->addRecurringId($this->getToken());
+                $orderRequest->addType('direct');
+            }
+        }
+
         return $orderRequest;
     }
 
@@ -261,5 +271,21 @@ class OrderService
         }
 
         return $orderDescription;
+    }
+
+    /**
+     * @return bool
+     */
+    private function shouldSaveToken(): bool
+    {
+        return (bool)Tools::getValue('saveToken', false) === true;
+    }
+
+    /**
+     * @return string|null
+     */
+    private function getToken(): ?string
+    {
+        return Tools::getValue('selectedToken', null);
     }
 }
