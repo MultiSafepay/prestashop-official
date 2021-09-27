@@ -1,6 +1,5 @@
 <?php
 
-
 class AdminMultiSafepayController extends ModuleAdminController
 {
     /**
