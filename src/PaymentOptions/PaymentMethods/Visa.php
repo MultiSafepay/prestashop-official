@@ -24,7 +24,6 @@
 namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
-use PaymentModule;
 
 class Visa extends BasePaymentOption
 {

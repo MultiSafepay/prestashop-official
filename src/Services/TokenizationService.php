@@ -27,7 +27,6 @@ use Multisafepay;
 use MultiSafepay\Api\Tokens\Token;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
-use PaymentModule;
 
 /**
  * Class TokenizationService
