@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
 use MultiSafepay\PrestaShop\Services\SdkService;
-use Order as PrestaShopOrder;
-use OrderHistory as PrestaShopOrderHistory;
+use Order;
+use OrderHistory;
 use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
@@ -31,7 +31,7 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
         $sdkService = $this->module->get('multisafepay.sdk_service');
         $transactionManager = $sdkService->getSdk()->getTransactionManager();
         $orderReference  = Tools::getValue('transactionid');
-        $orderCollection = PrestaShopOrder::getByReference($orderReference);
+        $orderCollection = Order::getByReference($orderReference);
 
         foreach ($orderCollection->getResults() as $order) {
             if (!$order->id) {
@@ -73,7 +73,7 @@ class MultisafepayNotificationModuleFrontController extends ModuleFrontControlle
      */
     private function setNewOrderStatus(int $orderId, int $orderStatusId): void
     {
-        $history           = new PrestaShopOrderHistory();
+        $history           = new OrderHistory();
         $history->id_order = (int)$orderId;
         $history->changeIdOrderState($orderStatusId, $orderId);
         $history->addWithemail();

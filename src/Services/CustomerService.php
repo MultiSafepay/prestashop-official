@@ -4,15 +4,15 @@ namespace MultiSafepay\PrestaShop\Services;
 
 use Address as PrestaShopAddress;
 use Country as PrestaShopCountry;
-use Language as PrestaShopLanguage;
+use Language;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\CustomerDetails;
 use MultiSafepay\ValueObject\Customer\Address;
 use MultiSafepay\ValueObject\Customer\AddressParser;
 use MultiSafepay\ValueObject\Customer\Country;
 use MultiSafepay\ValueObject\Customer\EmailAddress;
 use MultiSafepay\ValueObject\Customer\PhoneNumber;
-use Order as PrestaShopOrder;
-use State as PrestaShopState;
+use Order;
+use State;
 
 /**
  * Class CustomerService
@@ -21,10 +21,10 @@ use State as PrestaShopState;
 class CustomerService
 {
     /**
-     * @param PrestaShopOrder $order
+     * @param Order $order
      * @return CustomerDetails
      */
-    public function createCustomerDetails(PrestaShopOrder $order): CustomerDetails
+    public function createCustomerDetails(Order $order): CustomerDetails
     {
         $invoiceAddress = $this->getCustomerAddress((int) $order->id_address_invoice);
 
@@ -32,7 +32,7 @@ class CustomerService
             $invoiceAddress->address1,
             $invoiceAddress->address2,
             (new PrestaShopCountry($invoiceAddress->id_country))->iso_code,
-            PrestaShopState::getNameById($invoiceAddress->id_state) ? PrestaShopState::getNameById($invoiceAddress->id_state) : '',
+            State::getNameById($invoiceAddress->id_state) ? State::getNameById($invoiceAddress->id_state) : '',
             $invoiceAddress->city,
             $invoiceAddress->postcode
         );
@@ -45,17 +45,17 @@ class CustomerService
             $invoiceAddress->lastname,
             $_SERVER['REMOTE_ADDR'] ?? null,
             $_SERVER['HTTP_USER_AGENT'] ?? null,
-            $this->getLanguageCode(PrestaShopLanguage::getIsoById((int) $order->id_lang)),
+            $this->getLanguageCode(Language::getIsoById((int) $order->id_lang)),
             $invoiceAddress->company,
             (string)$order->id_customer
         );
     }
 
     /**
-     * @param PrestaShopOrder $order
+     * @param Order $order
      * @return CustomerDetails
      */
-    public function createDeliveryDetails(PrestaShopOrder $order): CustomerDetails
+    public function createDeliveryDetails(Order $order): CustomerDetails
     {
         $shippingAddress = $this->getCustomerAddress((int) $order->id_address_delivery);
 
@@ -63,7 +63,7 @@ class CustomerService
             $shippingAddress->address1,
             $shippingAddress->address2,
             (new PrestaShopCountry($shippingAddress->id_country))->iso_code,
-            PrestaShopState::getNameById($shippingAddress->id_state) ? PrestaShopState::getNameById($shippingAddress->id_state) : '',
+            State::getNameById($shippingAddress->id_state) ? State::getNameById($shippingAddress->id_state) : '',
             $shippingAddress->city,
             $shippingAddress->postcode
         );
@@ -76,7 +76,7 @@ class CustomerService
             $shippingAddress->lastname,
             $_SERVER['REMOTE_ADDR'] ?? null,
             $_SERVER['HTTP_USER_AGENT'] ?? null,
-            $this->getLanguageCode(PrestaShopLanguage::getIsoById((int) $order->id_lang)),
+            $this->getLanguageCode(Language::getIsoById((int) $order->id_lang)),
             $shippingAddress->company
         );
     }
@@ -178,7 +178,7 @@ class CustomerService
      */
     private function getLanguageCode(string $isoCode): string
     {
-        $locale = PrestaShopLanguage::getLanguageCodeByIso($isoCode);
+        $locale = Language::getLanguageCodeByIso($isoCode);
         $parts = explode('-', (string) $locale);
         $languageCode = $parts[0] . '_' . strtoupper($parts[1]);
         return $languageCode;

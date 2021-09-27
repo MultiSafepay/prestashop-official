@@ -8,7 +8,6 @@ require __DIR__ . '/vendor/autoload.php';
 
 use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
 use MultiSafepay\PrestaShop\Helper\Installer;
-use MultiSafepay\PrestaShop\Helper\OrderStatusInstaller;
 use MultiSafepay\PrestaShop\Helper\Uninstaller;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\RefundService;
