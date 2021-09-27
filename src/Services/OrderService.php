@@ -17,7 +17,6 @@ use Multisafepay;
 use Order as PrestaShopOrder;
 use PrestaShopCollection;
 use Tools;
-use PaymentModule;
 
 /**
  * Class OrderService

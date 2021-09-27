@@ -14,7 +14,6 @@ use Order;
 use PrestaShopCollection;
 use PrestaShopException;
 use Tools;
-use PaymentModule;
 
 /**
  * Class RefundService

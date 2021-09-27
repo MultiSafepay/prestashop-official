@@ -7,7 +7,6 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\IssuerService;
 use Tools;
 use Order;
-use PaymentModule;
 
 class Ideal extends BasePaymentOption
 {

@@ -7,7 +7,6 @@ use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\SdkService;
-use PaymentModule;
 use MultiSafepay\PrestaShop\Helper\CancelOrderHelper;
 use MultiSafepay\PrestaShop\Helper\DuplicateCartHelper;
 

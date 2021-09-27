@@ -10,7 +10,6 @@ use MultiSafepay\ValueObject\IbanNumber;
 use MultiSafepay\Exception\InvalidArgumentException;
 use Tools;
 use Order;
-use PaymentModule;
 
 class Dirdeb extends BasePaymentOption
 {

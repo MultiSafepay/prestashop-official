@@ -8,7 +8,6 @@ use OrderState;
 use PrestaShopCollection;
 use Tab;
 use Multisafepay;
-use PaymentModule;
 
 /**
  * Class Uninstaller

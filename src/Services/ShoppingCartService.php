@@ -13,7 +13,6 @@ use MultiSafepay\ValueObject\CartItem;
 use MultiSafepay\ValueObject\Weight;
 use Order;
 use Tools;
-use PaymentModule;
 
 /**
  * Class ShoppingCartService

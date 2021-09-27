@@ -10,7 +10,6 @@ use Multisafepay;
 use OrderState;
 use Tab;
 use Tools;
-use PaymentModule;
 
 /**
  * Class Installer

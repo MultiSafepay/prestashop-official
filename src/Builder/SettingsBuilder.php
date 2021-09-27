@@ -13,7 +13,6 @@ use Tools;
 use Context;
 use OrderState;
 use Group;
-use PaymentModule;
 
 /**
  * Class SettingsBuilder

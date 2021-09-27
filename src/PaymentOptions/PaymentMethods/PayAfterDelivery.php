@@ -9,7 +9,6 @@ use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Meta;
 use MultiSafepay\Exception\InvalidArgumentException;
 use Tools;
 use Order;
-use PaymentModule;
 use Address;
 use Context;
 

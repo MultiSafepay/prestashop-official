@@ -12,7 +12,6 @@ use Media;
 use Context;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use Symfony\Component\Finder\Finder;
-use PaymentModule; // This line is here to prevent this PHPStan error: Internal error: Class 'PaymentModuleCore' not found
 
 /**
  * Class PaymentOptionService

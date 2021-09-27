@@ -11,7 +11,6 @@ use Group;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use Multisafepay;
 use Order;
-use PaymentModule;
 
 abstract class BasePaymentOption implements BasePaymentOptionInterface
 {

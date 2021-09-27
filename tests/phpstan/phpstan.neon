@@ -16,6 +16,8 @@ parameters:
     - ../../tests
   scanFiles:
     - ../../multisafepay.php
+    - ../../../../var/cache/prod/class_stub.php
+    - ../../../../classes/PaymentModule.php
   ignoreErrors:
     - '#Call to an undefined method [a-zA-Z0-9\\_]+::validateOrder\(\)#'
     - '#Variable \$transaction might not be defined.#'
