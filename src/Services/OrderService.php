@@ -150,7 +150,7 @@ class OrderService
             'order_id'       => $order->reference,
             'order_total'    => $this->getOrderTotalByOrderCollection($orderCollection),
             'shipping_total' => $this->getShippingTotalByOrderCollection($orderCollection),
-            'currency_code'  => Currency::getIsoCodeById((int)$order->id_currency),
+            'currency_code'  => $this->getCurrencyIsoCodeById((int)$order->id_currency),
             'round_type'     => (int)$order->round_type,
             'weight_unit'    => Configuration::get('PS_WEIGHT_UNIT'),
         ];
@@ -271,6 +271,15 @@ class OrderService
         }
 
         return $orderDescription;
+    }
+
+    /**
+     * @param int $currencyId
+     * @return string
+     */
+    private function getCurrencyIsoCodeById(int $currencyId): string
+    {
+        return (new Currency($currencyId))->iso_code;
     }
 
     /**
