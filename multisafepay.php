@@ -22,7 +22,6 @@ class Multisafepay extends PaymentModule
 
     /**
      * Multisafepay plugin constructor.
-     * @todo Check if we need an instance on load admin. Until now, we don`t
      */
     public function __construct()
     {
@@ -30,7 +29,7 @@ class Multisafepay extends PaymentModule
         $this->tab           = 'payments_gateways';
         $this->version       = self::MULTISAFEPAY_MODULE_VERSION;
         $this->author        = 'MultiSafepay';
-        $this->need_instance = 1;
+        $this->need_instance = 0;
         $this->bootstrap     = true;
         parent::__construct();
 
