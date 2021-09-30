@@ -13,3 +13,4 @@ This extension has been developed by MultiSafepay following the development guid
  - phpcs: `make phpcs`
  - PHPUnit: `make phpunit`
  - phpcbf: `make phpcbf`
+ - PHPStan: `make phpstan`

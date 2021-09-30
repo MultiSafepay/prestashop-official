@@ -14,3 +14,7 @@ phpunit:
 .PHONY: phpcbf
 phpcbf:
 	docker-compose exec --workdir /var/www/html/modules/multisafepay app vendor/bin/phpcbf --standard=phpcs.xml .
+
+.PHONY: phpstan
+phpstan:
+	docker-compose exec -e _PS_ROOT_DIR_=./../../ --workdir /var/www/html/modules/multisafepay app vendor/bin/phpstan analyse --configuration=tests/phpstan/phpstan.neon
