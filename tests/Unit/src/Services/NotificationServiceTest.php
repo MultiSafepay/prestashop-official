@@ -50,6 +50,7 @@ class NotificationServiceTest extends BaseMultiSafepayTest
         $mockPaymentOptionService = $this->getMockBuilder(PaymentOptionService::class)->disableOriginalConstructor()->onlyMethods(['getMultiSafepayPaymentOption'])->getMock();
 
         $mockDirDeb= $this->getMockBuilder(Dirdeb::class)->setConstructorArgs([$mockMultisafepay])->onlyMethods(['allowTokenization'])->getMock();
+
         $mockDirDeb->method('allowTokenization')->willReturn(
             false
         );
@@ -78,12 +79,5 @@ class NotificationServiceTest extends BaseMultiSafepayTest
     {
         $orderStatusId = $this->notificationService->getOrderStatusId('completed');
         self::assertIsString($orderStatusId);
-    }
-
-    public function testGetPaymentMethodNameFromTransaction()
-    {
-        $transactionResponse = $this->notificationService->getTransactionFromPostNotification($this->rawPostNotification);
-        $paymentMethodName = $this->notificationService->getPaymentMethodNameFromTransaction($transactionResponse);
-        self::assertEquals('SEPA Direct Debit', $paymentMethodName);
     }
 }

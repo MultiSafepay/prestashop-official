@@ -49,7 +49,7 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
                 $this->context->cart->id,
                 Configuration::get('MULTISAFEPAY_OS_INITIALIZED'),
                 0,
-                $selectedPaymentOption->getPaymentOptionName(),
+                $selectedPaymentOption->getName(),
                 null,
                 ['dont_send_email' => true],
                 $this->context->cart->id_currency,
