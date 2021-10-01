@@ -10,33 +10,16 @@ use Order;
 
 class Ideal extends BasePaymentOption
 {
+    protected $name = 'iDEAL';
+    protected $gatewayCode = 'IDEAL';
+    protected $logo = 'ideal.png';
     public $hasConfigurableDirect = true;
     public $hasConfigurableTokenization = true;
-
-    public function getPaymentOptionName(): string
-    {
-        return 'iDEAL';
-    }
 
     public function getTransactionType(): string
     {
         $checkoutVars = Tools::getAllValues();
-        return empty($checkoutVars['issuer_id']) ? 'redirect' : 'direct';
-    }
-
-    public function getPaymentOptionGatewayCode(): string
-    {
-        return 'IDEAL';
-    }
-
-    public function getPaymentOptionLogo(): string
-    {
-        return 'ideal.png';
-    }
-
-    public function getPaymentOptionForm(): bool
-    {
-        return true;
+        return empty($checkoutVars['issuer_id']) ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
     }
 
     public function getDirectTransactionInputFields(): array
@@ -48,7 +31,7 @@ class Ideal extends BasePaymentOption
                 'type'        => 'select',
                 'name'        => 'issuer_id',
                 'placeholder' => $this->module->l('Select bank'),
-                'options'     => $issuerService->getIssuers($this->getPaymentOptionGatewayCode()),
+                'options'     => $issuerService->getIssuers($this->getGatewayCode()),
             ],
         ];
     }

@@ -13,37 +13,16 @@ use Order;
 
 class Dirdeb extends BasePaymentOption
 {
-    public $hasConfigurableDirect = true;
-
-    public function getPaymentOptionName(): string
-    {
-        return 'SEPA Direct Debit';
-    }
+    protected $hasConfigurableDirect = true;
+    protected $hasConfigurableTokenization = true;
+    protected $name = 'SEPA Direct Debit';
+    protected $gatewayCode = 'DIRDEB';
+    protected $logo = 'dirdeb.png';
 
     public function getTransactionType(): string
     {
         $checkoutVars = Tools::getAllValues();
-        return (empty($checkoutVars['bankaccount']) || empty($checkoutVars['account_holder_name'])) ? 'redirect' : 'direct';
-    }
-
-    public function getPaymentOptionGatewayCode(): string
-    {
-        return 'DIRDEB';
-    }
-
-    public function getPaymentOptionDescription(): string
-    {
-        return '';
-    }
-
-    public function getPaymentOptionLogo(): string
-    {
-        return 'dirdeb.png';
-    }
-
-    public function getPaymentOptionForm(): bool
-    {
-        return true;
+        return (empty($checkoutVars['bankaccount']) || empty($checkoutVars['account_holder_name'])) ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
     }
 
     public function getDirectTransactionInputFields(): array

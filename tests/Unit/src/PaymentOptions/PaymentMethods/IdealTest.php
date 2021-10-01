@@ -41,31 +41,31 @@ class IdealTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getPaymentOptionName
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getName
      */
-    public function testGetPaymentOptionName()
+    public function testGetName()
     {
-        $output = $this->idealPaymentOption->name;
+        $output = $this->idealPaymentOption->getName();
         self::assertEquals('iDEAL', $output);
         self::assertIsString($output);
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getPaymentOptionDescription
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getDescription
      */
-    public function testGetPaymentOptionDescription()
+    public function testGetDescription()
     {
-        $output = $this->idealPaymentOption->description;
+        $output = $this->idealPaymentOption->getDescription();
         self::assertEquals('', $output);
         self::assertIsString($output);
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getPaymentOptionGatewayCode
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getGatewayCode
      */
-    public function testGetPaymentOptionGatewayCode()
+    public function testGetGatewayCode()
     {
-        $output = $this->idealPaymentOption->gatewayCode;
+        $output = $this->idealPaymentOption->getGatewayCode();
         self::assertEquals('IDEAL', $output);
         self::assertIsString($output);
     }
@@ -75,17 +75,17 @@ class IdealTest extends BaseMultiSafepayTest
      */
     public function testGetTransactionType()
     {
-        $output = $this->idealPaymentOption->type;
+        $output = $this->idealPaymentOption->getTransactionType();
         self::assertEquals('redirect', $output);
         self::assertIsString($output);
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getPaymentOptionLogo
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getLogo
      */
-    public function testGetPaymentOptionLogo()
+    public function testGetLogo()
     {
-        $output = $this->idealPaymentOption->icon;
+        $output = $this->idealPaymentOption->getLogo();
         self::assertEquals('ideal.png', $output);
         self::assertIsString($output);
     }

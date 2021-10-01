@@ -80,7 +80,7 @@ class TokenizationService
     {
         $inputFields = [];
 
-        $tokens = $this->getTokensByCustomerIdAndGatewayCode($customerId, $paymentOption->getPaymentOptionGatewayCode());
+        $tokens = $this->getTokensByCustomerIdAndGatewayCode($customerId, $paymentOption->getGatewayCode());
 
         if (!empty($tokens)) {
             $options = [];

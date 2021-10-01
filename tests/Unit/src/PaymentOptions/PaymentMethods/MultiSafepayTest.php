@@ -26,31 +26,31 @@ class MultiSafepayTest extends BaseMultiSafepayTest
 
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getPaymentOptionName
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getName
      */
-    public function testGetPaymentOptionName()
+    public function testGetName()
     {
-        $output = $this->multiSafepayPaymentMethod->name;
+        $output = $this->multiSafepayPaymentMethod->getName();
         self::assertEquals('MultiSafepay', $output);
         self::assertIsString($output);
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getPaymentOptionDescription
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getDescription
      */
-    public function testGetPaymentOptionDescription()
+    public function testGetDescription()
     {
-        $output = $this->multiSafepayPaymentMethod->description;
+        $output = $this->multiSafepayPaymentMethod->getDescription();
         self::assertEquals('', $output);
         self::assertIsString($output);
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getPaymentOptionGatewayCode
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getGatewayCode
      */
-    public function testGetPaymentOptionGatewayCode()
+    public function testGetGatewayCode()
     {
-        $output = $this->multiSafepayPaymentMethod->gatewayCode;
+        $output = $this->multiSafepayPaymentMethod->getGatewayCode();
         self::assertEmpty($output);
         self::assertIsString($output);
     }
@@ -60,17 +60,17 @@ class MultiSafepayTest extends BaseMultiSafepayTest
      */
     public function testGetTransactionType()
     {
-        $output = $this->multiSafepayPaymentMethod->type;
+        $output = $this->multiSafepayPaymentMethod->getTransactionType();
         self::assertEquals('redirect', $output);
         self::assertIsString($output);
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getPaymentOptionLogo
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getLogo
      */
-    public function testGetPaymentOptionLogo()
+    public function testGetLogo()
     {
-        $output = $this->multiSafepayPaymentMethod->icon;
+        $output = $this->multiSafepayPaymentMethod->getLogo();
         self::assertEquals('multisafepay.png', $output);
         self::assertIsString($output);
     }
@@ -80,7 +80,7 @@ class MultiSafepayTest extends BaseMultiSafepayTest
      */
     public function testGetInputFields()
     {
-        $output = $this->multiSafepayPaymentMethod->inputs;
+        $output = $this->multiSafepayPaymentMethod->getInputFields();
         self::assertIsArray($output);
         self::assertIsArray($output[0]);
         self::assertArrayHasKey('type', $output[0]);

@@ -11,19 +11,19 @@ interface BasePaymentOptionInterface
      *
      * @return string
      */
-    public function getPaymentOptionName(): string;
+    public function getName(): string;
 
     /**
      *
      * @return string
      */
-    public function getPaymentOptionDescription(): string;
+    public function getDescription(): string;
 
     /**
      *
      * @return string
      */
-    public function getPaymentOptionGatewayCode(): string;
+    public function getGatewayCode(): string;
 
     /**
      *
@@ -35,7 +35,7 @@ interface BasePaymentOptionInterface
      *
      * @return string
      */
-    public function getPaymentOptionLogo(): string;
+    public function getLogo(): string;
 
     /**
      * @return string

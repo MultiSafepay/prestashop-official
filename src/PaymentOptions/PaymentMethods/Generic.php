@@ -7,23 +7,14 @@ use Configuration;
 
 class Generic extends BasePaymentOption
 {
+    protected $name = 'Generic Gateway';
 
-    public function getPaymentOptionName(): string
-    {
-        return 'Generic Gateway';
-    }
-
-    public function getPaymentOptionGatewayCode(): string
+    public function getGatewayCode(): string
     {
         return (Configuration::get('MULTISAFEPAY_GATEWAY_CODE_'.$this->getUniqueName()) ?: '');
     }
 
-    public function getTransactionType(): string
-    {
-        return 'redirect';
-    }
-
-    public function getPaymentOptionLogo(): string
+    public function getIcon(): string
     {
         return (Configuration::get('MULTISAFEPAY_GATEWAY_CODE_'.$this->getUniqueName()) ?: '');
     }

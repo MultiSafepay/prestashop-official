@@ -22,31 +22,31 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
 
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getPaymentOptionName
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getName
      */
-    public function testGetPaymentOptionName()
+    public function testGetName()
     {
-        $output = $this->payAfterDeliveryPaymentMethod->name;
+        $output = $this->payAfterDeliveryPaymentMethod->getName();
         self::assertEquals('Pay After Delivery', $output);
         self::assertIsString($output);
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getPaymentOptionDescription
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getDescription
      */
-    public function testGetPaymentOptionDescription()
+    public function testGetDescription()
     {
-        $output = $this->payAfterDeliveryPaymentMethod->description;
+        $output = $this->payAfterDeliveryPaymentMethod->getDescription();
         self::assertEquals('', $output);
         self::assertIsString($output);
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getPaymentOptionGatewayCode
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getGatewayCode
      */
-    public function testGetPaymentOptionGatewayCode()
+    public function testGetGatewayCode()
     {
-        $output = $this->payAfterDeliveryPaymentMethod->gatewayCode;
+        $output = $this->payAfterDeliveryPaymentMethod->getGatewayCode();
         self::assertEquals('PAYAFTER', $output);
         self::assertIsString($output);
     }
@@ -56,17 +56,17 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
      */
     public function testGetTransactionType()
     {
-        $output = $this->payAfterDeliveryPaymentMethod->type;
+        $output = $this->payAfterDeliveryPaymentMethod->getTransactionType();
         self::assertEquals('redirect', $output);
         self::assertIsString($output);
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getPaymentOptionLogo
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getLogo
      */
-    public function testGetPaymentOptionLogo()
+    public function testGetLogo()
     {
-        $output = $this->payAfterDeliveryPaymentMethod->icon;
+        $output = $this->payAfterDeliveryPaymentMethod->getLogo();
         self::assertEquals('payafter.png', $output);
         self::assertIsString($output);
     }

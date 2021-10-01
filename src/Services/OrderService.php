@@ -85,7 +85,7 @@ class OrderService
                     $orderRequestArguments['currency_code']
                 )
             )
-            ->addGatewayCode($paymentOption->getPaymentOptionGatewayCode())
+            ->addGatewayCode($paymentOption->getGatewayCode())
             ->addType($paymentOption->getTransactionType())
             ->addPluginDetails($this->createPluginDetails())
             ->addDescriptionText($this->getOrderDescriptionText($orderRequestArguments['order_id']))
@@ -125,7 +125,7 @@ class OrderService
             }
             if ($this->getToken() !== null) {
                 $orderRequest->addRecurringId($this->getToken());
-                $orderRequest->addType('direct');
+                $orderRequest->addType(BasePaymentOption::DIRECT_TYPE);
             }
         }
 

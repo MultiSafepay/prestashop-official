@@ -23,31 +23,31 @@ class GenericTest extends BaseMultiSafepayTest
 
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic::getPaymentOptionName
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic::getName
      */
-    public function testGetPaymentOptionName()
+    public function testGetName()
     {
-        $output = $this->genericPaymentMethod->name;
+        $output = $this->genericPaymentMethod->getName();
         self::assertEquals('Generic Gateway', $output);
         self::assertIsString($output);
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic::getPaymentOptionDescription
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic::getDescription
      */
-    public function testGetPaymentOptionDescription()
+    public function testGetDescription()
     {
-        $output = $this->genericPaymentMethod->description;
+        $output = $this->genericPaymentMethod->getDescription();
         self::assertEquals('', $output);
         self::assertIsString($output);
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic::getPaymentOptionGatewayCode
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic::getGatewayCode
      */
-    public function testGetPaymentOptionGatewayCode()
+    public function testGetGatewayCode()
     {
-        $output = $this->genericPaymentMethod->gatewayCode;
+        $output = $this->genericPaymentMethod->getGatewayCode();
         self::assertEquals('', $output);
         self::assertIsString($output);
     }
@@ -57,17 +57,17 @@ class GenericTest extends BaseMultiSafepayTest
      */
     public function testGetTransactionType()
     {
-        $output = $this->genericPaymentMethod->type;
+        $output = $this->genericPaymentMethod->getTransactionType();
         self::assertEquals('redirect', $output);
         self::assertIsString($output);
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic::getPaymentOptionLogo
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Generic::getLogo
      */
-    public function testGetPaymentOptionLogo()
+    public function testGetLogo()
     {
-        $output = $this->genericPaymentMethod->icon;
+        $output = $this->genericPaymentMethod->getLogo();
         self::assertEquals('', $output);
         self::assertIsString($output);
     }
@@ -77,7 +77,7 @@ class GenericTest extends BaseMultiSafepayTest
      */
     public function testGetInputFields()
     {
-        $output = $this->genericPaymentMethod->inputs;
+        $output = $this->genericPaymentMethod->getInputFields();
         self::assertIsArray($output);
         self::assertIsArray($output[0]);
         self::assertArrayHasKey('type', $output[0]);

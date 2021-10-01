@@ -10,7 +10,7 @@
                         <h4 class="panel-title">
                             <a role="button" data-toggle="collapse" data-parent="#accordion" href="#multisafepay-collapse-{$key}" aria-expanded="true" aria-controls="multisafepay-collapse-{$key}" class="collapsed">
                                 <span class="status{if ($active == 1)} active{/if}"></span>
-                                <span class="title">{$paymentOption->name}</span>
+                                <span class="title">{$paymentOption->getName()}</span>
                             </a>
                         </h4>
                     </div>

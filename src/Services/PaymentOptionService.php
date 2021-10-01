@@ -47,7 +47,7 @@ class PaymentOptionService
             $paymentOptions[] = new $className($this->module);
         }
         usort($paymentOptions, function ($a, $b) {
-            return strcmp($a->sortOrderPosition, $b->sortOrderPosition);
+            return strcmp($a->getSortOrderPosition(), $b->getSortOrderPosition());
         });
         return $paymentOptions;
     }
@@ -61,7 +61,7 @@ class PaymentOptionService
     {
         foreach ($this->getPaymentOptionClassNamesFromDirectory() as $className) {
             $paymentOption = new $className($this->module);
-            if ($paymentOption->getPaymentOptionGatewayCode() === $gatewayCode) {
+            if ($paymentOption->getGatewayCode() === $gatewayCode) {
                 return $paymentOption;
             }
         }
@@ -76,6 +76,7 @@ class PaymentOptionService
     public function getFilteredMultiSafepayPaymentOptions(Cart $cart): array
     {
         $paymentOptions = [];
+        /** @var BasePaymentOption[] $paymentMethods */
         $paymentMethods = $this->getMultiSafepayPaymentOptions();
         foreach ($paymentMethods as $paymentMethod) {
             if ($this->excludePaymentOptionByPaymentOptionSettings($paymentMethod, $cart)) {
@@ -83,14 +84,14 @@ class PaymentOptionService
             }
 
             $option = new PaymentOption();
-            $option->setCallToActionText($paymentMethod->callToActionText);
-            $option->setAction($paymentMethod->action);
-            $option->setForm($this->module->getMultiSafepayPaymentOptionForm($paymentMethod->gatewayCode, $paymentMethod->inputs));
-            if (!empty($paymentMethod->icon)) {
-                $option->setLogo($this->getLogoByPaymentOption($paymentMethod->icon));
+            $option->setCallToActionText($paymentMethod->getFrontEndName());
+            $option->setAction($paymentMethod->getAction());
+            $option->setForm($this->module->getMultiSafepayPaymentOptionForm($paymentMethod->getGatewayCode(), $paymentMethod->getInputFields()));
+            if (!empty($paymentMethod->getLogo())) {
+                $option->setLogo($this->getLogoByName($paymentMethod->getLogo()));
             }
-            if ($paymentMethod->description) {
-                $option->setAdditionalInformation($paymentMethod->description);
+            if ($paymentMethod->getDescription()) {
+                $option->setAdditionalInformation($paymentMethod->getDescription());
             }
 
             $paymentOptions[] = $option;
@@ -100,21 +101,21 @@ class PaymentOptionService
 
 
     /**
-     * @param string $paymentOptionLogo
+     * @param string $name
      * @return string
      */
-    private function getLogoByPaymentOption(string $paymentOptionLogo): string
+    private function getLogoByName(string $name): string
     {
 
         // Logo by language
-        $logoLocale = _PS_MODULE_DIR_ . $this->module->name . '/views/img/' . str_replace('.png', '', $paymentOptionLogo) . '-'. strtolower(substr(Context::getContext()->language->locale, 0, 2)).'.png';
+        $logoLocale = _PS_MODULE_DIR_ . $this->module->name . '/views/img/' . str_replace('.png', '', $name) . '-'. strtolower(substr(Context::getContext()->language->locale, 0, 2)).'.png';
         if (file_exists($logoLocale)) {
             return Media::getMediaPath($logoLocale);
         }
 
         // Default logo
-        if (file_exists(_PS_MODULE_DIR_ . $this->module->name . '/views/img/' . $paymentOptionLogo)) {
-            return Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/' . $paymentOptionLogo);
+        if (file_exists(_PS_MODULE_DIR_ . $this->module->name . '/views/img/' . $name)) {
+            return Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/' . $name);
         }
 
         return '';

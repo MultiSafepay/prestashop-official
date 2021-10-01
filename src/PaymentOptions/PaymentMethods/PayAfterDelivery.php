@@ -14,37 +14,16 @@ use Context;
 
 class PayAfterDelivery extends BasePaymentOption
 {
-    public $hasConfigurableDirect = true;
-
-    public function getPaymentOptionName(): string
-    {
-        return 'Pay After Delivery';
-    }
+    protected $name = 'Pay After Delivery';
+    protected $gatewayCode = 'PAYAFTER';
+    protected $logo = 'payafter.png';
+    protected $hasConfigurableDirect = true;
+    protected $canProcessRefunds = false;
 
     public function getTransactionType(): string
     {
         $checkoutVars = Tools::getAllValues();
-        return (empty($checkoutVars['bankaccount']) || empty($checkoutVars['birthday'])) ? 'redirect' : 'direct';
-    }
-
-    public function getPaymentOptionGatewayCode(): string
-    {
-        return 'PAYAFTER';
-    }
-
-    public function getPaymentOptionDescription(): string
-    {
-        return '';
-    }
-
-    public function getPaymentOptionLogo(): string
-    {
-        return 'payafter.png';
-    }
-
-    public function getPaymentOptionForm(): bool
-    {
-        return true;
+        return (empty($checkoutVars['bankaccount']) || empty($checkoutVars['birthday'])) ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
     }
 
     public function getDirectTransactionInputFields(): array
@@ -78,10 +57,5 @@ class PayAfterDelivery extends BasePaymentOption
         $gatewayInfo->addBankAccountAsString($data['bankaccount']);
         $gatewayInfo->addBirthdayAsString($data['birthday']);
         return $gatewayInfo;
-    }
-
-    public function canProcessRefunds(): bool
-    {
-        return false;
     }
 }
