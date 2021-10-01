@@ -1,7 +1,6 @@
 <?php declare(strict_types=1);
 
 use MultiSafepay\Api\Transactions\OrderRequest;
-use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Services\OrderService;
@@ -9,6 +8,7 @@ use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\PrestaShop\Helper\CancelOrderHelper;
 use MultiSafepay\PrestaShop\Helper\DuplicateCartHelper;
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class MultisafepayPaymentModuleFrontController extends ModuleFrontController
 {
@@ -42,12 +42,14 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
             return;
         }
 
+        $selectedPaymentOption = $this->getSelectedPaymentOption();
+
         try {
             $validate = $this->module->validateOrder(
                 $this->context->cart->id,
                 Configuration::get('MULTISAFEPAY_OS_INITIALIZED'),
                 0,
-                $this->module->displayName,
+                $selectedPaymentOption->getPaymentOptionName(),
                 null,
                 ['dont_send_email' => true],
                 $this->context->cart->id_currency,
@@ -75,11 +77,8 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
 
         /** @var OrderService $orderService */
         $orderService = $this->get('multisafepay.order_service');
-        /** @var PaymentOptionService $paymentOptionService */
-        $paymentOptionService = $this->get('multisafepay.payment_option_service');
-        $paymentOption        = $paymentOptionService->getMultiSafepayPaymentOption(Tools::getValue('gateway'));
-
-        $orderRequest = $orderService->createOrderRequest($orderCollection, $paymentOption);
+        /** @var OrderRequest $orderRequest */
+        $orderRequest = $orderService->createOrderRequest($orderCollection, $selectedPaymentOption);
 
         if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
             LoggerHelper::logInfo(
@@ -171,5 +170,20 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
         }
 
         return $ordersIds;
+    }
+
+    /**
+     * Return the PaymentOption selected in checkout
+     *
+     * @return BasePaymentOption
+     * @throws Exception
+     */
+    private function getSelectedPaymentOption(): BasePaymentOption
+    {
+        /** @var PaymentOptionService $paymentOptionService */
+        $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
+        /** @var BasePaymentOption $paymentOption */
+        $paymentOption        = $paymentOptionService->getMultiSafepayPaymentOption(Tools::getValue('gateway'));
+        return $paymentOption;
     }
 }

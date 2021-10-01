@@ -233,7 +233,6 @@ class OrderService
         $paymentOptions = new PaymentOptions();
 
         return $paymentOptions
-            ->addNotificationMethod('GET')
             ->addNotificationUrl(Context::getContext()->link->getModuleLink('multisafepay', 'notification', [], true))
             ->addCancelUrl(
                 Context::getContext()->link->getModuleLink(

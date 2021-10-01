@@ -59,14 +59,10 @@ class SettingsBuilder
             'MULTISAFEPAY_OS_COMPLETED'        => ['default' => Configuration::get('PS_OS_PAYMENT')],
             'MULTISAFEPAY_OS_UNCLEARED'        => ['default' => Configuration::get('MULTISAFEPAY_OS_UNCLEARED')],
             'MULTISAFEPAY_OS_RESERVED'         => ['default' => Configuration::get('MULTISAFEPAY_OS_INITIALIZED')],
-            'MULTISAFEPAY_OS_VOID'             => ['default' => Configuration::get('PS_OS_CANCELED')],
             'MULTISAFEPAY_OS_CHARGEBACK'       => ['default' => Configuration::get('MULTISAFEPAY_OS_CHARGEBACK')],
             'MULTISAFEPAY_OS_REFUNDED'         => ['default' => Configuration::get('PS_OS_REFUND')],
-            'MULTISAFEPAY_OS_DECLINED'         => ['default' => Configuration::get('PS_OS_CANCELED')],
-            'MULTISAFEPAY_OS_EXPIRED'          => ['default' => Configuration::get('PS_OS_CANCELED')],
             'MULTISAFEPAY_OS_SHIPPED'          => ['default' => Configuration::get('PS_OS_SHIPPING')],
             'MULTISAFEPAY_OS_PARTIAL_REFUNDED' => ['default' => Configuration::get('MULTISAFEPAY_OS_PARTIAL_REFUNDED')],
-            'MULTISAFEPAY_OS_CANCELLED'        => ['default' => Configuration::get('PS_OS_CANCELED')],
         ];
     }
 
@@ -397,14 +393,10 @@ class SettingsBuilder
     {
         return [
             'initialized',
-            'declined',
-            'cancelled',
             'completed',
-            'expired',
             'uncleared',
             'refunded',
             'partial_refunded',
-            'void',
             'chargeback',
             'shipped',
         ];

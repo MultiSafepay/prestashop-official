@@ -41,9 +41,18 @@ services:
     arguments:
       - "@multisafepay"
       - "@multisafepay.sdk_service"
+
   multisafepay.refund_service:
     class: MultiSafepay\PrestaShop\Services\RefundService
     arguments:
       - "@multisafepay"
       - "@multisafepay.sdk_service"
       - "@multisafepay.payment_option_service"
+
+  multisafepay.notification_service:
+    class: MultiSafepay\PrestaShop\Services\NotificationService
+    arguments:
+      - "@multisafepay"
+      - "@multisafepay.sdk_service"
+      - "@multisafepay.payment_option_service"
+
