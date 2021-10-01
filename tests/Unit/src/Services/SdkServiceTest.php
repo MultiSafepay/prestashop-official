@@ -15,7 +15,7 @@ class SdkServiceTest extends BaseMultiSafepayTest
         parent::setUp();
 
         // Please set an API Key in your env file
-        $apiKey = getenv('MULTISAFEPAY_API_KEY') ?: '';
+        $apiKey = getenv('MULTISAFEPAY_API_KEY') ?: 'FAKE_API_KEY';
 
         $mockSdkService = $this->createPartialMock(SdkService::class, ['getApiKey', 'getTestMode']);
         $mockSdkService->expects(self::atLeastOnce())->method('getApiKey')->willReturn($apiKey);
