@@ -59,7 +59,7 @@ class PaymentOptionService
      */
     public function getMultiSafepayPaymentOption(string $gatewayCode): BasePaymentOption
     {
-        if (!empty($gatewayCode)) {
+        if (empty($gatewayCode)) {
             return new MultiSafepay($this->module);
         }
 

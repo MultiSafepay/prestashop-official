@@ -8,6 +8,8 @@ use MultiSafepay\PrestaShop\Services\IssuerService;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\TokenizationService;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
+use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay as MultiSafepayPaymentMethod;
+use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal;
 
 class PaymentOptionServiceTest extends BaseMultiSafepayTest
 {
@@ -73,5 +75,23 @@ class PaymentOptionServiceTest extends BaseMultiSafepayTest
         foreach ($paymentOptions as $paymentOption) {
             self::assertInstanceOf(BasePaymentOption::class, $paymentOption);
         }
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Services\PaymentOptionService::getMultiSafepayPaymentOption
+     */
+    public function testGetMultiSafepayPaymentOptionReturnInstanceOfMultiSafepayUsingEmptyArgument(): void
+    {
+        $paymentOption = $this->paymentOptionsService->getMultiSafepayPaymentOption('');
+        self::assertInstanceOf(MultiSafepayPaymentMethod::class, $paymentOption);
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Services\PaymentOptionService::getMultiSafepayPaymentOption
+     */
+    public function testGetMultiSafepayPaymentOptionReturnInstanceOfIdealUsingIdealArgument(): void
+    {
+        $paymentOption = $this->paymentOptionsService->getMultiSafepayPaymentOption('IDEAL');
+        self::assertInstanceOf(Ideal::class, $paymentOption);
     }
 }
