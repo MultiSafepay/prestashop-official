@@ -59,12 +59,17 @@ class PaymentOptionService
      */
     public function getMultiSafepayPaymentOption(string $gatewayCode): BasePaymentOption
     {
+        if (!empty($gatewayCode)) {
+            return new MultiSafepay($this->module);
+        }
+
         foreach ($this->getPaymentOptionClassNamesFromDirectory() as $className) {
             $paymentOption = new $className($this->module);
             if ($paymentOption->getGatewayCode() === $gatewayCode) {
                 return $paymentOption;
             }
         }
+
         return new MultiSafepay($this->module);
     }
 
