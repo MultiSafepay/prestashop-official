@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace MultiSafepay\PrestaShop\Services;
 
@@ -46,8 +46,8 @@ class PaymentOptionService
         foreach ($this->getPaymentOptionClassNamesFromDirectory() as $className) {
             $paymentOptions[] = new $className($this->module);
         }
-        usort($paymentOptions, function ($a, $b) {
-            return strcmp($a->getSortOrderPosition(), $b->getSortOrderPosition());
+        uasort($paymentOptions, function ($a, $b) {
+            return $a->getSortOrderPosition() - $b->getSortOrderPosition();
         });
         return $paymentOptions;
     }
