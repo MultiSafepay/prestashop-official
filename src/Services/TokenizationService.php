@@ -27,6 +27,8 @@ use Multisafepay;
 use MultiSafepay\Api\Tokens\Token;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
+use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+use Context;
 
 /**
  * Class TokenizationService
@@ -71,6 +73,41 @@ class TokenizationService
 
     /**
      * @param string $customerId
+     *
+     * @return Token[]
+     * @throws \Psr\Http\Client\ClientExceptionInterface
+     */
+    public function getTokensByCustomerId(string $customerId): array
+    {
+        $tokenManager = $this->sdkService->getSdk()->getTokenManager();
+
+        // The API will raise an error if there are no tokens for a customer, therefore we catch the error and return an empty array
+        try {
+            return $tokenManager->getList($customerId);
+        } catch (ApiException $exception) {
+            return [];
+        }
+    }
+
+    /**
+     * @param string $customerId
+     * @param string $tokenId
+     * @return bool
+     * @throws \Psr\Http\Client\ClientExceptionInterface
+     */
+    public function deleteToken(string $customerId, string $tokenId): bool
+    {
+        $tokenManager = $this->sdkService->getSdk()->getTokenManager();
+        try {
+            return $tokenManager->delete($tokenId, $customerId);
+        } catch (ApiException $exception) {
+            LoggerHelper::logError('There was an error when deleting a token: ' . $exception->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * @param string $customerId
      * @param BasePaymentOption $paymentOption
      *
      * @return array
@@ -106,5 +143,44 @@ class TokenizationService
         ];
 
         return $inputFields;
+    }
+
+    /**
+     * @return array
+     * @throws \Psr\Http\Client\ClientExceptionInterface
+     */
+    public function getTokensForCustomerAccount(): array
+    {
+        /** @var PaymentOptionService $paymentOptionService */
+        $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
+
+        $tokens = $this->getTokensByCustomerId((string)Context::getContext()->customer->id);
+
+        $customerTokens = [];
+        foreach ($tokens as $token) {
+            $paymentOption = $paymentOptionService->getMultiSafepayPaymentOption($token->getGatewayCode());
+            $customerTokens[] = [
+                'tokenId'           => $token->getToken(),
+                'display'           => $token->getDisplay(),
+                'expiryDate'        => $this->formatExpiryDate($token->getExpiryDate()),
+                'paymentOptionName' => $paymentOption->getName(),
+            ];
+        }
+
+        return $customerTokens;
+    }
+
+    /**
+     * @param mixed $expiryDate
+     * @return string
+     */
+    private function formatExpiryDate($expiryDate): string
+    {
+        if (is_null($expiryDate) || strlen((string)$expiryDate) !== 4) {
+            return '--';
+        }
+
+        $parts = str_split((string)$expiryDate, 2);
+        return $parts[1] . '/' . $parts[0];
     }
 }

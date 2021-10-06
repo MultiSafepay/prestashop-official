@@ -76,6 +76,7 @@ class Multisafepay extends PaymentModule
             $this->registerHook('actionSetInvoice') &&
             $this->registerHook('actionOrderStatusPostUpdate') &&
             $this->registerHook('actionOrderSlipAdd') &&
+            $this->registerHook('displayCustomerAccount') &&
             $this->registerHook('actionEmailSendBefore');
     }
 
@@ -297,5 +298,16 @@ class Multisafepay extends PaymentModule
         }
 
         return $refundService->processRefund($order, $productList);
+    }
+
+    /**
+     * Display account block with link to MultiSafepay tokens list.
+     *
+     * @param array $params
+     * @return string
+     */
+    public function hookDisplayCustomerAccount(array $params)
+    {
+        return $this->context->smarty->display('module:multisafepay/views/templates/hook/tokens.tpl');
     }
 }
