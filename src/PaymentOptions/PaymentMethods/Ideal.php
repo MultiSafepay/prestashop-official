@@ -13,8 +13,8 @@ class Ideal extends BasePaymentOption
     protected $name = 'iDEAL';
     protected $gatewayCode = 'IDEAL';
     protected $logo = 'ideal.png';
-    public $hasConfigurableDirect = true;
-    public $hasConfigurableTokenization = true;
+    protected $hasConfigurableDirect = true;
+    protected $hasConfigurableTokenization = true;
 
     public function getTransactionType(): string
     {
