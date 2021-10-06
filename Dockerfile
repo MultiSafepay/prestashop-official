@@ -40,5 +40,10 @@ RUN curl -LkSso /usr/bin/mhsendmail 'https://github.com/mailhog/mhsendmail/relea
 chmod 0755 /usr/bin/mhsendmail && \
 echo 'sendmail_path = "/usr/bin/mhsendmail --smtp-addr=mailhog:1025"' >> /usr/local/etc/php/php.ini;
 
+# Set recommended PHP settings by PrestaShop documentation
+RUN sed -i "s/max_execution_time = 30/max_execution_time = 300/g" /usr/local/etc/php/php.ini && \
+    sed -i "s/memory_limit = 256M/memory_limit = 512M/g" /usr/local/etc/php/php.ini && \
+    sed -i "s/max_input_time = 60/max_input_time = 300/g" /usr/local/etc/php/php.ini;
+
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
