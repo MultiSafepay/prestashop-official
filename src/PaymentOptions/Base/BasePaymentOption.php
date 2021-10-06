@@ -127,7 +127,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             $inputFields = array_merge($inputFields, $this->getDirectTransactionInputFields());
         }
 
-        if (true === $this->allowTokenization()) {
+        if ($this->allowTokenization() === true) {
             /** @var TokenizationService $tokenizationService */
             $tokenizationService = $this->module->get('multisafepay.tokenization_service');
             $inputFields         = array_merge(
@@ -265,7 +265,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             ],
         ];
 
-        if (true === $this->hasConfigurableDirect) {
+        if ($this->hasConfigurableDirect === true) {
             $settings['MULTISAFEPAY_DIRECT_'.$this->getUniqueName()] = [
                 'type'       => 'switch',
                 'name'       => $this->module->l('Enable direct'),
@@ -278,7 +278,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             ];
         }
 
-        if (true === $this->hasConfigurableTokenization) {
+        if ($this->hasConfigurableTokenization === true) {
             $settings['MULTISAFEPAY_TOKENIZATION_'.$this->getUniqueName()] = [
                 'type'       => 'switch',
                 'name'       => $this->module->l('Enable tokenization'),
@@ -407,7 +407,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     public function isDirect(): bool
     {
         $isDirect = false;
-        if (true === $this->hasConfigurableDirect) {
+        if ($this->hasConfigurableDirect === true) {
             $isDirect = (bool)Configuration::get('MULTISAFEPAY_DIRECT_'.$this->getUniqueName());
         }
 
@@ -421,7 +421,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     {
         $allowTokenization = false;
         $customer          = Context::getContext()->customer;
-        if (true === $this->hasConfigurableTokenization && $customer !== null && !(bool)$customer->is_guest) {
+        if ($this->hasConfigurableTokenization === true && $customer !== null && !(bool)$customer->is_guest) {
             $allowTokenization = (bool)Configuration::get('MULTISAFEPAY_TOKENIZATION_'.$this->getUniqueName());
         }
 

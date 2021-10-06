@@ -244,6 +244,6 @@ class ShoppingCartService
      */
     private function productIsGift(array $product): bool
     {
-        return isset($product['is_gift']) && true === $product['is_gift'];
+        return isset($product['is_gift']) && $product['is_gift'] === true;
     }
 }
