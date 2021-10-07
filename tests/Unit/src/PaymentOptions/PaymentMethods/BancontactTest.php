@@ -6,7 +6,7 @@ use Multisafepay;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Bancontact;
 
-class AlipayTest extends BaseMultiSafepayTest
+class BancontactTest extends BaseMultiSafepayTest
 {
     /** @var Bancontact  */
     protected $bancontactPaymentMethod;
