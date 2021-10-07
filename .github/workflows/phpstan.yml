@@ -15,9 +15,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Run docker compose
-        run:  docker-compose up -d
-      - name: Install Composer dependencies PrestaShop 1.7
-        run:  docker exec -e XDEBUG_MODE=off --workdir /var/www/html/modules/multisafepay prestashop-1.7 composer install
+        run: docker-compose up -d app db
+      - name: Sleep for 60 seconds to let PrestaShop installation script finish the process
+        run: sleep 60s
+        shell: bash
+      - name: Install MultiSafepay plugin
+        run:  make install
       - name: Run PHPStan PrestaShop 1.7
-        run:  docker exec -e XDEBUG_MODE=off --workdir /var/www/html/modules/multisafepay prestashop-1.7 composer run-script phpstan
-
+        run:  make phpstan
