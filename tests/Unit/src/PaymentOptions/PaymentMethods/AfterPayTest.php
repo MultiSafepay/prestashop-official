@@ -24,7 +24,7 @@ class AfterPayTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\AfterPay::getPaymentOptionName
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\AfterPay::getName
      */
     public function testGetPaymentOptionName()
     {
@@ -34,7 +34,7 @@ class AfterPayTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\AfterPay::getPaymentOptionDescription
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\AfterPay::getDescription
      */
     public function testGetPaymentOptionDescription()
     {
@@ -44,7 +44,7 @@ class AfterPayTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\AfterPay::getPaymentOptionGatewayCode
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\AfterPay::getGatewayCode
      */
     public function testGetPaymentOptionGatewayCode()
     {
@@ -64,7 +64,7 @@ class AfterPayTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\AfterPay::getPaymentOptionLogo
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\AfterPay::getLogo
      */
     public function testGetPaymentOptionLogo()
     {
@@ -74,7 +74,7 @@ class AfterPayTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\AfterPay::getInputFields
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\AfterPay::getDirectTransactionInputFields
      */
     public function testGetDirectTransactionInputFields()
     {

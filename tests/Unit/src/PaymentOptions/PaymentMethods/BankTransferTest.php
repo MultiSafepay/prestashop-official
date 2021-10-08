@@ -23,7 +23,7 @@ class BankTransferTest extends BaseMultiSafepayTest
 
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\BankTransfer::getPaymentOptionName
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\BankTransfer::getName
      */
     public function testGetPaymentOptionName()
     {
@@ -33,7 +33,7 @@ class BankTransferTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\BankTransfer::getPaymentOptionDescription
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\BankTransfer::getDescription
      */
     public function testGetPaymentOptionDescription()
     {
@@ -43,7 +43,7 @@ class BankTransferTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\BankTransfer::getPaymentOptionGatewayCode
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\BankTransfer::getGatewayCode
      */
     public function testGetPaymentOptionGatewayCode()
     {
@@ -75,7 +75,7 @@ class BankTransferTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\BankTransfer::getPaymentOptionLogo
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\BankTransfer::getLogo
      */
     public function testGetPaymentOptionLogo()
     {

@@ -23,7 +23,7 @@ class AlipayTest extends BaseMultiSafepayTest
 
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Alipay::getPaymentOptionName
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Alipay::getName
      */
     public function testGetPaymentOptionName()
     {
@@ -33,7 +33,7 @@ class AlipayTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Alipay::getPaymentOptionDescription
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Alipay::getDescription
      */
     public function testGetPaymentOptionDescription()
     {
@@ -43,7 +43,7 @@ class AlipayTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Alipay::getPaymentOptionGatewayCode
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Alipay::getGatewayCode
      */
     public function testGetPaymentOptionGatewayCode()
     {
@@ -63,7 +63,7 @@ class AlipayTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Alipay::getPaymentOptionLogo
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Alipay::getLogo
      */
     public function testGetPaymentOptionLogo()
     {

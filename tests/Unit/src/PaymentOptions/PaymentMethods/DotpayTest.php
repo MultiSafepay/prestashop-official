@@ -24,7 +24,7 @@ class DotpayTest extends BaseMultiSafepayTest
 
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Dotpay::getPaymentOptionName
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Dotpay::getName
      */
     public function testGetPaymentOptionName()
     {
@@ -34,7 +34,7 @@ class DotpayTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Dotpay::getPaymentOptionDescription
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Dotpay::getDescription
      */
     public function testGetPaymentOptionDescription()
     {
@@ -44,7 +44,7 @@ class DotpayTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Dotpay::getPaymentOptionGatewayCode
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Dotpay::getGatewayCode
      */
     public function testGetPaymentOptionGatewayCode()
     {
@@ -64,7 +64,7 @@ class DotpayTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Dotpay::getPaymentOptionLogo
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Dotpay::getLogo
      */
     public function testGetPaymentOptionLogo()
     {

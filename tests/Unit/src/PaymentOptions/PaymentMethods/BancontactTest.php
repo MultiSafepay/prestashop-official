@@ -23,7 +23,7 @@ class BancontactTest extends BaseMultiSafepayTest
 
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Bancontact::getPaymentOptionName
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Bancontact::getName
      */
     public function testGetPaymentOptionName()
     {
@@ -33,7 +33,7 @@ class BancontactTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Bancontact::getPaymentOptionDescription
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Bancontact::getDescription
      */
     public function testGetPaymentOptionDescription()
     {
@@ -43,7 +43,7 @@ class BancontactTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Bancontact::getPaymentOptionGatewayCode
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Bancontact::getGatewayCode
      */
     public function testGetPaymentOptionGatewayCode()
     {
@@ -63,7 +63,7 @@ class BancontactTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Bancontact::getPaymentOptionLogo
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Bancontact::getLogo
      */
     public function testGetPaymentOptionLogo()
     {

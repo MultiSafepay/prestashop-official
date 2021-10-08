@@ -24,7 +24,7 @@ class CbcTest extends BaseMultiSafepayTest
 
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Cbc::getPaymentOptionName
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Cbc::getName
      */
     public function testGetPaymentOptionName()
     {
@@ -34,7 +34,7 @@ class CbcTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Cbc::getPaymentOptionDescription
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Cbc::getDescription
      */
     public function testGetPaymentOptionDescription()
     {
@@ -44,7 +44,7 @@ class CbcTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Cbc::getPaymentOptionGatewayCode
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Cbc::getGatewayCode
      */
     public function testGetPaymentOptionGatewayCode()
     {
@@ -64,7 +64,7 @@ class CbcTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Cbc::getPaymentOptionLogo
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Cbc::getLogo
      */
     public function testGetPaymentOptionLogo()
     {

@@ -23,7 +23,7 @@ class BelfiusTest extends BaseMultiSafepayTest
 
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Belfius::getPaymentOptionName
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Belfius::getName
      */
     public function testGetPaymentOptionName()
     {
@@ -33,7 +33,7 @@ class BelfiusTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Belfius::getPaymentOptionDescription
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Belfius::getDescription
      */
     public function testGetPaymentOptionDescription()
     {
@@ -43,7 +43,7 @@ class BelfiusTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Belfius::getPaymentOptionGatewayCode
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Belfius::getGatewayCode
      */
     public function testGetPaymentOptionGatewayCode()
     {
@@ -63,7 +63,7 @@ class BelfiusTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Belfius::getPaymentOptionLogo
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Belfius::getLogo
      */
     public function testGetPaymentOptionLogo()
     {

@@ -72,7 +72,7 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getInputFields
+     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getDirectTransactionInputFields
      */
     public function testGetDirectTransactionInputFields()
     {
