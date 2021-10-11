@@ -95,12 +95,11 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
     public function getTransactionType(): string
     {
-        $transactionType = self::REDIRECT_TYPE;
         if ($this->isDirect()) {
-            $transactionType = self::DIRECT_TYPE;
+            return self::DIRECT_TYPE;
         }
 
-        return $transactionType;
+        return self::REDIRECT_TYPE;
     }
 
     public function getFrontEndName(): string
@@ -127,7 +126,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             $inputFields = array_merge($inputFields, $this->getDirectTransactionInputFields());
         }
 
-        if ($this->allowTokenization() === true) {
+        if ($this->allowTokenization()) {
             /** @var TokenizationService $tokenizationService */
             $tokenizationService = $this->module->get('multisafepay.tokenization_service');
             $inputFields         = array_merge(
@@ -218,7 +217,10 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'value'      => $this->settingToArray(
                     Configuration::get('MULTISAFEPAY_COUNTRIES_'.$this->getUniqueName())
                 ),
-                'options'    => $this->getCountriesForSettings(),
+                'options'    => $this->mapArrayForSettings(
+                    Country::getCountries((int)Context::getContext()->language->id, true),
+                    'id_country'
+                ),
                 'helperText' => $this->module->l('Leave blank to support all countries'),
                 'default'    => '',
                 'order'      => 60,
@@ -240,7 +242,10 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'value'      => $this->settingToArray(
                     Configuration::get('MULTISAFEPAY_CUSTOMER_GROUPS_'.$this->getUniqueName())
                 ),
-                'options'    => $this->getGroupsForSettings(),
+                'options'    => $this->mapArrayForSettings(
+                    Group::getGroups((int)Context::getContext()->language->id),
+                    'id_group'
+                ),
                 'helperText' => $this->module->l('Leave blank to support all customer groups'),
                 'default'    => '',
                 'order'      => 80,
@@ -251,7 +256,17 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'value'      => $this->settingToArray(
                     Configuration::get('MULTISAFEPAY_CARRIERS_'.$this->getUniqueName())
                 ),
-                'options'    => $this->getCarrierForSettings(),
+                'options'    => $this->mapArrayForSettings(
+                    Carrier::getCarriers(
+                        Context::getContext()->language->id,
+                        false,
+                        false,
+                        false,
+                        null,
+                        Carrier::ALL_CARRIERS
+                    ),
+                    'id_carrier'
+                ),
                 'helperText' => $this->module->l('Leave blank to support all carriers'),
                 'default'    => '',
                 'order'      => 81,
@@ -265,7 +280,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             ],
         ];
 
-        if ($this->hasConfigurableDirect === true) {
+        if ($this->hasConfigurableDirect) {
             $settings['MULTISAFEPAY_DIRECT_'.$this->getUniqueName()] = [
                 'type'       => 'switch',
                 'name'       => $this->module->l('Enable direct'),
@@ -278,7 +293,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             ];
         }
 
-        if ($this->hasConfigurableTokenization === true) {
+        if ($this->hasConfigurableTokenization) {
             $settings['MULTISAFEPAY_TOKENIZATION_'.$this->getUniqueName()] = [
                 'type'       => 'switch',
                 'name'       => $this->module->l('Enable tokenization'),
@@ -316,73 +331,21 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     }
 
     /**
+     * @param array $list
+     * @param string $idKey
+     *
      * @return array
      */
-    protected function getCountriesForSettings(): array
+    protected function mapArrayForSettings(array $list, string $idKey)
     {
-        $returnArray = [];
-        $countries   = Country::getCountries((int)Context::getContext()->language->id, true);
-        if (empty($countries)) {
-            return [];
+        $result = [];
+        foreach ($list as $item) {
+            $resultItem['id']   = $item[$idKey];
+            $resultItem['name'] = $item['name'];
+            $result[]           = $resultItem;
         }
 
-        foreach ($countries as $country) {
-            $returnArray[] = [
-                'id'   => $country['id_country'],
-                'name' => $country['name'],
-            ];
-        }
-
-        return $returnArray;
-    }
-
-    /**
-     * @return array
-     */
-    protected function getCarrierForSettings(): array
-    {
-        $returnArray = [];
-        $carriers    = Carrier::getCarriers(
-            Context::getContext()->language->id,
-            false,
-            false,
-            false,
-            null,
-            Carrier::ALL_CARRIERS
-        );
-        if (empty($carriers)) {
-            return [];
-        }
-
-        foreach ($carriers as $carrier) {
-            $returnArray[] = [
-                'id'   => $carrier['id_carrier'],
-                'name' => $carrier['name'],
-            ];
-        }
-
-        return $returnArray;
-    }
-
-    /**
-     * @return array
-     */
-    protected function getGroupsForSettings(): array
-    {
-        $returnArray = [];
-        $groups      = Group::getGroups((int)Context::getContext()->language->id);
-        if (empty($groups)) {
-            return [];
-        }
-
-        foreach ($groups as $group) {
-            $returnArray[] = [
-                'id'   => $group['id_group'],
-                'name' => $group['name'],
-            ];
-        }
-
-        return $returnArray;
+        return $result;
     }
 
     public function isActive(): bool
@@ -406,12 +369,11 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      */
     public function isDirect(): bool
     {
-        $isDirect = false;
-        if ($this->hasConfigurableDirect === true) {
-            $isDirect = (bool)Configuration::get('MULTISAFEPAY_DIRECT_'.$this->getUniqueName());
+        if ($this->hasConfigurableDirect) {
+            return (bool)Configuration::get('MULTISAFEPAY_DIRECT_'.$this->getUniqueName());
         }
 
-        return $isDirect;
+        return false;
     }
 
     /**
@@ -419,13 +381,12 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      */
     public function allowTokenization(): bool
     {
-        $allowTokenization = false;
-        $customer          = Context::getContext()->customer;
-        if ($this->hasConfigurableTokenization === true && $customer !== null && !(bool)$customer->is_guest) {
-            $allowTokenization = (bool)Configuration::get('MULTISAFEPAY_TOKENIZATION_'.$this->getUniqueName());
+        $customer = Context::getContext()->customer;
+        if ($this->hasConfigurableTokenization && $customer !== null && !(bool)$customer->is_guest) {
+            return (bool)Configuration::get('MULTISAFEPAY_TOKENIZATION_'.$this->getUniqueName());
         }
 
-        return $allowTokenization;
+        return false;
     }
 
 
