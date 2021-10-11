@@ -157,7 +157,7 @@ class Installer
                 'send_mail' => true,
                 'color'     => '#ec2e15',
                 'invoice'   => false,
-                'template'  => '',
+                'template'  => 'refund',
                 'paid'      => false,
                 'logable'   => false
             ],
