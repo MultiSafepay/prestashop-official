@@ -427,4 +427,14 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
         return $allowTokenization;
     }
+
+
+    /**
+     * @param Context $context
+     *
+     * @return void
+     */
+    public function registerJavascript(Context $context): void
+    {
+    }
 }

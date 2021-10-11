@@ -74,6 +74,23 @@ class PaymentOptionService
     }
 
     /**
+     * Get all active MultiSafepay payment options
+     *
+     * @return array
+     */
+    public function getActivePaymentOptions(): array
+    {
+        $paymentOptions = [];
+        foreach ($this->getMultiSafepayPaymentOptions() as $paymentOption) {
+            if ($paymentOption->isActive()) {
+                $paymentOptions[] = $paymentOption;
+            }
+        }
+
+        return $paymentOptions;
+    }
+
+    /**
      * Return  an array of MultiSafepay PaymentOptions
      *
      * @return array

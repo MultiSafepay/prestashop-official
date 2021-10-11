@@ -70,6 +70,7 @@ class Multisafepay extends PaymentModule
 
         return $install &&
             $this->registerHook('header') &&
+            $this->registerHook('actionFrontControllerSetMedia') &&
             $this->registerHook('backOfficeHeader') &&
             $this->registerHook('paymentReturn') &&
             $this->registerHook('paymentOptions') &&
@@ -131,6 +132,25 @@ class Multisafepay extends PaymentModule
     {
         $this->context->controller->addJS($this->_path.'/views/js/front.js');
         $this->context->controller->addCSS($this->_path.'/views/css/front.css');
+    }
+
+    /**
+     * Add the CSS & JavaScript files you want to be added on the FO.
+     *
+     */
+    public function hookActionFrontControllerSetMedia(array $params): void
+    {
+        if ($this->context->controller->php_self !== 'order') {
+            return;
+        }
+
+        /** @var PaymentOptionService $paymentOptionService */
+        $paymentOptionService = $this->get('multisafepay.payment_option_service');
+
+        $paymentOptions = $paymentOptionService->getActivePaymentOptions();
+        foreach ($paymentOptions as $paymentOption) {
+            $paymentOption->registerJavascript($this->context);
+        }
     }
 
     /**
