@@ -45,10 +45,10 @@ class Einvoicing extends BasePaymentOption
         ];
     }
 
-    public function getGatewayInfo(Order $order, array $data = []): GatewayInfoInterface
+    public function getGatewayInfo(Order $order, array $data = []): ?GatewayInfoInterface
     {
         if (empty($data['bankaccount']) && empty($data['birthday'])) {
-            return new BaseGatewayInfo();
+            return null;
         }
 
         $gatewayInfo = new Meta();

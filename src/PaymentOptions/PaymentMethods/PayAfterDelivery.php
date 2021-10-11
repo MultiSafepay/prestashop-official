@@ -4,7 +4,6 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
-use MultiSafepay\PrestaShop\PaymentOptions\Base\BaseGatewayInfo;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Meta;
 use MultiSafepay\Exception\InvalidArgumentException;
 use Tools;
@@ -44,10 +43,10 @@ class PayAfterDelivery extends BasePaymentOption
         ];
     }
 
-    public function getGatewayInfo(Order $order, array $data = []): GatewayInfoInterface
+    public function getGatewayInfo(Order $order, array $data = []): ?GatewayInfoInterface
     {
         if (empty($data['bankaccount']) && empty($data['birthday'])) {
-            return new BaseGatewayInfo();
+            return null;
         }
 
         $gatewayInfo = new Meta();

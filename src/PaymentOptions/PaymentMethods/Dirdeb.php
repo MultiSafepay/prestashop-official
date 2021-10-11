@@ -4,7 +4,6 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
-use MultiSafepay\PrestaShop\PaymentOptions\Base\BaseGatewayInfo;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Account;
 use MultiSafepay\ValueObject\IbanNumber;
 use MultiSafepay\Exception\InvalidArgumentException;
@@ -49,16 +48,16 @@ class Dirdeb extends BasePaymentOption
         ];
     }
 
-    public function getGatewayInfo(Order $order, array $data = []): GatewayInfoInterface
+    public function getGatewayInfo(Order $order, array $data = []): ?GatewayInfoInterface
     {
         if (empty($data['bankaccount']) && empty($data['account_holder_name'])) {
-            return new BaseGatewayInfo();
+            return null;
         }
 
         try {
             $ibanNumber = new IbanNumber($data['bankaccount']);
         } catch (InvalidArgumentException $invalidArgumentException) {
-            return new BaseGatewayInfo();
+            return null;
         }
 
         $gatewayInfo = new Account();

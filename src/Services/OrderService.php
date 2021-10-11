@@ -114,9 +114,9 @@ class OrderService
             );
         }
 
-        $gatewayInfoVars = Tools::getAllValues();
-        if ($gatewayInfoVars && $paymentOption->isDirect()) {
-            $orderRequest->addGatewayInfo($paymentOption->getGatewayInfo($firstOrder, $gatewayInfoVars));
+        $gatewayInfo = $paymentOption->getGatewayInfo($firstOrder, Tools::getAllValues());
+        if ($gatewayInfo !== null) {
+            $orderRequest->addGatewayInfo($gatewayInfo);
         }
 
         if ($paymentOption->allowTokenization()) {

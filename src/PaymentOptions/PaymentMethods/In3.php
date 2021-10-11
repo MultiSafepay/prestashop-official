@@ -66,10 +66,10 @@ class In3 extends BasePaymentOption
         ];
     }
 
-    public function getGatewayInfo(Order $order, array $data = []): GatewayInfoInterface
+    public function getGatewayInfo(Order $order, array $data = []): ?GatewayInfoInterface
     {
         if (empty($data['gender']) && empty($data['birthday'])) {
-            return new BaseGatewayInfo();
+            return null;
         }
 
         $gatewayInfo = new Meta();

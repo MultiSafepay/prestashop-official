@@ -36,10 +36,10 @@ class Ideal extends BasePaymentOption
         ];
     }
 
-    public function getGatewayInfo(Order $order, array $data = []): GatewayInfoInterface
+    public function getGatewayInfo(Order $order, array $data = []): ?GatewayInfoInterface
     {
         if (!isset($data['issuer_id'])) {
-            return parent::getGatewayInfo($order, $data);
+            return null;
         }
         $gatewayInfo = new \MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Ideal();
         $gatewayInfo->addIssuerId($data['issuer_id']);

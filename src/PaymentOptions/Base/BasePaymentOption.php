@@ -394,11 +394,11 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      * @param Order $order
      * @param array $data
      *
-     * @return GatewayInfoInterface
+     * @return GatewayInfoInterface|null
      */
-    public function getGatewayInfo(Order $order, array $data = []): GatewayInfoInterface
+    public function getGatewayInfo(Order $order, array $data = []): ?GatewayInfoInterface
     {
-        return new BaseGatewayInfo();
+        return null;
     }
 
     /**
