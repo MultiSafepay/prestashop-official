@@ -79,16 +79,18 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
         $output = $this->payAfterDeliveryPaymentMethod->getDirectTransactionInputFields();
         self::assertIsArray($output);
         self::assertContains([
-            'type' => 'date',
-            'name'  => 'birthday',
+            'type'        => 'date',
+            'name'        => 'birthday',
             'placeholder' => '',
-            'value' => ''
+            'value'       => '',
+            'order'       => 1
         ], $output);
         self::assertContains([
-            'type' => 'text',
-            'name'  => 'bankaccount',
+            'type'        => 'text',
+            'name'        => 'bankaccount',
             'placeholder' => '',
-            'value' => ''
+            'value'       => '',
+            'order'       => 2
         ], $output);
     }
 
@@ -100,9 +102,10 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
         $output = $this->payAfterDeliveryPaymentMethod->getInputFields();
         self::assertIsArray($output);
         self::assertContains([
-            'type' => 'hidden',
+            'type'  => 'hidden',
             'name'  => 'gateway',
             'value' => 'PAYAFTER',
+            'order' => 100
         ], $output);
     }
 }

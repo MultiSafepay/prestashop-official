@@ -41,5 +41,7 @@ parameters:
     - '#Parameter \#1 \$order of method [a-zA-Z0-9\\_]+::createDeliveryDetails\(\) expects Order, ObjectModel\|false given.#'
     - '#Call to function is_null\(\) with MultiSafepay\\Sdk will always evaluate to false.#'
     - '#Parameter \#1 \$body of method [a-zA-Z0-9\\_]+::processNotification\(\) expects string, bool\|string given.#'
+    - '#Call to an undefined method AdminController\|FrontController::registerStylesheet\(\)#'
     - '#Call to an undefined method AdminController\|FrontController::registerJavascript\(\).#'
 
+>>>>>>> main

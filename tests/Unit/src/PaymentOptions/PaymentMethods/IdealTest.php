@@ -110,9 +110,10 @@ class IdealTest extends BaseMultiSafepayTest
         $output = $this->idealPaymentOption->getInputFields();
         self::assertIsArray($output);
         self::assertContains([
-            'type' => 'hidden',
+            'type'  => 'hidden',
             'name'  => 'gateway',
             'value' => 'IDEAL',
+            'order' => 100
         ], $output);
     }
 }

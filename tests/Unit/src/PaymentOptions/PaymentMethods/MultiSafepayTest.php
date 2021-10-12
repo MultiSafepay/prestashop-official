@@ -95,9 +95,10 @@ class MultiSafepayTest extends BaseMultiSafepayTest
         $output = $this->multiSafepayPaymentMethod->getInputFields();
         self::assertIsArray($output);
         self::assertContains([
-            'type' => 'hidden',
+            'type'  => 'hidden',
             'name'  => 'gateway',
             'value' => '',
+            'order' => 100
         ], $output);
     }
 }

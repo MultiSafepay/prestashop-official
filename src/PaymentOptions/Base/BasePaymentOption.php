@@ -119,6 +119,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'type'  => 'hidden',
                 'name'  => 'gateway',
                 'value' => $this->getGatewayCode(),
+                'order' => 100,
             ],
         ];
 
@@ -137,6 +138,15 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 )
             );
         }
+
+        return $this->sortInputFields($inputFields);
+    }
+
+    public function sortInputFields(array $inputFields): array
+    {
+        uasort($inputFields, function ($a, $b) {
+            return $a['order'] - $b['order'];
+        });
 
         return $inputFields;
     }
@@ -306,14 +316,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             ];
         }
 
-        uasort(
-            $settings,
-            function ($a, $b) {
-                return $a['order'] - $b['order'];
-            }
-        );
-
-        return $settings;
+        return $this->sortInputFields($settings);
     }
 
     /**

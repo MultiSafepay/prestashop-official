@@ -108,7 +108,7 @@ class PaymentOptionService
             $option = new PaymentOption();
             $option->setCallToActionText($paymentMethod->getFrontEndName());
             $option->setAction($paymentMethod->getAction());
-            $option->setForm($this->module->getMultiSafepayPaymentOptionForm($paymentMethod->getGatewayCode(), $paymentMethod->getInputFields()));
+            $option->setForm($this->module->getMultiSafepayPaymentOptionForm($paymentMethod));
             if (!empty($paymentMethod->getLogo())) {
                 $option->setLogo($this->getLogoByName($paymentMethod->getLogo()));
             }

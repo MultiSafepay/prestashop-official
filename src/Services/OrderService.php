@@ -123,7 +123,7 @@ class OrderService
             if ($this->shouldSaveToken()) {
                 $orderRequest->addRecurringModel('cardOnFile');
             }
-            if ($this->getToken() !== null) {
+            if ($this->getToken() !== null && 'new' !== $this->getToken()) {
                 $orderRequest->addRecurringId($this->getToken());
                 $orderRequest->addType(BasePaymentOption::DIRECT_TYPE);
             }

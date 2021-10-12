@@ -32,6 +32,7 @@ class Ideal extends BasePaymentOption
                 'name'        => 'issuer_id',
                 'placeholder' => $this->module->l('Select bank'),
                 'options'     => $issuerService->getIssuers($this->getGatewayCode()),
+                'order'       => 1,
             ],
         ];
     }

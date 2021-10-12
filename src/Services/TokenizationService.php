@@ -121,18 +121,26 @@ class TokenizationService
 
         if (!empty($tokens)) {
             $options = [];
+
             foreach ($tokens as $token) {
                 $options[] = [
                     'name'  => $token->getDisplay(),
                     'value' => $token->getToken(),
                 ];
             }
+
+            $options[] = [
+                'name'    => $this->module->l('Use new payment details'),
+                'value'   => 'new',
+            ];
+
             $inputFields[] = [
-                'type'        => 'select',
+                'type'        => 'radio',
                 'name'        => 'selectedToken',
+                'class'       => 'form-group-token-list',
                 'options'     => $options,
                 'placeholder' => $this->module->l('Payment details'),
-                'label' => $this->module->l('Select previous payment details or leave blank to enter new.'),
+                'order'       => 0
             ];
         }
 
@@ -140,6 +148,7 @@ class TokenizationService
             'type'  => 'checkbox',
             'name'  => 'saveToken',
             'label' => $this->module->l('Save payment details for future purchases.'),
+            'order' => 99,
         ];
 
         return $inputFields;

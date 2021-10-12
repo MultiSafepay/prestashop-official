@@ -14,6 +14,7 @@ use MultiSafepay\PrestaShop\Services\RefundService;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\Api\Transactions\UpdateRequest;
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Multisafepay extends PaymentModule
 {
@@ -69,7 +70,6 @@ class Multisafepay extends PaymentModule
         (new Installer($this))->install();
 
         return $install &&
-            $this->registerHook('header') &&
             $this->registerHook('actionFrontControllerSetMedia') &&
             $this->registerHook('backOfficeHeader') &&
             $this->registerHook('paymentReturn') &&
@@ -126,23 +126,24 @@ class Multisafepay extends PaymentModule
     /**
      * Add the CSS & JavaScript files you want to be added on the FO.
      *
-     * @return void
-     */
-    public function hookHeader(): void
-    {
-        $this->context->controller->addJS($this->_path.'/views/js/front.js');
-        $this->context->controller->addCSS($this->_path.'/views/css/front.css');
-    }
-
-    /**
-     * Add the CSS & JavaScript files you want to be added on the FO.
-     *
      */
     public function hookActionFrontControllerSetMedia(array $params): void
     {
         if ($this->context->controller->php_self !== 'order') {
             return;
         }
+
+        $this->context->controller->registerStylesheet(
+            'module-multisafepay-styles',
+            'modules/multisafepay/views/css/front.css'
+        );
+        $this->context->controller->registerJavascript(
+            'module-multisafepay-javascript',
+            'modules/multisafepay/views/js/front.js',
+            [
+                'priority' => 200,
+            ]
+        );
 
         /** @var PaymentOptionService $paymentOptionService */
         $paymentOptionService = $this->get('multisafepay.payment_option_service');
@@ -177,18 +178,16 @@ class Multisafepay extends PaymentModule
     /**
      * Return payment form
      *
-     * @param string $gatewayCode
-     * @param array $inputs
+     * @param BasePaymentOption $paymentOption
      * @return false|string
      * @throws SmartyException
      */
-    public function getMultiSafepayPaymentOptionForm(string $gatewayCode, array $inputs = [])
+    public function getMultiSafepayPaymentOptionForm(BasePaymentOption $paymentOption)
     {
         $this->context->smarty->assign(
             [
-                'action'       => $this->context->link->getModuleLink($this->name, 'payment', [], true),
-                'gateway'      => (!empty($gatewayCode)) ? strtolower($gatewayCode) : 'multisafepay',
-                'inputs'       => $inputs
+                'action'        => $this->context->link->getModuleLink($this->name, 'payment', [], true),
+                'paymentOption' => $paymentOption,
             ]
         );
         return $this->context->smarty->fetch('module:multisafepay/views/templates/front/form.tpl');
