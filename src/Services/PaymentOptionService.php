@@ -128,6 +128,10 @@ class PaymentOptionService
      */
     private function getLogoByName(string $name): string
     {
+        // If Generic Gateway, this will return a full URL
+        if ((strpos($name, 'http')) !== false) {
+            return $name;
+        }
 
         // Logo by language
         $logoLocale = _PS_MODULE_DIR_ . $this->module->name . '/views/img/' . str_replace('.png', '', $name) . '-'. strtolower(substr(Context::getContext()->language->locale, 0, 2)).'.png';

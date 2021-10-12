@@ -197,7 +197,7 @@ class NotificationService
         } else {
             $paymentOption = $this->paymentOptionService->getMultiSafepayPaymentOption($gatewayCode);
         }
-        return $paymentOption->getName();
+        return $paymentOption->getFrontEndName();
     }
 
     /**
