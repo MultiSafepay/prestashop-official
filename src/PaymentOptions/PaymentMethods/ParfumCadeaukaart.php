@@ -4,10 +4,10 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
-class Webshopgiftcard extends BasePaymentOption
+class ParfumCadeaukaart extends BasePaymentOption
 {
-    protected $name = 'Webshop gift card';
-    protected $gatewayCode = 'WEBSHOPGIFTCARD';
-    protected $logo = 'webshopgiftcard.png';
+    protected $name = 'Parfum cadeaukaart';
+    protected $gatewayCode = 'PARFUMCADEAUKAART';
+    protected $logo = 'parfumcadeaukaart.png';
     protected $canProcessRefunds = false;
 }

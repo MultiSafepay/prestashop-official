@@ -4,10 +4,10 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
-class Vvvcadeaukaart extends BasePaymentOption
+class NationaleTuinbon extends BasePaymentOption
 {
-    protected $name = 'VVV Cadeaukaart';
-    protected $gatewayCode = 'VVVGIFTCRD';
-    protected $logo = 'vvv.png';
+    protected $name = 'Nationale tuinbon';
+    protected $gatewayCode = 'NATIONALETUINBON';
+    protected $logo = 'nationaletuinbon.png';
     protected $canProcessRefunds = false;
 }

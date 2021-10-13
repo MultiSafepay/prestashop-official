@@ -4,10 +4,10 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
-class Wellnessgiftcard extends BasePaymentOption
+class PodiumCadeaukaart extends BasePaymentOption
 {
-    protected $name = 'Wellness gift card';
-    protected $gatewayCode = 'WELLNESSGIFTCARD';
-    protected $logo = 'wellnessgiftcard.png';
+    protected $name = 'Podium cadeaukaart';
+    protected $gatewayCode = 'PODIUM';
+    protected $logo = 'podium.png';
     protected $canProcessRefunds = false;
 }
