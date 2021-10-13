@@ -43,5 +43,3 @@ parameters:
     - '#Parameter \#1 \$body of method [a-zA-Z0-9\\_]+::processNotification\(\) expects string, bool\|string given.#'
     - '#Call to an undefined method AdminController\|FrontController::registerStylesheet\(\)#'
     - '#Call to an undefined method AdminController\|FrontController::registerJavascript\(\).#'
-
->>>>>>> main
