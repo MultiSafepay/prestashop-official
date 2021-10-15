@@ -37,7 +37,7 @@ class Multisafepay extends PaymentModule
         $this->displayName            = $this->l('MultiSafepay');
         $this->description            = $this->l('MultiSafepay payment plugin for PrestaShop');
         $this->confirmUninstall       = $this->l('Are you sure you want to uninstall MultiSafepay?');
-        $this->ps_versions_compliancy = ['min' => '1.7.0', 'max' => _PS_VERSION_];
+        $this->ps_versions_compliancy = ['min' => '1.7.6', 'max' => _PS_VERSION_];
     }
 
     /**
