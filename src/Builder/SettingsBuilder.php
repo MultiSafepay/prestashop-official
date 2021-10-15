@@ -45,24 +45,25 @@ class SettingsBuilder
     public static function getConfigFieldsAndDefaultValues(): array
     {
         return [
-            'MULTISAFEPAY_TEST_MODE'           => ['default' => '0'],
-            'MULTISAFEPAY_API_KEY'             => ['default' => 'live_api_key'],
-            'MULTISAFEPAY_TEST_API_KEY'        => ['default' => 'test_api_key'],
-            'MULTISAFEPAY_TIME_ACTIVE_VALUE'   => ['default' => '30'],
-            'MULTISAFEPAY_TIME_ACTIVE_UNIT'    => ['default' => self::DAYS],
-            'MULTISAFEPAY_GOOGLE_ANALYTICS_ID' => ['default' => ''],
-            'MULTISAFEPAY_ORDER_DESCRIPTION'   => ['default' => 'Payment for order: {order_reference}'],
-            'MULTISAFEPAY_OS_TRIGGER_SHIPPED'  => ['default' => Configuration::get('PS_OS_SHIPPING')],
-            'MULTISAFEPAY_DEBUG_MODE'          => ['default' => '0'],
-            'MULTISAFEPAY_SECOND_CHANCE'       => ['default' => '1'],
-            'MULTISAFEPAY_OS_INITIALIZED'      => ['default' => Configuration::get('MULTISAFEPAY_OS_INITIALIZED')],
-            'MULTISAFEPAY_OS_COMPLETED'        => ['default' => Configuration::get('PS_OS_PAYMENT')],
-            'MULTISAFEPAY_OS_UNCLEARED'        => ['default' => Configuration::get('MULTISAFEPAY_OS_UNCLEARED')],
-            'MULTISAFEPAY_OS_RESERVED'         => ['default' => Configuration::get('MULTISAFEPAY_OS_INITIALIZED')],
-            'MULTISAFEPAY_OS_CHARGEBACK'       => ['default' => Configuration::get('MULTISAFEPAY_OS_CHARGEBACK')],
-            'MULTISAFEPAY_OS_REFUNDED'         => ['default' => Configuration::get('PS_OS_REFUND')],
-            'MULTISAFEPAY_OS_SHIPPED'          => ['default' => Configuration::get('PS_OS_SHIPPING')],
-            'MULTISAFEPAY_OS_PARTIAL_REFUNDED' => ['default' => Configuration::get('MULTISAFEPAY_OS_PARTIAL_REFUNDED')],
+            'MULTISAFEPAY_TEST_MODE'                => ['default' => '0'],
+            'MULTISAFEPAY_API_KEY'                  => ['default' => 'live_api_key'],
+            'MULTISAFEPAY_TEST_API_KEY'             => ['default' => 'test_api_key'],
+            'MULTISAFEPAY_TIME_ACTIVE_VALUE'        => ['default' => '30'],
+            'MULTISAFEPAY_TIME_ACTIVE_UNIT'         => ['default' => self::DAYS],
+            'MULTISAFEPAY_GOOGLE_ANALYTICS_ID'      => ['default' => ''],
+            'MULTISAFEPAY_ORDER_DESCRIPTION'        => ['default' => 'Payment for order: {order_reference}'],
+            'MULTISAFEPAY_OS_TRIGGER_SHIPPED'       => ['default' => Configuration::get('PS_OS_SHIPPING')],
+            'MULTISAFEPAY_DEBUG_MODE'               => ['default' => '0'],
+            'MULTISAFEPAY_SECOND_CHANCE'            => ['default' => '1'],
+            'MULTISAFEPAY_CONFIRMATION_ORDER_EMAIL' => ['default' => '1'],
+            'MULTISAFEPAY_OS_INITIALIZED'           => ['default' => Configuration::get('MULTISAFEPAY_OS_INITIALIZED')],
+            'MULTISAFEPAY_OS_COMPLETED'             => ['default' => Configuration::get('PS_OS_PAYMENT')],
+            'MULTISAFEPAY_OS_UNCLEARED'             => ['default' => Configuration::get('MULTISAFEPAY_OS_UNCLEARED')],
+            'MULTISAFEPAY_OS_RESERVED'              => ['default' => Configuration::get('MULTISAFEPAY_OS_INITIALIZED')],
+            'MULTISAFEPAY_OS_CHARGEBACK'            => ['default' => Configuration::get('MULTISAFEPAY_OS_CHARGEBACK')],
+            'MULTISAFEPAY_OS_REFUNDED'              => ['default' => Configuration::get('PS_OS_REFUND')],
+            'MULTISAFEPAY_OS_SHIPPED'               => ['default' => Configuration::get('PS_OS_SHIPPING')],
+            'MULTISAFEPAY_OS_PARTIAL_REFUNDED'      => ['default' => Configuration::get('MULTISAFEPAY_OS_PARTIAL_REFUNDED')],
         ];
     }
 
@@ -181,6 +182,27 @@ class SettingsBuilder
                         'name'    => 'MULTISAFEPAY_SECOND_CHANCE',
                         'is_bool' => true,
                         'desc'    => $this->module->l('When a customer initiates but does not complete a payment, whatever the reason may be, MultiSafepay will send two Second Chance reminder emails. In the emails, MultiSafepay will include a link to allow the consumer to finalize the payment. The first Second Chance email is sent 1 hour after the transaction was initiated and the second after 24 hours. To receive second chance emails, this option must also be activated within your MultiSafepay account, otherwise it will not work.'),
+                        'values'  => [
+                            [
+                                'id'    => 'active_on',
+                                'value' => true,
+                                'label' => $this->module->l('Enabled'),
+                            ],
+                            [
+                                'id'    => 'active_off',
+                                'value' => false,
+                                'label' => $this->module->l('Disabled'),
+                            ],
+                        ],
+                        'section' => 'default'
+                    ],
+                    [
+                        'type'    => 'switch',
+                        'tab'     => 'general_settings',
+                        'label'   => $this->module->l('Send confirmation order email'),
+                        'name'    => 'MULTISAFEPAY_CONFIRMATION_ORDER_EMAIL',
+                        'is_bool' => true,
+                        'desc'    => $this->module->l('Send an email to the customer with the order details when a customer initiates an order, but has not yet completed the payment.'),
                         'values'  => [
                             [
                                 'id'    => 'active_on',

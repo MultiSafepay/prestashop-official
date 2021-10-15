@@ -51,7 +51,7 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
                 0,
                 $selectedPaymentOption->getFrontEndName(),
                 null,
-                ['dont_send_email' => true],
+                ['send_email' => (Configuration::get('MULTISAFEPAY_CONFIRMATION_ORDER_EMAIL') ?? false)],
                 $this->context->cart->id_currency,
                 false,
                 $this->context->customer->secure_key

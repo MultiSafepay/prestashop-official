@@ -201,7 +201,11 @@ class Multisafepay extends PaymentModule
      */
     public function hookActionEmailSendBefore(array $params): bool
     {
-        return !(isset($params['templateVars']['dont_send_email']) && $params['templateVars']['dont_send_email'] === true);
+        if (!isset($params['templateVars']['send_email'])) {
+            return true;
+        }
+
+        return !(empty($params['templateVars']['send_email']));
     }
 
     /**
