@@ -22,13 +22,31 @@ class SdkService
     private $sdk;
 
     /**
+     * @var Configuration
+     */
+    private $configuration;
+
+    /**
+     * SdkService constructor.
+     * @param Configuration $configuration
+     */
+    public function __construct($configuration = null)
+    {
+        if (is_null($configuration)) {
+            $this->configuration = new Configuration();
+        } else {
+            $this->configuration = $configuration;
+        }
+    }
+
+    /**
      * Returns if test mode is enable
      *
      * @return  boolean
      */
     public function getTestMode(): bool
     {
-        return (bool)Configuration::get('MULTISAFEPAY_TEST_MODE');
+        return (bool)$this->configuration::get('MULTISAFEPAY_TEST_MODE');
     }
 
     /**
@@ -40,9 +58,9 @@ class SdkService
     public function getApiKey(): string
     {
         if ($this->getTestMode()) {
-            return (string)Configuration::get('MULTISAFEPAY_TEST_API_KEY');
+            return (string)$this->configuration::get('MULTISAFEPAY_TEST_API_KEY');
         }
-        return (string)Configuration::get('MULTISAFEPAY_TEST_API_KEY');
+        return (string)$this->configuration::get('MULTISAFEPAY_API_KEY');
     }
 
     /**

@@ -5,6 +5,7 @@ namespace MultiSafepay\Tests\Services;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\Sdk;
+use Configuration;
 
 class SdkServiceTest extends BaseMultiSafepayTest
 {
@@ -14,14 +15,17 @@ class SdkServiceTest extends BaseMultiSafepayTest
     {
         parent::setUp();
 
-        // Please set an API Key in your env file
-        $apiKey = getenv('MULTISAFEPAY_API_KEY') ?: 'FAKE_API_KEY';
-
-        $mockSdkService = $this->createPartialMock(SdkService::class, ['getApiKey', 'getTestMode']);
-        $mockSdkService->expects(self::atLeastOnce())->method('getApiKey')->willReturn($apiKey);
-        $mockSdkService->expects(self::atLeastOnce())->method('getTestMode')->willReturn(true);
-
-        $this->sdkService = $mockSdkService;
+        $mockConfiguration = new class extends Configuration {
+            public static function get($key, $idLang = null, $idShopGroup = null, $idShop = null, $default = false)
+            {
+                if ($key === 'MULTISAFEPAY_API_KEY') {
+                    return 'MOCKED-REAL-API-KEY';
+                } elseif ($key === 'MULTISAFEPAY_TEST_API_KEY') {
+                    return 'MOCKED-TEST-API-KEY';
+                }
+            }
+        };
+        $this->sdkService = $this->getMockBuilder(SdkService::class)->setConstructorArgs([$mockConfiguration])->onlyMethods(['getTestMode'])->getMock();
     }
 
     /**
@@ -31,5 +35,23 @@ class SdkServiceTest extends BaseMultiSafepayTest
     {
         $output = $this->sdkService->getSdk();
         self::assertInstanceOf(Sdk::class, $output);
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Services\SdkService::getApiKey
+     */
+    public function testGetApiKeyWhenTestModeIsEnable()
+    {
+        $this->sdkService->method('getTestMode')->willReturn(true);
+        self::assertEquals('MOCKED-TEST-API-KEY', $this->sdkService->getApiKey());
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Services\SdkService::getApiKey
+     */
+    public function testGetApiKeyWhenTestModeIsDisable()
+    {
+        $this->sdkService->method('getTestMode')->willReturn(false);
+        self::assertEquals('MOCKED-REAL-API-KEY', $this->sdkService->getApiKey());
     }
 }
