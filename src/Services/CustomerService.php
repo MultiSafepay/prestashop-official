@@ -32,7 +32,7 @@ class CustomerService
             $invoiceAddress->address1,
             $invoiceAddress->address2,
             (new PrestaShopCountry($invoiceAddress->id_country))->iso_code,
-            State::getNameById($invoiceAddress->id_state) ? State::getNameById($invoiceAddress->id_state) : '',
+            State::getNameById($invoiceAddress->id_state) ?: '',
             $invoiceAddress->city,
             $invoiceAddress->postcode
         );
@@ -63,7 +63,7 @@ class CustomerService
             $shippingAddress->address1,
             $shippingAddress->address2,
             (new PrestaShopCountry($shippingAddress->id_country))->iso_code,
-            State::getNameById($shippingAddress->id_state) ? State::getNameById($shippingAddress->id_state) : '',
+            State::getNameById($shippingAddress->id_state) ?: '',
             $shippingAddress->city,
             $shippingAddress->postcode
         );
@@ -115,7 +115,7 @@ class CustomerService
             ->addLastName($lastName)
             ->addPhoneNumber(new PhoneNumber($phoneNumber))
             ->addLocale($languageCode)
-            ->addCompanyName($companyName ? $companyName : '');
+            ->addCompanyName($companyName ?: '');
 
         if (! empty($ipAddress)) {
             $customerDetails->addIpAddressAsString($ipAddress);

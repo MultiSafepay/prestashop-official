@@ -167,7 +167,7 @@ class OrderService
     {
         $orderTotal = 0;
         foreach ($orderCollection->getResults() as $order) {
-            $orderTotal = $orderTotal + $order->total_paid;
+            $orderTotal += $order->total_paid;
         }
 
         return $orderTotal;
@@ -184,7 +184,7 @@ class OrderService
     {
         $shippingTotal = 0;
         foreach ($orderCollection->getResults() as $order) {
-            $shippingTotal = $shippingTotal + $order->total_shipping;
+            $shippingTotal += $order->total_shipping;
         }
 
         return $shippingTotal;
@@ -200,10 +200,10 @@ class OrderService
         $timeActive     = (int)Configuration::get('MULTISAFEPAY_TIME_ACTIVE_VALUE');
         $timeActiveUnit = Configuration::get('MULTISAFEPAY_TIME_ACTIVE_UNIT');
         if ((string)$timeActiveUnit === 'days') {
-            $timeActive = $timeActive * 24 * 60 * 60;
+            $timeActive *= 24 * 60 * 60;
         }
         if ((string)$timeActiveUnit === 'hours') {
-            $timeActive = $timeActive * 60 * 60;
+            $timeActive *= 60 * 60;
         }
 
         return $timeActive;

@@ -162,7 +162,7 @@ class PaymentOptionService
         $orderCustomerGroups    = (new Customer($cart->id_customer))->id_default_group;
         $orderCarrierId         = $cart->id_carrier;
         $isVirtual              = $cart->isVirtualCart();
-        $isCartSplitted         = ($cart->getNbOfPackages() > 1) ? true : false;
+        $isCartSplitted         = $cart->getNbOfPackages() > 1;
 
         $paymentMethodSettings = $paymentMethod->getGatewaySettings();
 
