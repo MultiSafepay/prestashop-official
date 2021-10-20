@@ -11,6 +11,11 @@ if (typeof prestashop !== 'undefined') {
     );
 }
 
+// One Page Checkout PS support
+$(document).on('opc-load-payment:completed', function () {
+    checkIfDeviceSupportApplePay();
+});
+
 function checkIfDeviceSupportApplePay()
 {
     try {
