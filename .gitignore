@@ -15,4 +15,4 @@
 /.php_cs.dist
 /.config.xml
 /config.xml
-/logs
+/logs/multisafepay_log
