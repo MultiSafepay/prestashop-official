@@ -119,13 +119,8 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'type'  => 'hidden',
                 'name'  => 'gateway',
                 'value' => $this->getGatewayCode(),
-                'order' => 100,
             ],
         ];
-
-        if ($this->isDirect()) {
-            $inputFields = array_merge($inputFields, $this->getDirectTransactionInputFields());
-        }
 
         if ($this->allowTokenization()) {
             /** @var TokenizationService $tokenizationService */
@@ -139,7 +134,20 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             );
         }
 
-        return $this->sortInputFields($inputFields);
+        if ($this->isDirect()) {
+            $inputFields = array_merge($inputFields, $this->getDirectTransactionInputFields());
+        }
+
+        if ($this->allowTokenization()) {
+            /** @var TokenizationService $tokenizationService */
+            $tokenizationService = $this->module->get('multisafepay.tokenization_service');
+            $inputFields         = array_merge(
+                $inputFields,
+                $tokenizationService->createTokenizationSavePaymentDetailsCheckbox()
+            );
+        }
+
+        return $inputFields;
     }
 
     public function sortInputFields(array $inputFields): array

@@ -82,15 +82,13 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
             'type'        => 'date',
             'name'        => 'birthday',
             'placeholder' => '',
-            'value'       => '',
-            'order'       => 1
+            'value'       => ''
         ], $output);
         self::assertContains([
             'type'        => 'text',
             'name'        => 'bankaccount',
             'placeholder' => '',
-            'value'       => '',
-            'order'       => 2
+            'value'       => ''
         ], $output);
     }
 
@@ -104,8 +102,7 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
         self::assertContains([
             'type'  => 'hidden',
             'name'  => 'gateway',
-            'value' => 'PAYAFTER',
-            'order' => 100
+            'value' => 'PAYAFTER'
         ], $output);
     }
 }

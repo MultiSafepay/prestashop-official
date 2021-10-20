@@ -48,19 +48,14 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
 
         $mockTokenizationService = $this->getMockBuilder(TokenizationService::class)->setConstructorArgs(
             [$mockMultisafepay, $this->container->get('multisafepay.sdk_service')]
-        )->onlyMethods(['getTokensByCustomerIdAndGatewayCode'])->getMock();
-        $mockTokenizationService->method('getTokensByCustomerIdAndGatewayCode')->willReturn([]);
+        )->onlyMethods([])->getMock();
 
-        $output = $mockTokenizationService->createTokenizationCheckoutFields(
-            '1',
-            new MultiSafepayPaymentMethod($this->container->get('multisafepay'))
-        );
+        $output = $mockTokenizationService->createTokenizationSavePaymentDetailsCheckbox();
 
         self::assertCount(1, $output);
-        self::assertCount(4, $output[0]);
+        self::assertCount(3, $output[0]);
         self::assertEquals('checkbox', $output[0]['type']);
         self::assertEquals('saveToken', $output[0]['name']);
-        self::assertEquals('99', $output[0]['order']);
     }
 
     /**
@@ -107,7 +102,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
 
         $output = $mockTokenizationService->createTokenizationCheckoutFields('1', new Visa($mockMultisafepay));
 
-        self::assertCount(2, $output);
+        self::assertCount(1, $output);
         self::assertEquals('radio', $output[0]['type']);
         self::assertCount(2, $output[0]['options'][0]);
         self::assertEquals('12345VISA', $output[0]['options'][0]['name']);

@@ -97,8 +97,7 @@ class MultiSafepayTest extends BaseMultiSafepayTest
         self::assertContains([
             'type'  => 'hidden',
             'name'  => 'gateway',
-            'value' => '',
-            'order' => 100
+            'value' => ''
         ], $output);
     }
 }

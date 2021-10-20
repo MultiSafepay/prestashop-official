@@ -140,18 +140,22 @@ class TokenizationService
                 'class'       => 'form-group-token-list',
                 'options'     => $options,
                 'placeholder' => $this->module->l('Payment details'),
-                'order'       => 0
             ];
         }
 
-        $inputFields[] = [
-            'type'  => 'checkbox',
-            'name'  => 'saveToken',
-            'label' => $this->module->l('Save payment details for future purchases.'),
-            'order' => 99,
-        ];
-
         return $inputFields;
+    }
+
+
+    public function createTokenizationSavePaymentDetailsCheckbox(): array
+    {
+        return [
+            [
+                'type'  => 'checkbox',
+                'name'  => 'saveToken',
+                'label' => $this->module->l('Save payment details for future purchases.'),
+            ]
+        ];
     }
 
     /**

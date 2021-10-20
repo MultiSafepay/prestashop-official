@@ -33,14 +33,12 @@ class PayAfterDelivery extends BasePaymentOption
                 'name'          => 'birthday',
                 'placeholder'   => $this->module->l('Birthday'),
                 'value'         => Context::getContext()->customer->birthday ?? '',
-                'order'         => 1,
             ],
             [
                 'type'          => 'text',
                 'name'          => 'bankaccount',
                 'placeholder'   => $this->module->l('Bank Account'),
                 'value'         => '',
-                'order'         => 2,
             ]
         ];
     }

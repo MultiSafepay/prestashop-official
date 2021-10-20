@@ -112,8 +112,7 @@ class IdealTest extends BaseMultiSafepayTest
         self::assertContains([
             'type'  => 'hidden',
             'name'  => 'gateway',
-            'value' => 'IDEAL',
-            'order' => 100
+            'value' => 'IDEAL'
         ], $output);
     }
 }

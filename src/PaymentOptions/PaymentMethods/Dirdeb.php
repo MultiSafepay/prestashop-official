@@ -32,21 +32,18 @@ class Dirdeb extends BasePaymentOption
                 'name'          => 'account_holder_name',
                 'placeholder'   => $this->module->l('Account Holder Name'),
                 'value'         => '',
-                'order'         => 1,
             ],
             [
                 'type'          => 'text',
                 'name'          => 'bankaccount',
                 'placeholder'   => $this->module->l('Bank Account'),
                 'value'         => '',
-                'order'         => 2,
             ],
             [
                 'type'          => 'hidden',
                 'name'          => 'emandate',
                 'placeholder'   => '',
                 'value'         => '1',
-                'order'         => 3,
             ]
         ];
     }
