@@ -15,6 +15,7 @@ use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\Api\Transactions\UpdateRequest;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
+use Psr\Http\Client\ClientExceptionInterface;
 
 class Multisafepay extends PaymentModule
 {
@@ -218,7 +219,7 @@ class Multisafepay extends PaymentModule
         $currenciesModule = $this->getCurrency($cart->id_currency);
         if (is_array($currenciesModule)) {
             foreach ($currenciesModule as $currencyModule) {
-                if ($currencyOrder->id == $currencyModule['id_currency']) {
+                if ($currencyOrder->id === $currencyModule['id_currency']) {
                     return true;
                 }
             }
@@ -231,7 +232,7 @@ class Multisafepay extends PaymentModule
      *
      * @param array $params
      *
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws ClientExceptionInterface
      */
     public function hookActionSetInvoice(array $params): void
     {
@@ -259,8 +260,8 @@ class Multisafepay extends PaymentModule
         $sdkService         = $this->get('multisafepay.sdk_service');
         $transactionManager = $sdkService->getSdk()->getTransactionManager();
         $updateOrder        = new UpdateRequest();
-        $updateOrder->addData(['invoice_id'  => (string)$orderInvoiceNumber]);
-        $transactionManager->update((string) $order->reference, $updateOrder);
+        $updateOrder->addData(['invoice_id'  => $orderInvoiceNumber]);
+        $transactionManager->update($order->reference, $updateOrder);
     }
 
     /**
@@ -270,7 +271,7 @@ class Multisafepay extends PaymentModule
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws ClientExceptionInterface
      */
     public function hookActionOrderStatusPostUpdate(array $params): void
     {
@@ -294,18 +295,22 @@ class Multisafepay extends PaymentModule
             [
                 'status' => 'shipped',
                 'tracktrace_code' => $order->getWsShippingNumber(),
-                'carrier' => (new Carrier((int)$order->id_carrier))->name,
+                'carrier' => (new Carrier($order->id_carrier))->name,
                 'ship_date' => date('Y-m-d H:i:s')
             ]
         );
-        $transactionManager->update((string) $order->reference, $updateOrder);
+        $transactionManager->update($order->reference, $updateOrder);
     }
 
     /**
      * Process the refund action
      *
      * @param array $params
-     * @throws Exception
+     *
+     * @return bool
+     * @throws ClientExceptionInterface
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function hookActionOrderSlipAdd(array $params): bool
     {
@@ -327,9 +332,11 @@ class Multisafepay extends PaymentModule
      * Display account block with link to MultiSafepay tokens list.
      *
      * @param array $params
+     *
      * @return string
+     * @throws SmartyException
      */
-    public function hookDisplayCustomerAccount(array $params)
+    public function hookDisplayCustomerAccount(array $params): string
     {
         return $this->context->smarty->display('module:multisafepay/views/templates/hook/tokens.tpl');
     }
