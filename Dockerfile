@@ -9,7 +9,7 @@ RUN pecl install xdebug \
     && docker-php-ext-enable xdebug
 
 RUN { \
-        echo 'xdebug.mode=coverage,debug,develop'; \
+        echo 'xdebug.mode=debug'; \
         echo 'xdebug.start_with_request=trigger'; \
         echo 'xdebug.client_host=host.docker.internal'; \
         echo 'xdebug.idekey=PHPSTORM'; \
