@@ -340,4 +340,15 @@ class MultisafepayOfficial extends PaymentModule
     {
         return $this->context->smarty->display('module:multisafepayofficial/views/templates/hook/tokens.tpl');
     }
+
+    /**
+     * Used to display extra information by third party modules.
+     *
+     * @param array $params
+     * @return bool
+     */
+    public function hookPaymentReturn(array $params)
+    {
+        return false;
+    }
 }
