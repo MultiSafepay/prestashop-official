@@ -219,7 +219,7 @@ class Multisafepay extends PaymentModule
         $currenciesModule = $this->getCurrency($cart->id_currency);
         if (is_array($currenciesModule)) {
             foreach ($currenciesModule as $currencyModule) {
-                if ($currencyOrder->id === $currencyModule['id_currency']) {
+                if ($currencyOrder->id === (int)$currencyModule['id_currency']) {
                     return true;
                 }
             }
