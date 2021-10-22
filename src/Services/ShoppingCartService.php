@@ -4,7 +4,7 @@ namespace MultiSafepay\PrestaShop\Services;
 
 use Cart;
 use Configuration;
-use Multisafepay;
+use MultisafepayOfficial;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\ShoppingCart;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\ShoppingCart\ShippingItem;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
@@ -23,16 +23,16 @@ class ShoppingCartService
     public const PRESTASHOP_ROUNDING_PRECISION = 2;
 
     /**
-     * @var Multisafepay
+     * @var MultisafepayOfficial
      */
     private $module;
 
     /**
      * ShoppingCartService constructor.
      *
-     * @param Multisafepay $module
+     * @param MultisafepayOfficial $module
      */
-    public function __construct(Multisafepay $module)
+    public function __construct(MultisafepayOfficial $module)
     {
         $this->module = $module;
     }

@@ -7,7 +7,7 @@ use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
 use OrderState;
 use PrestaShopCollection;
 use Tab;
-use Multisafepay;
+use MultisafepayOfficial;
 
 /**
  * Class Uninstaller
@@ -16,16 +16,16 @@ class Uninstaller
 {
 
     /**
-     * @var Multisafepay
+     * @var MultisafepayOfficial
      */
     private $module;
 
     /**
      * Uninstaller constructor.
      *
-     * @param Multisafepay $module
+     * @param MultisafepayOfficial $module
      */
-    public function __construct(Multisafepay $module)
+    public function __construct(MultisafepayOfficial $module)
     {
         $this->module = $module;
     }
@@ -50,7 +50,7 @@ class Uninstaller
      */
     protected function uninstallMultiSafepayTab(): void
     {
-        $tabId = Tab::getIdFromClassName('AdminMultiSafepay');
+        $tabId = Tab::getIdFromClassName('AdminMultisafepayOfficial');
         $tab   = new Tab($tabId);
         $tab->delete();
     }

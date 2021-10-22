@@ -5,7 +5,7 @@ namespace MultiSafepay\PrestaShop\Builder;
 use Country;
 use Currency;
 use HelperForm;
-use Multisafepay;
+use MultisafepayOfficial;
 use Configuration;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOptionInterface;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
@@ -25,14 +25,15 @@ class SettingsBuilder
     public const DAYS = 'days';
 
     /**
-     * @var Multisafepay
+     * @var MultisafepayOfficial
      */
     private $module;
 
     /**
-     * SettingsService constructor.
+     * SettingsBuilder constructor.
+     * @param MultisafepayOfficial $module
      */
-    public function __construct(Multisafepay $module)
+    public function __construct(MultisafepayOfficial $module)
     {
         $this->module  = $module;
     }
@@ -80,7 +81,7 @@ class SettingsBuilder
         $context                       = Context::getContext();
         $helper->default_form_language = $context->language->id;
 
-        $helper->submit_action = 'submitMultisafepayModule';
+        $helper->submit_action = 'submitMultisafepayOfficialModule';
         $helper->currentIndex  = $context->link->getAdminLink('AdminModules', false)
             .'&configure='.$this->module->name.'&tab_module='.$this->module->tab.'&module_name='.$this->module->name;
         $helper->token         = Tools::getAdminTokenLite('AdminModules');
@@ -328,7 +329,7 @@ class SettingsBuilder
                 'customer_groups' => $groups
             ]
         );
-        return Context::getContext()->smarty->fetch('module:multisafepay/views/templates/admin/settings/payment-methods.tpl');
+        return Context::getContext()->smarty->fetch('module:multisafepayofficial/views/templates/admin/settings/payment-methods.tpl');
     }
 
     /**
@@ -339,7 +340,7 @@ class SettingsBuilder
      */
     public function getSupportHtmlContent(): string
     {
-        return Context::getContext()->smarty->fetch('module:multisafepay/views/templates/admin/settings/support.tpl');
+        return Context::getContext()->smarty->fetch('module:multisafepayofficial/views/templates/admin/settings/support.tpl');
     }
 
     /**

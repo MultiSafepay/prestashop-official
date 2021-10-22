@@ -9,7 +9,7 @@ use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultiSafepay\PrestaShop\Helper\OrderMessageHelper;
-use Multisafepay;
+use MultisafepayOfficial;
 use Order;
 use PrestaShopCollection;
 use PrestaShopException;
@@ -22,7 +22,7 @@ use Tools;
 class RefundService
 {
     /**
-     * @var Multisafepay
+     * @var MultisafepayOfficial
      */
     private $module;
 
@@ -39,10 +39,12 @@ class RefundService
     /**
      * RefundService constructor.
      *
+     * @param MultisafepayOfficial $module
      * @param SdkService $sdkService
+     * @param PaymentOptionService $paymentOptionService
      */
     public function __construct(
-        Multisafepay $module,
+        MultisafepayOfficial $module,
         SdkService $sdkService,
         PaymentOptionService $paymentOptionService
     ) {

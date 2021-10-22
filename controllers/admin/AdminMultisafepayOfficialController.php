@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-class AdminMultiSafepayController extends ModuleAdminController
+class AdminMultisafepayOfficialController extends ModuleAdminController
 {
     /**
      * @return bool|ObjectModel|void
@@ -15,7 +15,7 @@ class AdminMultiSafepayController extends ModuleAdminController
                 true,
                 [],
                 [
-                    'configure' => 'multisafepay',
+                    'configure' => 'multisafepayofficial',
                 ]
             )
         );

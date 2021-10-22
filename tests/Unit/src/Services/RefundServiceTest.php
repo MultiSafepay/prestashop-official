@@ -2,7 +2,7 @@
 
 namespace MultiSafepay\Tests\Services;
 
-use Multisafepay;
+use MultisafepayOfficial;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use Order;
@@ -22,7 +22,7 @@ class RefundServiceTest extends BaseMultiSafepayTest
     {
         parent::setUp();
         // Mock Multisafepay class. PaymentModule
-        $mockModule = $this->getMockBuilder(Multisafepay::class)->getMock();
+        $mockModule = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
         // Mock SdkService class
         $mockSdkService = $this->getMockBuilder(SdkService::class)->getMock();
         // Mock PaymentOptionService class

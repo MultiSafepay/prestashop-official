@@ -10,7 +10,7 @@ use MultiSafepay\PrestaShop\Helper\CancelOrderHelper;
 use MultiSafepay\PrestaShop\Helper\DuplicateCartHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
-class MultisafepayPaymentModuleFrontController extends ModuleFrontController
+class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontController
 {
 
     /**
@@ -108,7 +108,7 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
                 ]
             );
 
-            return $this->setTemplate('module:multisafepay/views/templates/front/error.tpl');
+            return $this->setTemplate('module:multisafepayofficial/views/templates/front/error.tpl');
         }
 
         if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
@@ -127,7 +127,7 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
     {
         $isValid = false;
         foreach (Module::getPaymentModules() as $module) {
-            if ($module['name'] == 'multisafepay') {
+            if ($module['name'] == 'multisafepayofficial') {
                 $isValid = true;
                 break;
             }
@@ -143,7 +143,7 @@ class MultisafepayPaymentModuleFrontController extends ModuleFrontController
     private function isContextSetUp(): bool
     {
         // If the module is not active or is being called out of context
-        if (!$this->module->active || !($this->module instanceof Multisafepay)) {
+        if (!$this->module->active || !($this->module instanceof MultisafepayOfficial)) {
             return false;
         }
 

@@ -24,7 +24,7 @@ The supported Payment Methods & Giftcards for this plugin can be found over here
 
 ## Installation through SFTP
 1) Extract Plugin_PrestaShop_5.x.x.zip
-2) Upload the multisafepay folder to prestashop_root/modules/multisafepay/
+2) Upload the multisafepay folder to prestashop_root/modules/multisafepayofficial/
 
 For additional information or instructions please see our [installation & configuration manual](https://docs.multisafepay.com/plugins/prestashop-1-7/manual/)
 

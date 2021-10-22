@@ -27,7 +27,7 @@ class OrderServiceTest extends BaseMultiSafepayTest
     {
 
         $output = $this->orderService->createPluginDetails();
-        self::assertEquals(\Multisafepay::getVersion(), $output->getData()['plugin_version']);
+        self::assertEquals(\MultisafepayOfficial::getVersion(), $output->getData()['plugin_version']);
         self::assertEquals('PrestaShop: '._PS_VERSION_, $output->getData()['shop_version']);
     }
 

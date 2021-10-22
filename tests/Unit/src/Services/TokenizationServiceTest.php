@@ -24,7 +24,7 @@
 
 namespace MultiSafepay\Tests\Services;
 
-use Multisafepay;
+use MultisafepayOfficial;
 use MultiSafepay\Api\TokenManager;
 use MultiSafepay\Api\Tokens\Token;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay as MultiSafepayPaymentMethod;
@@ -41,7 +41,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
      */
     public function testSaveTokenField()
     {
-        $mockMultisafepay = $this->getMockBuilder(Multisafepay::class)->getMock();
+        $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
         $mockMultisafepay->method('l')->willReturn(
             ''
         );
@@ -70,7 +70,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
             []
         );
 
-        $mockMultisafepay = $this->getMockBuilder(Multisafepay::class)->getMock();
+        $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
         $mockMultisafepay->method('get')->willReturn(
             $mockTokenizationServiceForGateway
         );

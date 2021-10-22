@@ -2,7 +2,7 @@
 
 namespace MultiSafepay\Tests\PaymentOptions;
 
-use Multisafepay;
+use MultisafepayOfficial;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery;
 
@@ -14,7 +14,7 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
     public function setUp(): void
     {
         parent::setUp();
-        $mockMultisafepay = $this->getMockBuilder(Multisafepay::class)->getMock();
+        $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
         $mockPayAfterDelivery = $this->getMockBuilder(PayAfterDelivery::class)->setConstructorArgs([$mockMultisafepay])->onlyMethods(['isDirect'])->getMock();
         $mockPayAfterDelivery->method('isDirect')->willReturn(true);
         $this->payAfterDeliveryPaymentMethod = $mockPayAfterDelivery;

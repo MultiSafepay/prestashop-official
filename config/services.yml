@@ -3,10 +3,10 @@ services:
     public: true
 
   multisafepay:
-    class: MultiSafepay
+    class: MultisafepayOfficial
     factory: ['Module', 'getInstanceByName']
     arguments:
-      - 'multisafepay'
+      - 'multisafepayofficial'
 
   multisafepay.sdk_service:
     class: MultiSafepay\PrestaShop\Services\SdkService

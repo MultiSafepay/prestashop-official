@@ -2,7 +2,7 @@
 
 namespace MultiSafepay\Tests\PaymentOptions;
 
-use Multisafepay;
+use MultisafepayOfficial;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal;
 use MultiSafepay\PrestaShop\Services\IssuerService;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
@@ -24,7 +24,7 @@ class IdealTest extends BaseMultiSafepayTest
             ]
         );
 
-        $mockMultisafepay = $this->getMockBuilder(Multisafepay::class)->getMock();
+        $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
         $mockMultisafepay->method('get')->with('multisafepay.issuer_service')->willReturn(
             $mockIssuerService
         );

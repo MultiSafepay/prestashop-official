@@ -1,25 +1,4 @@
 <?php declare(strict_types=1);
-/**
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
- * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
- *
- * @category    MultiSafepay
- * @package     Connect
- * @author      TechSupport <integration@multisafepay.com>
- * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
- * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- */
 
 namespace MultiSafepay\PrestaShop\Services;
 
@@ -29,11 +8,10 @@ use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\OrderMessageHelper;
 use MultiSafepay\Util\Notification;
-use Multisafepay;
+use MultisafepayOfficial;
 use Order;
 use OrderHistory;
 use OrderPayment;
-use PaymentModule;
 use PrestaShopException;
 use Tools;
 
@@ -45,7 +23,7 @@ use Tools;
 class NotificationService
 {
     /**
-     * @var Multisafepay
+     * @var MultisafepayOfficial
      */
     private $module;
 
@@ -62,11 +40,11 @@ class NotificationService
     /**
      * NotificationService constructor.
      *
-     * @param Multisafepay $module
+     * @param MultisafepayOfficial $module
      * @param SdkService $sdkService
      * @param PaymentOptionService $paymentOptionService
      */
-    public function __construct(Multisafepay $module, SdkService $sdkService, PaymentOptionService $paymentOptionService)
+    public function __construct(MultisafepayOfficial $module, SdkService $sdkService, PaymentOptionService $paymentOptionService)
     {
         $this->module = $module;
         $this->sdkService = $sdkService;
@@ -98,7 +76,7 @@ class NotificationService
                 throw new PrestaShopException($message);
             }
 
-            if ($order->module && $order->module !== 'multisafepay') {
+            if ($order->module && $order->module !== 'multisafepayofficial') {
                 $message = "It seems a notification is trying to process an order processed by another payment method. Transaction ID received is " . Tools::getValue('transactionid');
                 LoggerHelper::logWarning($message);
                 throw new PrestaShopException($message);

@@ -29,7 +29,7 @@
                 <directory>./upgrade</directory>
                 <directory>./vendor</directory>
                 <directory>./views</directory>
-                <file>./multisafepay.php</file>
+                <file>./multisafepayofficial.php</file>
                 <file>./index.php</file>
                 <file>./*/index.php</file>
                 <file>./*/*/index.php</file>

@@ -24,6 +24,6 @@ jobs:
         env:
           COMPOSE_INTERACTIVE_NO_CLI: 1
       - name: Run PHPUnit PrestaShop 1.7
-        run:  docker-compose exec -T --workdir /var/www/html/modules/multisafepay app vendor/bin/phpunit --testsuite prestashop-unit-tests
+        run:  docker-compose exec -T --workdir /var/www/html/modules/multisafepayofficial app vendor/bin/phpunit --testsuite prestashop-unit-tests
       - name: Send coverage.xml to codecov
         run:  bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }}

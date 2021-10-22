@@ -2,7 +2,7 @@
 
 namespace MultiSafepay\Tests\Services;
 
-use Multisafepay;
+use MultisafepayOfficial;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\IssuerService;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
@@ -36,7 +36,7 @@ class PaymentOptionServiceTest extends BaseMultiSafepayTest
             []
         );
 
-        $mockMultisafepay = $this->getMockBuilder(Multisafepay::class)->getMock();
+        $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
         $mockMultisafepay->method('get')->willReturnCallback([$this, 'multisafepayGetCallback']);
 
         $this->paymentOptionsService = new PaymentOptionService($mockMultisafepay);

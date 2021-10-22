@@ -2,7 +2,7 @@
 
 use MultiSafepay\PrestaShop\Services\NotificationService;
 
-class MultisafepayNotificationModuleFrontController extends ModuleFrontController
+class MultisafepayOfficialNotificationModuleFrontController extends ModuleFrontController
 {
 
     public function __construct()

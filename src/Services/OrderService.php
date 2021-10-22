@@ -13,7 +13,7 @@ use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PluginDetails;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\SecondChance;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
-use Multisafepay;
+use MultisafepayOfficial;
 use Order;
 use PrestaShopCollection;
 use Tools;
@@ -27,7 +27,7 @@ class OrderService
 {
 
     /**
-     * @var Multisafepay
+     * @var MultisafepayOfficial
      */
     private $module;
 
@@ -44,12 +44,12 @@ class OrderService
     /**
      * OrderService constructor.
      *
-     * @param Multisafepay $module
+     * @param MultisafepayOfficial $module
      * @param CustomerService $customerService
      * @param ShoppingCartService $shoppingCartService
      */
     public function __construct(
-        Multisafepay $module,
+        MultisafepayOfficial $module,
         CustomerService $customerService,
         ShoppingCartService $shoppingCartService
     ) {
@@ -219,7 +219,7 @@ class OrderService
         return $pluginDetails
             ->addApplicationName('PrestaShop ')
             ->addApplicationVersion('PrestaShop: '._PS_VERSION_)
-            ->addPluginVersion(Multisafepay::getVersion())
+            ->addPluginVersion(MultisafepayOfficial::getVersion())
             ->addShopRootUrl(Context::getContext()->shop->getBaseURL());
     }
 
@@ -233,10 +233,10 @@ class OrderService
         $paymentOptions = new PaymentOptions();
 
         return $paymentOptions
-            ->addNotificationUrl(Context::getContext()->link->getModuleLink('multisafepay', 'notification', [], true))
+            ->addNotificationUrl(Context::getContext()->link->getModuleLink('multisafepayofficial', 'notification', [], true))
             ->addCancelUrl(
                 Context::getContext()->link->getModuleLink(
-                    'multisafepay',
+                    'multisafepayofficial',
                     'cancel',
                     ['id_cart' => $order->id_cart, 'id_reference' => $order->reference],
                     true

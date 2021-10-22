@@ -6,7 +6,7 @@ use Configuration;
 use Language;
 use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
-use Multisafepay;
+use MultisafepayOfficial;
 use OrderState;
 use Tab;
 use Tools;
@@ -17,16 +17,16 @@ use Tools;
 class Installer
 {
     /**
-     * @var Multisafepay
+     * @var MultisafepayOfficial
      */
     private $module;
 
     /**
      * Uninstaller constructor.
      *
-     * @param Multisafepay $module
+     * @param MultisafepayOfficial $module
      */
-    public function __construct(Multisafepay $module)
+    public function __construct(MultisafepayOfficial $module)
     {
         $this->module = $module;
     }
@@ -51,9 +51,9 @@ class Installer
         $idParent = Tab::getIdFromClassName('IMPROVE');
 
         $tab             = new Tab();
-        $tab->class_name = 'AdminMultiSafepay';
+        $tab->class_name = 'AdminMultisafepayOfficial';
         $tab->id_parent  = $idParent;
-        $tab->module     = 'MultiSafepay';
+        $tab->module     = 'multisafepayofficial';
         $tab->active     = true;
         $tab->icon       = 'multisafepay icon-multisafepay';
         $languages       = Language::getLanguages(true);
@@ -121,7 +121,7 @@ class Installer
         $orderState->invoice     = $multisafepayOrderStatusValues['invoice'];
         $orderState->template    = $multisafepayOrderStatusValues['template'];
         $orderState->paid        = $multisafepayOrderStatusValues['paid'];
-        $orderState->module_name = 'multisafepay';
+        $orderState->module_name = 'multisafepayofficial';
         $orderState->add();
         return $orderState;
     }

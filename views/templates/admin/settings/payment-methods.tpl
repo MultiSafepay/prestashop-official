@@ -25,9 +25,9 @@
                                         <div class="col-lg-9">
                                             <span class="multisafepay-payment-methods-list-switch switch prestashop-switch fixed-width-lg">
                                                 <input type="radio" class="" name="{$optionId}" id="{$optionId}_on" value="1" {if ($option['value'] == 1)}checked="checked"{/if} >
-                                                <label for="{$optionId}_on">{l s='Enabled' mod='multisafepay'}</label>
+                                                <label for="{$optionId}_on">{l s='Enabled' mod='multisafepayofficial'}</label>
                                                 <input type="radio" class="" name="{$optionId}" id="{$optionId}_off" value="0" {if (empty($option['value']))}checked="checked"{/if}>
-                                                <label for="{$optionId}_off">{l s='Disabled' mod='multisafepay'}</label>
+                                                <label for="{$optionId}_off">{l s='Disabled' mod='multisafepayofficial'}</label>
                                                 <a class="slide-button btn"></a>
                                             </span>
                                             {if isset($option['helperText'])}

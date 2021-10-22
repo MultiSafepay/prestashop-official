@@ -10,7 +10,7 @@ use Currency;
 use Group;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\Services\TokenizationService;
-use Multisafepay;
+use MultisafepayOfficial;
 use Order;
 
 abstract class BasePaymentOption implements BasePaymentOptionInterface
@@ -59,11 +59,11 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     protected $hasConfigurableTokenization = false;
 
     /**
-     * @var Multisafepay
+     * @var MultisafepayOfficial
      */
     public $module;
 
-    public function __construct(Multisafepay $module)
+    public function __construct(MultisafepayOfficial $module)
     {
         $this->module = $module;
     }
@@ -90,7 +90,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
     public function getAction(): string
     {
-        return Context::getContext()->link->getModuleLink('multisafepay', 'payment', [], true);
+        return Context::getContext()->link->getModuleLink('multisafepayofficial', 'payment', [], true);
     }
 
     public function getTransactionType(): string

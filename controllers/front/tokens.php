@@ -2,7 +2,7 @@
 
 use MultiSafepay\PrestaShop\Services\TokenizationService;
 
-class MultisafepayTokensModuleFrontController extends ModuleFrontController
+class MultisafepayOfficialTokensModuleFrontController extends ModuleFrontController
 {
 
     /**
@@ -43,7 +43,7 @@ class MultisafepayTokensModuleFrontController extends ModuleFrontController
             'tokens' => $tokenizationService->getTokensForCustomerAccount(),
         ]);
 
-        return $this->setTemplate('module:multisafepay/views/templates/front/tokens.tpl');
+        return $this->setTemplate('module:multisafepayofficial/views/templates/front/tokens.tpl');
     }
 
     /**
@@ -64,8 +64,8 @@ class MultisafepayTokensModuleFrontController extends ModuleFrontController
         $breadcrumb = parent::getBreadcrumbLinks();
         $breadcrumb['links'][] = $this->addMyAccountToBreadcrumb();
         $breadcrumb['links'][] = [
-            'title' => $this->trans('Saved payment details', [], 'multisafepay'),
-            'url' => $this->context->link->getModuleLink('multisafepay', 'tokens'),
+            'title' => $this->trans('Saved payment details', [], 'multisafepayofficial'),
+            'url' => $this->context->link->getModuleLink('multisafepayofficial', 'tokens'),
         ];
 
         return $breadcrumb;

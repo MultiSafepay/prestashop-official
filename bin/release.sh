@@ -6,7 +6,7 @@ set -eo pipefail
 RELEASE_VERSION=$1
 
 FILENAME_PREFIX="Plugin_PrestaShop_"
-FOLDER_PREFIX="multisafepay"
+FOLDER_PREFIX="multisafepayofficial"
 RELEASE_FOLDER=".dist"
 
 # If tag is not supplied, latest tag is used

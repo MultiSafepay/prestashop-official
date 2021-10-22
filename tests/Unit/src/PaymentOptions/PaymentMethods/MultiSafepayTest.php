@@ -2,7 +2,7 @@
 
 namespace MultiSafepay\Tests\PaymentOptions;
 
-use Multisafepay;
+use MultisafepayOfficial;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay as MultiSafepayPaymentMethod;
 

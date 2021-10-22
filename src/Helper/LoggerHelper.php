@@ -4,7 +4,7 @@ namespace MultiSafepay\PrestaShop\Helper;
 
 class LoggerHelper
 {
-    const MULTISAFEPAY_LOG_DESTINATION  = _PS_MODULE_DIR_ . 'multisafepay/logs/multisafepay_log';
+    const MULTISAFEPAY_LOG_DESTINATION  = _PS_MODULE_DIR_ . 'multisafepayofficial/logs/multisafepay_log';
 
     const LEVEL_VALUE = [
         0 => 'EMERGENCY',

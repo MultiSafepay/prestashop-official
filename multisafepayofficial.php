@@ -17,7 +17,7 @@ use MultiSafepay\Api\Transactions\UpdateRequest;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use Psr\Http\Client\ClientExceptionInterface;
 
-class Multisafepay extends PaymentModule
+class MultisafepayOfficial extends PaymentModule
 {
 
     public const MULTISAFEPAY_MODULE_VERSION = '5.0.0';
@@ -27,7 +27,7 @@ class Multisafepay extends PaymentModule
      */
     public function __construct()
     {
-        $this->name          = 'multisafepay';
+        $this->name          = 'multisafepayofficial';
         $this->tab           = 'payments_gateways';
         $this->version       = self::MULTISAFEPAY_MODULE_VERSION;
         $this->author        = 'MultiSafepay';
@@ -102,7 +102,7 @@ class Multisafepay extends PaymentModule
     {
         $settingsBuilder = new SettingsBuilder($this);
 
-        if (true === Tools::isSubmit('submitMultisafepayModule')) {
+        if (true === Tools::isSubmit('submitMultisafepayOfficialModule')) {
             $settingsBuilder->postProcess();
             return $settingsBuilder->renderForm(true);
         }
@@ -118,7 +118,7 @@ class Multisafepay extends PaymentModule
     public function hookBackOfficeHeader(): void
     {
         $this->context->controller->addCSS($this->_path.'views/icons/css/multisafepay-icon.css');
-        if ('multisafepay' === $this->name) {
+        if ('multisafepayofficial' === $this->name) {
             $this->context->controller->addJS($this->_path.'views/js/admin.js');
             $this->context->controller->addCSS($this->_path.'views/css/back.css');
         }
@@ -136,11 +136,11 @@ class Multisafepay extends PaymentModule
 
         $this->context->controller->registerStylesheet(
             'module-multisafepay-styles',
-            'modules/multisafepay/views/css/front.css'
+            'modules/multisafepayofficial/views/css/front.css'
         );
         $this->context->controller->registerJavascript(
             'module-multisafepay-javascript',
-            'modules/multisafepay/views/js/front.js',
+            'modules/multisafepayofficial/views/js/front.js',
             [
                 'priority' => 200,
             ]
@@ -191,7 +191,7 @@ class Multisafepay extends PaymentModule
                 'paymentOption' => $paymentOption,
             ]
         );
-        return $this->context->smarty->fetch('module:multisafepay/views/templates/front/form.tpl');
+        return $this->context->smarty->fetch('module:multisafepayofficial/views/templates/front/form.tpl');
     }
 
     /**
@@ -243,7 +243,7 @@ class Multisafepay extends PaymentModule
         /** @var Order $order */
         $order = $params['Order'];
 
-        if (!$order->module || $order->module !== 'multisafepay') {
+        if (!$order->module || $order->module !== 'multisafepayofficial') {
             return;
         }
 
@@ -282,7 +282,7 @@ class Multisafepay extends PaymentModule
 
         $order = new Order((int)$params['id_order']);
 
-        if (!$order->module || $order->module !== 'multisafepay') {
+        if (!$order->module || $order->module !== 'multisafepayofficial') {
             return;
         }
 
@@ -338,6 +338,6 @@ class Multisafepay extends PaymentModule
      */
     public function hookDisplayCustomerAccount(array $params): string
     {
-        return $this->context->smarty->display('module:multisafepay/views/templates/hook/tokens.tpl');
+        return $this->context->smarty->display('module:multisafepayofficial/views/templates/hook/tokens.tpl');
     }
 }

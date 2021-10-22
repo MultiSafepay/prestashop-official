@@ -4,7 +4,7 @@ use MultiSafepay\PrestaShop\Helper\CancelOrderHelper;
 use MultiSafepay\PrestaShop\Helper\DuplicateCartHelper;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 
-class MultisafepayCancelModuleFrontController extends ModuleFrontController
+class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontController
 {
     /**
      *

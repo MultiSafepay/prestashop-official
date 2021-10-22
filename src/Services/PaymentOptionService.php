@@ -4,7 +4,7 @@ namespace MultiSafepay\PrestaShop\Services;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay;
-use Multisafepay as MultiSafepayModule;
+use MultisafepayOfficial;
 use Cart;
 use Address;
 use Customer;
@@ -20,17 +20,17 @@ use Symfony\Component\Finder\Finder;
 class PaymentOptionService
 {
     public const PAYMENT_OPTIONS_NAMESPACE = "MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\\";
-    public const PAYMENT_OPTIONS_DIR = _PS_ROOT_DIR_.'/modules/multisafepay/src/PaymentOptions/PaymentMethods';
+    public const PAYMENT_OPTIONS_DIR = _PS_ROOT_DIR_.'/modules/multisafepayofficial/src/PaymentOptions/PaymentMethods';
 
     /**
-     * @var MultiSafepayModule
+     * @var MultisafepayOfficial
      */
     private $module;
 
     /**
      * SdkService constructor.
      */
-    public function __construct(MultiSafepayModule $module)
+    public function __construct(MultisafepayOfficial $module)
     {
         $this->module = $module;
     }

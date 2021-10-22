@@ -20,7 +20,7 @@ abstract class BaseMultiSafepayTest extends TestCase
         parent::setUp();
 
         $this->container = new ContainerBuilder();
-        $locator = new FileLocator(_PS_MODULE_DIR_ . 'multisafepay/config');
+        $locator = new FileLocator(_PS_MODULE_DIR_ . 'multisafepayofficial/config');
         $loader = new YamlFileLoader($this->container, $locator);
         $loader->load('services.yml');
         $this->container->compile();
