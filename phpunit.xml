@@ -17,7 +17,7 @@
         </testsuite>
     </testsuites>
     <filter>
-        <whitelist processUncoveredFilesFromWhitelist="false" addUncoveredFilesFromWhitelist="true">
+        <whitelist processUncoveredFilesFromWhitelist="false" addUncoveredFilesFromWhitelist="false">
             <directory suffix=".php">.</directory>
             <exclude>
                 <directory>./.docker</directory>
