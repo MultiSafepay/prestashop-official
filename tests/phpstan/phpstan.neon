@@ -4,20 +4,21 @@ includes:
 parameters:
   checkMissingIterableValueType: false
   reportUnmatchedIgnoredErrors: false
-  level: max
+  level: 6
   # From Phpstan 0.12, paths are relative to the .neon file.
   paths:
     - ../../controllers
     - ../../upgrade
     - ../../views
-    - ../../multisafepay.php
+    - ../../multisafepayofficial.php
     - ../../src
   excludePaths:
     - ../../tests
   scanFiles:
-    - ../../multisafepay.php
+    - ../../multisafepayofficial.php
     - ../../../../var/cache/prod/class_stub.php
-    - ../../../../classes/PaymentModule.php
+  scanDirectories:
+    - ../../../../classes
   ignoreErrors:
     - '#Call to an undefined method [a-zA-Z0-9\\_]+::validateOrder\(\)#'
     - '#Variable \$transaction might not be defined.#'
@@ -43,3 +44,4 @@ parameters:
     - '#Parameter \#1 \$body of method [a-zA-Z0-9\\_]+::processNotification\(\) expects string, bool\|string given.#'
     - '#Call to an undefined method AdminController\|FrontController::registerStylesheet\(\)#'
     - '#Call to an undefined method AdminController\|FrontController::registerJavascript\(\).#'
+    - '#Property CustomerMessageCore::\$private \(bool\) does not accept int.#'
