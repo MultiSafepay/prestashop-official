@@ -295,7 +295,7 @@ class MultisafepayOfficial extends PaymentModule
             [
                 'status' => 'shipped',
                 'tracktrace_code' => $order->getWsShippingNumber(),
-                'carrier' => (new Carrier($order->id_carrier))->name,
+                'carrier' => (new Carrier((int)$order->id_carrier))->name,
                 'ship_date' => date('Y-m-d H:i:s')
             ]
         );
@@ -338,7 +338,7 @@ class MultisafepayOfficial extends PaymentModule
      */
     public function hookDisplayCustomerAccount(array $params): string
     {
-        return $this->context->smarty->display('module:multisafepayofficial/views/templates/hook/tokens.tpl');
+        return $this->display(__FILE__, 'tokens.tpl');
     }
 
     /**
