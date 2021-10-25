@@ -5,7 +5,7 @@
                 {assign var="options" value=$paymentOption->getGatewaySettings()}
                 {assign var="active" value=$paymentOption->isActive()}
                 {assign var="name" value=$paymentOption->getUniqueName()}
-                <div class="panel panel-default">
+                <div class="panel panel-default" id="multisafepay-panel-payment-option-{$key}">
                     <div class="panel-heading" role="tab" id="multisafepay-heading-{$key}">
                         <h4 class="panel-title">
                             <a role="button" data-toggle="collapse" data-parent="#accordion" href="#multisafepay-collapse-{$key}" aria-expanded="true" aria-controls="multisafepay-collapse-{$key}" class="collapsed">
