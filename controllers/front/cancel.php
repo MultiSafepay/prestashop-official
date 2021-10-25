@@ -15,7 +15,7 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
     public function postProcess()
     {
         if ($this->module->active == false || !Tools::getValue('id_reference') || !Tools::getValue('id_cart')) {
-            if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+            if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
                 LoggerHelper::logWarning('Warning: It seems postProcess method of MultiSafepay cancel controller is being called without the required parameters.');
             }
             header('HTTP/1.0 400 Bad request');

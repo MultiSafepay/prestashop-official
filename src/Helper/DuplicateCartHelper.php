@@ -29,7 +29,7 @@ class DuplicateCartHelper
         Context::getContext()->language = new Language((int) $cart->id_lang);
         Context::getContext()->cookie->__set('id_cart', $duplicatedCart['cart']->id);
 
-        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
             LoggerHelper::logInfo('Cart ID: ' . $cart->id . ' has been duplicated');
         }
     }

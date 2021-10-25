@@ -93,7 +93,7 @@ class OrderService
             ->addPaymentOptions($this->createPaymentOptions($firstOrder))
             ->addSecondsActive($this->getTimeActive())
             ->addSecondChance(
-                (new SecondChance())->addSendEmail((bool)Configuration::get('MULTISAFEPAY_SECOND_CHANCE'))
+                (new SecondChance())->addSendEmail((bool)Configuration::get('MULTISAFEPAY_OFFICIAL_SECOND_CHANCE'))
             )
             ->addShoppingCart(
                 $this->shoppingCartService->createShoppingCart(
@@ -108,9 +108,9 @@ class OrderService
             $orderRequest->addDelivery((new CustomerService())->createDeliveryDetails($firstOrder));
         }
 
-        if (Configuration::get('MULTISAFEPAY_GOOGLE_ANALYTICS_ID')) {
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID')) {
             $orderRequest->addGoogleAnalytics(
-                (new GoogleAnalytics())->addAccountId(Configuration::get('MULTISAFEPAY_GOOGLE_ANALYTICS_ID'))
+                (new GoogleAnalytics())->addAccountId(Configuration::get('MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID'))
             );
         }
 
@@ -197,8 +197,8 @@ class OrderService
      */
     private function getTimeActive(): int
     {
-        $timeActive     = (int)Configuration::get('MULTISAFEPAY_TIME_ACTIVE_VALUE');
-        $timeActiveUnit = Configuration::get('MULTISAFEPAY_TIME_ACTIVE_UNIT');
+        $timeActive     = (int)Configuration::get('MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE');
+        $timeActiveUnit = Configuration::get('MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT');
         if ((string)$timeActiveUnit === 'days') {
             $timeActive *= 24 * 60 * 60;
         }
@@ -261,11 +261,11 @@ class OrderService
     private function getOrderDescriptionText(string $orderReference): string
     {
         $orderDescription = sprintf('Payment for order: %s', $orderReference);
-        if (Configuration::get('MULTISAFEPAY_ORDER_DESCRIPTION')) {
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION')) {
             $orderDescription = str_replace(
                 '{order_reference}',
                 $orderReference,
-                Configuration::get('MULTISAFEPAY_ORDER_DESCRIPTION')
+                Configuration::get('MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION')
             );
         }
 

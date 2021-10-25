@@ -46,7 +46,7 @@ class SdkService
      */
     public function getTestMode(): bool
     {
-        return (bool)$this->configuration::get('MULTISAFEPAY_TEST_MODE');
+        return (bool)$this->configuration::get('MULTISAFEPAY_OFFICIAL_TEST_MODE');
     }
 
     /**
@@ -58,9 +58,9 @@ class SdkService
     public function getApiKey(): string
     {
         if ($this->getTestMode()) {
-            return (string)$this->configuration::get('MULTISAFEPAY_TEST_API_KEY');
+            return (string)$this->configuration::get('MULTISAFEPAY_OFFICIAL_TEST_API_KEY');
         }
-        return (string)$this->configuration::get('MULTISAFEPAY_API_KEY');
+        return (string)$this->configuration::get('MULTISAFEPAY_OFFICIAL_API_KEY');
     }
 
     /**

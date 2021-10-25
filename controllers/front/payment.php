@@ -30,7 +30,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
             return;
         }
 
-        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
             LoggerHelper::logInfo('Starting the payment process for Cart ID: '.$this->context->cart->id);
         }
 
@@ -47,11 +47,11 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
         try {
             $validate = $this->module->validateOrder(
                 $this->context->cart->id,
-                Configuration::get('MULTISAFEPAY_OS_INITIALIZED'),
+                Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED'),
                 0,
                 $selectedPaymentOption->getFrontEndName(),
                 null,
-                ['send_email' => (Configuration::get('MULTISAFEPAY_CONFIRMATION_ORDER_EMAIL') ?? false)],
+                ['send_email' => (Configuration::get('MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL') ?? false)],
                 $this->context->cart->id_currency,
                 false,
                 $this->context->customer->secure_key
@@ -65,7 +65,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
         $orderCollection = new PrestaShopCollection('Order');
         $orderCollection->where('id_cart', '=', $this->context->cart->id);
 
-        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
             $ordersIds = $this->getOrdersIdsFromCollection($orderCollection);
             LoggerHelper::logInfo(
                 'Order with Cart ID:'.$this->context->cart->id.' has been validated and as result the following orders IDS: '.implode(
@@ -80,7 +80,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
         /** @var OrderRequest $orderRequest */
         $orderRequest = $orderService->createOrderRequest($orderCollection, $selectedPaymentOption);
 
-        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
             LoggerHelper::logInfo(
                 'An OrderRequest for the Cart ID: '.$this->context->cart->id.' has been created and contains the following information: '.json_encode(
                     $orderRequest->getData()
@@ -111,7 +111,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
             return $this->setTemplate('module:multisafepayofficial/views/templates/front/error.tpl');
         }
 
-        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
             LoggerHelper::logInfo('Ending payment process. A transaction has been created for Cart ID: ' . $this->context->cart->id . ' with payment link ' . $transaction->getPaymentUrl());
         }
 

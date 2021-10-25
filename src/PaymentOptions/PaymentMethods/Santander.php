@@ -26,8 +26,8 @@ class Santander extends BasePaymentOption
     {
         $options = parent::getGatewaySettings();
 
-        $options['MULTISAFEPAY_MIN_AMOUNT_'.$this->getUniqueName()]['default'] = '250';
-        $options['MULTISAFEPAY_MAX_AMOUNT_'.$this->getUniqueName()]['default'] = '8000';
+        $options['MULTISAFEPAY_OFFICIAL_MIN_AMOUNT_'.$this->getUniqueName()]['default'] = '250';
+        $options['MULTISAFEPAY_OFFICIAL_MAX_AMOUNT_'.$this->getUniqueName()]['default'] = '8000';
 
         return $options;
     }

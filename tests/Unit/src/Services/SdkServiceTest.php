@@ -18,9 +18,9 @@ class SdkServiceTest extends BaseMultiSafepayTest
         $mockConfiguration = new class extends Configuration {
             public static function get($key, $idLang = null, $idShopGroup = null, $idShop = null, $default = false)
             {
-                if ($key === 'MULTISAFEPAY_API_KEY') {
+                if ($key === 'MULTISAFEPAY_OFFICIAL_API_KEY') {
                     return 'MOCKED-REAL-API-KEY';
-                } elseif ($key === 'MULTISAFEPAY_TEST_API_KEY') {
+                } elseif ($key === 'MULTISAFEPAY_OFFICIAL_TEST_API_KEY') {
                     return 'MOCKED-TEST-API-KEY';
                 }
             }

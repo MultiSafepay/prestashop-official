@@ -94,9 +94,9 @@ class Installer
     {
         $multisafepayOrderStatuses = $this->getMultiSafepayOrderStatuses();
         foreach ($multisafepayOrderStatuses as $multisafepayOrderStatusKey => $multisafepayOrderStatusValues) {
-            if (!Configuration::get('MULTISAFEPAY_OS_' . Tools::strtoupper($multisafepayOrderStatusKey))) {
+            if (!Configuration::get('MULTISAFEPAY_OFFICIAL_OS_' . Tools::strtoupper($multisafepayOrderStatusKey))) {
                 $orderState = $this->createOrderStatus($multisafepayOrderStatusValues);
-                Configuration::updateGlobalValue('MULTISAFEPAY_OS_' . Tools::strtoupper($multisafepayOrderStatusKey), (int) $orderState->id);
+                Configuration::updateGlobalValue('MULTISAFEPAY_OFFICIAL_OS_' . Tools::strtoupper($multisafepayOrderStatusKey), (int) $orderState->id);
             }
         }
     }

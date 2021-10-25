@@ -166,13 +166,13 @@ class PaymentOptionService
 
         $paymentMethodSettings = $paymentMethod->getGatewaySettings();
 
-        $paymentMethodStatus         = (bool) $paymentMethodSettings['MULTISAFEPAY_GATEWAY_' . $paymentMethod->getUniqueName()]['value'];
-        $paymentMethodMinAmount      = (float) $paymentMethodSettings['MULTISAFEPAY_MIN_AMOUNT_' . $paymentMethod->getUniqueName()]['value'];
-        $paymentMethodMaxAmount      = (float) $paymentMethodSettings['MULTISAFEPAY_MAX_AMOUNT_' . $paymentMethod->getUniqueName()]['value'];
-        $paymentMethodCountries      = $paymentMethodSettings['MULTISAFEPAY_COUNTRIES_' . $paymentMethod->getUniqueName()]['value'];
-        $paymentMethodCurrencies     = $paymentMethodSettings['MULTISAFEPAY_CURRENCIES_' . $paymentMethod->getUniqueName()]['value'];
-        $paymentMethodCustomerGroups = $paymentMethodSettings['MULTISAFEPAY_CUSTOMER_GROUPS_' . $paymentMethod->getUniqueName()]['value'];
-        $paymentMethodCarriers       = $paymentMethodSettings['MULTISAFEPAY_CARRIERS_' . $paymentMethod->getUniqueName()]['value'];
+        $paymentMethodStatus         = (bool) $paymentMethodSettings['MULTISAFEPAY_OFFICIAL_GATEWAY_' . $paymentMethod->getUniqueName()]['value'];
+        $paymentMethodMinAmount      = (float) $paymentMethodSettings['MULTISAFEPAY_OFFICIAL_MIN_AMOUNT_' . $paymentMethod->getUniqueName()]['value'];
+        $paymentMethodMaxAmount      = (float) $paymentMethodSettings['MULTISAFEPAY_OFFICIAL_MAX_AMOUNT_' . $paymentMethod->getUniqueName()]['value'];
+        $paymentMethodCountries      = $paymentMethodSettings['MULTISAFEPAY_OFFICIAL_COUNTRIES_' . $paymentMethod->getUniqueName()]['value'];
+        $paymentMethodCurrencies     = $paymentMethodSettings['MULTISAFEPAY_OFFICIAL_CURRENCIES_' . $paymentMethod->getUniqueName()]['value'];
+        $paymentMethodCustomerGroups = $paymentMethodSettings['MULTISAFEPAY_OFFICIAL_CUSTOMER_GROUPS_' . $paymentMethod->getUniqueName()]['value'];
+        $paymentMethodCarriers       = $paymentMethodSettings['MULTISAFEPAY_OFFICIAL_CARRIERS_' . $paymentMethod->getUniqueName()]['value'];
 
         if (!$paymentMethodStatus) {
             return true;

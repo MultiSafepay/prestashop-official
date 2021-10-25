@@ -46,25 +46,25 @@ class SettingsBuilder
     public static function getConfigFieldsAndDefaultValues(): array
     {
         return [
-            'MULTISAFEPAY_TEST_MODE'                => ['default' => '0'],
-            'MULTISAFEPAY_API_KEY'                  => ['default' => 'live_api_key'],
-            'MULTISAFEPAY_TEST_API_KEY'             => ['default' => 'test_api_key'],
-            'MULTISAFEPAY_TIME_ACTIVE_VALUE'        => ['default' => '30'],
-            'MULTISAFEPAY_TIME_ACTIVE_UNIT'         => ['default' => self::DAYS],
-            'MULTISAFEPAY_GOOGLE_ANALYTICS_ID'      => ['default' => ''],
-            'MULTISAFEPAY_ORDER_DESCRIPTION'        => ['default' => 'Payment for order: {order_reference}'],
-            'MULTISAFEPAY_OS_TRIGGER_SHIPPED'       => ['default' => Configuration::get('PS_OS_SHIPPING')],
-            'MULTISAFEPAY_DEBUG_MODE'               => ['default' => '0'],
-            'MULTISAFEPAY_SECOND_CHANCE'            => ['default' => '1'],
-            'MULTISAFEPAY_CONFIRMATION_ORDER_EMAIL' => ['default' => '1'],
-            'MULTISAFEPAY_OS_INITIALIZED'           => ['default' => Configuration::get('MULTISAFEPAY_OS_INITIALIZED')],
-            'MULTISAFEPAY_OS_COMPLETED'             => ['default' => Configuration::get('PS_OS_PAYMENT')],
-            'MULTISAFEPAY_OS_UNCLEARED'             => ['default' => Configuration::get('MULTISAFEPAY_OS_UNCLEARED')],
-            'MULTISAFEPAY_OS_RESERVED'              => ['default' => Configuration::get('MULTISAFEPAY_OS_INITIALIZED')],
-            'MULTISAFEPAY_OS_CHARGEBACK'            => ['default' => Configuration::get('MULTISAFEPAY_OS_CHARGEBACK')],
-            'MULTISAFEPAY_OS_REFUNDED'              => ['default' => Configuration::get('PS_OS_REFUND')],
-            'MULTISAFEPAY_OS_SHIPPED'               => ['default' => Configuration::get('PS_OS_SHIPPING')],
-            'MULTISAFEPAY_OS_PARTIAL_REFUNDED'      => ['default' => Configuration::get('MULTISAFEPAY_OS_PARTIAL_REFUNDED')],
+            'MULTISAFEPAY_OFFICIAL_TEST_MODE'                => ['default' => '0'],
+            'MULTISAFEPAY_OFFICIAL_API_KEY'                  => ['default' => 'live_api_key'],
+            'MULTISAFEPAY_OFFICIAL_TEST_API_KEY'             => ['default' => 'test_api_key'],
+            'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE'        => ['default' => '30'],
+            'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT'         => ['default' => self::DAYS],
+            'MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID'      => ['default' => ''],
+            'MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION'        => ['default' => 'Payment for order: {order_reference}'],
+            'MULTISAFEPAY_OFFICIAL_OS_TRIGGER_SHIPPED'       => ['default' => Configuration::get('PS_OS_SHIPPING')],
+            'MULTISAFEPAY_OFFICIAL_DEBUG_MODE'               => ['default' => '0'],
+            'MULTISAFEPAY_OFFICIAL_SECOND_CHANCE'            => ['default' => '1'],
+            'MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL' => ['default' => '1'],
+            'MULTISAFEPAY_OFFICIAL_OS_INITIALIZED'           => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED')],
+            'MULTISAFEPAY_OFFICIAL_OS_COMPLETED'             => ['default' => Configuration::get('PS_OS_PAYMENT')],
+            'MULTISAFEPAY_OFFICIAL_OS_UNCLEARED'             => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_UNCLEARED')],
+            'MULTISAFEPAY_OFFICIAL_OS_RESERVED'              => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED')],
+            'MULTISAFEPAY_OFFICIAL_OS_CHARGEBACK'            => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_CHARGEBACK')],
+            'MULTISAFEPAY_OFFICIAL_OS_REFUNDED'              => ['default' => Configuration::get('PS_OS_REFUND')],
+            'MULTISAFEPAY_OFFICIAL_OS_SHIPPED'               => ['default' => Configuration::get('PS_OS_SHIPPING')],
+            'MULTISAFEPAY_OFFICIAL_OS_PARTIAL_REFUNDED'      => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_REFUNDED')],
         ];
     }
 
@@ -122,7 +122,7 @@ class SettingsBuilder
                         'type'    => 'switch',
                         'tab'     => 'account_settings',
                         'label'   => $this->module->l('Test mode'),
-                        'name'    => 'MULTISAFEPAY_TEST_MODE',
+                        'name'    => 'MULTISAFEPAY_OFFICIAL_TEST_MODE',
                         'is_bool' => true,
                         'desc'    => $this->module->l('Use this module in test mode'),
                         'values'  => [
@@ -143,7 +143,7 @@ class SettingsBuilder
                         'type'  => 'text',
                         'tab'   => 'account_settings',
                         'desc'  => $this->module->l('Enter a valid live API key'),
-                        'name'  => 'MULTISAFEPAY_API_KEY',
+                        'name'  => 'MULTISAFEPAY_OFFICIAL_API_KEY',
                         'label' => $this->module->l('Live API key'),
                         'section' => 'default'
                     ],
@@ -151,7 +151,7 @@ class SettingsBuilder
                         'type'  => 'text',
                         'tab'   => 'account_settings',
                         'desc'  => $this->module->l('Enter a valid test API key'),
-                        'name'  => 'MULTISAFEPAY_TEST_API_KEY',
+                        'name'  => 'MULTISAFEPAY_OFFICIAL_TEST_API_KEY',
                         'label' => $this->module->l('Test API key'),
                         'section' => 'default'
                     ],
@@ -159,7 +159,7 @@ class SettingsBuilder
                         'type'    => 'switch',
                         'tab'     => 'general_settings',
                         'label'   => $this->module->l('Debug mode'),
-                        'name'    => 'MULTISAFEPAY_DEBUG_MODE',
+                        'name'    => 'MULTISAFEPAY_OFFICIAL_DEBUG_MODE',
                         'is_bool' => true,
                         'desc'    => $this->module->l('Use this module in debug mode'),
                         'values'  => [
@@ -180,7 +180,7 @@ class SettingsBuilder
                         'type'    => 'switch',
                         'tab'     => 'general_settings',
                         'label'   => $this->module->l('Second Chance'),
-                        'name'    => 'MULTISAFEPAY_SECOND_CHANCE',
+                        'name'    => 'MULTISAFEPAY_OFFICIAL_SECOND_CHANCE',
                         'is_bool' => true,
                         'desc'    => $this->module->l('When a customer initiates but does not complete a payment, whatever the reason may be, MultiSafepay will send two Second Chance reminder emails. In the emails, MultiSafepay will include a link to allow the consumer to finalize the payment. The first Second Chance email is sent 1 hour after the transaction was initiated and the second after 24 hours. To receive second chance emails, this option must also be activated within your MultiSafepay account, otherwise it will not work.'),
                         'values'  => [
@@ -201,7 +201,7 @@ class SettingsBuilder
                         'type'    => 'switch',
                         'tab'     => 'general_settings',
                         'label'   => $this->module->l('Send confirmation order email'),
-                        'name'    => 'MULTISAFEPAY_CONFIRMATION_ORDER_EMAIL',
+                        'name'    => 'MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL',
                         'is_bool' => true,
                         'desc'    => $this->module->l('Send an email to the customer with the order details when a customer initiates an order, but has not yet completed the payment.'),
                         'values'  => [
@@ -222,7 +222,7 @@ class SettingsBuilder
                         'tab'   => 'general_settings',
                         'type'  => 'text',
                         'desc'  => $this->module->l('Enter a valid Google Analytics ID'),
-                        'name'  => 'MULTISAFEPAY_GOOGLE_ANALYTICS_ID',
+                        'name'  => 'MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID',
                         'label' => $this->module->l('Google Analytics ID'),
                         'section' => 'default'
                     ],
@@ -230,7 +230,7 @@ class SettingsBuilder
                         'tab'   => 'general_settings',
                         'type'  => 'text',
                         'desc'  => $this->module->l('A text which will be shown with the order in MultiSafepay Control. If the customer’s bank supports it this description will also be shown on the customer’s bank statement. You can include the order number using {order_reference}'),
-                        'name'  => 'MULTISAFEPAY_ORDER_DESCRIPTION',
+                        'name'  => 'MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION',
                         'label' => $this->module->l('Order description'),
                         'section' => 'default'
                     ],
@@ -238,7 +238,7 @@ class SettingsBuilder
                         'tab'   => 'general_settings',
                         'type'  => 'select',
                         'desc'  => $this->module->l('When the order reaches this status, a notification will be sent to MultiSafepay to set the transaction as shipped'),
-                        'name'  => 'MULTISAFEPAY_OS_TRIGGER_SHIPPED',
+                        'name'  => 'MULTISAFEPAY_OFFICIAL_OS_TRIGGER_SHIPPED',
                         'label' => $this->module->l('Set transaction as shipped'),
                         'options' => $this->getPrestaShopOrderStatusesOptions(),
                         'section' => 'default'
@@ -247,7 +247,7 @@ class SettingsBuilder
                         'tab'   => 'general_settings',
                         'type'  => 'text',
                         'desc'  => $this->module->l('Lifetime of payment link value'),
-                        'name'  => 'MULTISAFEPAY_TIME_ACTIVE_VALUE',
+                        'name'  => 'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE',
                         'label' => $this->module->l('Lifetime of payment link value'),
                         'section' => 'default'
                     ],
@@ -255,7 +255,7 @@ class SettingsBuilder
                         'tab'     => 'general_settings',
                         'type'    => 'select',
                         'desc'    => $this->module->l('Lifetime of payment link unit'),
-                        'name'    => 'MULTISAFEPAY_TIME_ACTIVE_UNIT',
+                        'name'    => 'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT',
                         'label'   => $this->module->l('Lifetime of payment link unit'),
                         'options' => [
                             'query' => [
@@ -396,7 +396,7 @@ class SettingsBuilder
             $orderStatusesSettingsFields['form']['input'][] = [
                 'tab'         => 'order_status',
                 'type'        => 'select',
-                'name'        => 'MULTISAFEPAY_OS_' . strtoupper($orderStatus),
+                'name'        => 'MULTISAFEPAY_OFFICIAL_OS_' . strtoupper($orderStatus),
                 'desc'        => 'Select the order status for which an order should change if MultiSafepay notification reports the order as ' . $orderStatus,
                 'label'       => $this->module->l(ucfirst(str_replace('_', ' ', $orderStatus))),
                 'options'     => $this->getPrestaShopOrderStatusesOptions(),

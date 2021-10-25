@@ -56,7 +56,7 @@ class MultisafepayOfficial extends PaymentModule
      */
     public function install(): bool
     {
-        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
             LoggerHelper::logInfo('Begin install process');
         }
 
@@ -276,7 +276,7 @@ class MultisafepayOfficial extends PaymentModule
     public function hookActionOrderStatusPostUpdate(array $params): void
     {
 
-        if ((int)Configuration::get('MULTISAFEPAY_OS_TRIGGER_SHIPPED') !== $params['newOrderStatus']->id) {
+        if ((int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_TRIGGER_SHIPPED') !== $params['newOrderStatus']->id) {
             return;
         }
 

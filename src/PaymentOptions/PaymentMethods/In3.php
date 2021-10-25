@@ -29,8 +29,8 @@ class In3 extends BasePaymentOption
     {
         $options = parent::getGatewaySettings();
 
-        $options['MULTISAFEPAY_MIN_AMOUNT_'.$this->getUniqueName()]['default'] = '100';
-        $options['MULTISAFEPAY_MAX_AMOUNT_'.$this->getUniqueName()]['default'] = '3000';
+        $options['MULTISAFEPAY_OFFICIAL_MIN_AMOUNT_'.$this->getUniqueName()]['default'] = '100';
+        $options['MULTISAFEPAY_OFFICIAL_MAX_AMOUNT_'.$this->getUniqueName()]['default'] = '3000';
 
         return $options;
     }

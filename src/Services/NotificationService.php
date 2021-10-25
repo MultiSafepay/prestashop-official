@@ -104,7 +104,7 @@ class NotificationService
             // Set new order status and set transaction id within the order information
             $this->updateOrderData($order, $transaction);
 
-            if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+            if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
                 LoggerHelper::logInfo('A notification has been processed for order ID: ' . $order->id . ' with status: ' . $transaction->getStatus() . ' and PSP ID: ' . $transaction->getTransactionId());
             }
         }
@@ -155,7 +155,7 @@ class NotificationService
         $message = 'Notification received with a different payment method for Order ID: ' . $order->id . ' and Order Reference: ' . $order->reference . ' on ' . date('d/m/Y H:i:s') . '. Payment method changed from ' . $order->payment . ' to ' . $paymentMethodName . '.';
         OrderMessageHelper::addMessage($order, $message);
 
-        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
             LoggerHelper::logInfo($message);
         }
     }
@@ -210,18 +210,18 @@ class NotificationService
             case 'completed':
                 return Configuration::get('PS_OS_PAYMENT');
             case 'uncleared':
-                return Configuration::get('MULTISAFEPAY_OS_UNCLEARED');
+                return Configuration::get('MULTISAFEPAY_OFFICIAL_OS_UNCLEARED');
             case 'refunded':
                 return Configuration::get('PS_OS_REFUND');
             case 'partial_refunded':
-                return Configuration::get('MULTISAFEPAY_OS_PARTIAL_REFUNDED');
+                return Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_REFUNDED');
             case 'chargedback':
-                return Configuration::get('MULTISAFEPAY_OS_CHARGEBACK');
+                return Configuration::get('MULTISAFEPAY_OFFICIAL_OS_CHARGEBACK');
             case 'shipped':
                 return Configuration::get('PS_OS_SHIPPING');
             case 'initialized':
             default:
-                return Configuration::get('MULTISAFEPAY_OS_INITIALIZED');
+                return Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED');
         }
     }
 

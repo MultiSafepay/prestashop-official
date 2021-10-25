@@ -98,7 +98,7 @@ class RefundService
         $message = "A refund of $amount $currency has been processed for Order ID: $order->id";
 
         OrderMessageHelper::addMessage($order, $message);
-        if (Configuration::get('MULTISAFEPAY_DEBUG_MODE')) {
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
             LoggerHelper::logInfo($message);
         }
 
