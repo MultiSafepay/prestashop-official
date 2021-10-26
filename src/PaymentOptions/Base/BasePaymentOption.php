@@ -295,6 +295,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'value'   => Configuration::get('MULTISAFEPAY_OFFICIAL_SORT_ORDER_'.$this->getUniqueName()),
                 'default' => '',
                 'order'   => 90,
+                'class'   => 'sort-order'
             ],
         ];
 

@@ -1,14 +1,16 @@
 <div class="row">
     <div class="col-lg-12">
-        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="fields-rows" id="dragula-container">
+            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
             {foreach from=$payment_options key=key item=paymentOption}
                 {assign var="options" value=$paymentOption->getGatewaySettings()}
                 {assign var="active" value=$paymentOption->isActive()}
                 {assign var="name" value=$paymentOption->getUniqueName()}
-                <div class="panel panel-default" id="multisafepay-panel-payment-option-{$key}">
+                <div class="panel panel-default multisafepay-panel-payment-option" id="multisafepay-panel-payment-option-{$key}">
                     <div class="panel-heading" role="tab" id="multisafepay-heading-{$key}">
                         <h4 class="panel-title">
                             <a role="button" data-toggle="collapse" data-parent="#accordion" href="#multisafepay-collapse-{$key}" aria-expanded="true" aria-controls="multisafepay-collapse-{$key}" class="collapsed">
+                                <span class="drag-and-drop-control"></span>
                                 <span class="status{if ($active == 1)} active{/if}"></span>
                                 <span class="title">{$paymentOption->getName()}</span>
                             </a>
@@ -42,7 +44,7 @@
                                             {$option['name']}
                                         </label>
                                         <div class="col-lg-9">
-                                            <input type="text" name="{$optionId}" id="{$optionId}" value="{$option['value']}" class="">
+                                            <input type="text" name="{$optionId}" id="{$optionId}" value="{$option['value']}" class="{if isset($option['class'])}{$option['class']}{/if}">
                                             {if isset($option['helperText'])}
                                                 <p class="help-block">{$option['helperText']}</p>
                                             {/if}
@@ -71,6 +73,7 @@
                     </div>
                 </div>
             {/foreach}
+        </div>
         </div>
     </div>
 </div>

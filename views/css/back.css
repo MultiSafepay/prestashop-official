@@ -1,19 +1,19 @@
-.form-group-multisafepay-payment-methods .panel-group .panel {
+.multisafepay-panel-payment-option {
     margin: 0px 0px 30px 0px !important;
     padding: 0px !important;;
 }
-.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading {
+.multisafepay-panel-payment-option .panel-heading {
     margin: 0px !important;
     padding: 5px 10px !important;
     height: auto !important;
 }
-.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading a {
+.multisafepay-panel-payment-option .panel-heading a {
     display: block;
 }
-.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading a:hover {
+.multisafepay-panel-payment-option .panel-heading a:hover {
     text-decoration: none;
 }
-.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading a.collapsed:after {
+.multisafepay-panel-payment-option .panel-heading a.collapsed:after {
     font-family: 'FontAwesome';
     content: "\f067";
     float: right;
@@ -21,12 +21,12 @@
     line-height: 40px;
     vertical-align: middle;
 }
-.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading a.collapsed {
+.multisafepay-panel-payment-option .panel-heading a.collapsed {
     background-color: #f6f6f6;
     border-color: #dcdcdc;
     color: #4c4d5a;
 }
-.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading a:after {
+.multisafepay-panel-payment-option .panel-heading a:after {
     font-family: 'FontAwesome';
     content: "\f068";
     float: right;
@@ -34,12 +34,53 @@
     line-height: 40px;
     vertical-align: middle;
 }
-.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status {
+.multisafepay-panel-payment-option .panel-heading .panel-title a .drag-and-drop-control {
+    background-color: #f6f6f6;
+    border: 1px solid #dcdcdc;
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    padding: 0;
+    margin: 5px 10px 5px 0px;
+    text-align: center;
+    border: 1px solid #DDDDDD;
+}
+.multisafepay-panel-payment-option .panel-heading .panel-title a .drag-and-drop-control:hover {
+    max-width: 80px;
+    cursor: move;
+    cursor: grab;
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+}
+.multisafepay-panel-payment-option .panel-heading .panel-title a .drag-and-drop-control:active {
+    cursor: grabbing;
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+}
+.multisafepay-panel-payment-option .panel-heading .panel-title a {
+    text-decoration: none;
+}
+.multisafepay-panel-payment-option .panel-heading .panel-title a .title {
+    text-decoration: none;
+}
+.multisafepay-panel-payment-option .panel-heading .panel-title a:hover .title {
+    text-decoration: none;
+}
+.multisafepay-panel-payment-option .panel-heading .panel-title a .drag-and-drop-control:after {
+    font-size: 14px;
+    line-height: 30px;
+    text-align: center;
+    content: "\f047";
+    font-family: 'FontAwesome';
+}
+.multisafepay-panel-payment-option .panel-heading .panel-title a .status {
     display: block;
     background-color: #f6f6f6;
     border: 1px solid #dcdcdc;
 }
-.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status {
+.multisafepay-panel-payment-option .panel-heading .panel-title a .status {
     position: relative;
     display: inline-block;
     width: 30px;
@@ -50,7 +91,7 @@
     text-align: center;
     border: 1px solid #DDDDDD;
 }
-.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status:after {
+.multisafepay-panel-payment-option .panel-heading .panel-title a .status:after {
     font-size: 14px;
     line-height: 30px;
     text-align: center;
@@ -58,10 +99,40 @@
     font-family: 'FontAwesome';
     color: darkred;
 }
-.form-group-multisafepay-payment-methods .panel-group .panel .panel-heading .panel-title a .status.active:after {
+.multisafepay-panel-payment-option .panel-heading .panel-title a .status.active:after {
     content: "\f00c" !important;
     font-family: 'FontAwesome';
     color: forestgreen;
+}
+.drag-active {
+    position: relative;
+    background: #fcfcfc;
+    opacity: 0.4;
+}
+.gu-mirror {
+    position: fixed !important;
+    margin: 0 !important;
+    z-index: 9999 !important;
+    opacity: 0.8;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=80)";
+    filter: alpha(opacity=80);
+}
+.gu-hide {
+    display: none !important;
+}
+.gu-unselectable {
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+}
+.gu-transit {
+    opacity: 0.2;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=20)";
+    filter: alpha(opacity=20);
+}
+.multisafepay-panel-payment-option.drag-active .panel-collapse {
+    display: none !important;
 }
 #multisafepay-support .account-list {
     padding-left: 10px;

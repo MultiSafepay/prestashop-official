@@ -4,6 +4,7 @@
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>*/translations/*</exclude-pattern>
     <exclude-pattern>*/sql/*</exclude-pattern>
+    <exclude-pattern>*/views/js/dragula.js</exclude-pattern>
     <rule ref="PSR2">
         <exclude name="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
         <exclude name="PEAR.Functions.ValidDefaultValue"/>
