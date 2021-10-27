@@ -47,7 +47,7 @@ class PaymentOptionService
             $paymentOptions[] = new $className($this->module);
         }
         uasort($paymentOptions, function ($a, $b) {
-            return $a->getSortOrderPosition() - $b->getSortOrderPosition();
+            return $a->getSortOrderPosition() - $b->getSortOrderPosition() ?: strcasecmp($a->getName(), $b->getName());
         });
         return $paymentOptions;
     }
@@ -99,7 +99,7 @@ class PaymentOptionService
     {
         $paymentOptions = [];
         /** @var BasePaymentOption[] $paymentMethods */
-        $paymentMethods = $this->getMultiSafepayPaymentOptions();
+        $paymentMethods = $this->getActivePaymentOptions();
         foreach ($paymentMethods as $paymentMethod) {
             if ($this->excludePaymentOptionByPaymentOptionSettings($paymentMethod, $cart)) {
                 continue;

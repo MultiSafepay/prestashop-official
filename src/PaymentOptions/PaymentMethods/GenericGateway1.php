@@ -44,9 +44,6 @@ class GenericGateway1 extends BasePaymentOption
             'order' => 32,
         ];
 
-        uasort($options, function ($a, $b) {
-            return $a['order'] - $b['order'];
-        });
-        return $options;
+        return $this->sortInputFields($options);
     }
 }
