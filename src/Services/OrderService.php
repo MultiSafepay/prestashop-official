@@ -219,7 +219,7 @@ class OrderService
         return $pluginDetails
             ->addApplicationName('PrestaShop ')
             ->addApplicationVersion('PrestaShop: '._PS_VERSION_)
-            ->addPluginVersion(MultisafepayOfficial::getVersion())
+            ->addPluginVersion($this->module->version)
             ->addShopRootUrl(Context::getContext()->shop->getBaseURL());
     }
 

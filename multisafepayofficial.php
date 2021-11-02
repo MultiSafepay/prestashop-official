@@ -20,8 +20,6 @@ use Psr\Http\Client\ClientExceptionInterface;
 class MultisafepayOfficial extends PaymentModule
 {
 
-    public const MULTISAFEPAY_MODULE_VERSION = '5.0.0';
-
     /**
      * Multisafepay plugin constructor.
      */
@@ -29,7 +27,7 @@ class MultisafepayOfficial extends PaymentModule
     {
         $this->name          = 'multisafepayofficial';
         $this->tab           = 'payments_gateways';
-        $this->version       = self::MULTISAFEPAY_MODULE_VERSION;
+        $this->version       = '5.0.0';
         $this->author        = 'MultiSafepay';
         $this->need_instance = 0;
         $this->bootstrap     = true;
@@ -39,14 +37,6 @@ class MultisafepayOfficial extends PaymentModule
         $this->description            = $this->l('MultiSafepay payment plugin for PrestaShop');
         $this->confirmUninstall       = $this->l('Are you sure you want to uninstall MultiSafepay?');
         $this->ps_versions_compliancy = ['min' => '1.7.6', 'max' => _PS_VERSION_];
-    }
-
-    /**
-     * @return string
-     */
-    public static function getVersion(): string
-    {
-        return self::MULTISAFEPAY_MODULE_VERSION;
     }
 
     /**

@@ -5,6 +5,7 @@ namespace MultiSafepay\Tests\Services;
 use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
 use PrestaShopCollection;
+use MultisafepayOfficial;
 
 class OrderServiceTest extends BaseMultiSafepayTest
 {
@@ -27,7 +28,7 @@ class OrderServiceTest extends BaseMultiSafepayTest
     {
 
         $output = $this->orderService->createPluginDetails();
-        self::assertEquals(\MultisafepayOfficial::getVersion(), $output->getData()['plugin_version']);
+        self::assertEquals((new MultisafepayOfficial())->version, $output->getData()['plugin_version']);
         self::assertEquals('PrestaShop: '._PS_VERSION_, $output->getData()['shop_version']);
     }
 
