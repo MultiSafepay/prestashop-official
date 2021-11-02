@@ -352,6 +352,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     {
         $result = [];
         foreach ($list as $item) {
+            $resultItem         = [];
             $resultItem['id']   = $item[$idKey];
             $resultItem['name'] = $item['name'];
             $result[]           = $resultItem;

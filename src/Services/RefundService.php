@@ -114,6 +114,7 @@ class RefundService
     public function getRefundData(Order $order, $productList = []): array
     {
         $currency           = new Currency($order->id_currency);
+        $refund             = [];
         $refund['currency'] = $currency->iso_code;
         $refund['amount']   = $this->getProductsRefundAmount($productList);
         $refund['amount']   += $this->getShippingRefundAmount($order);

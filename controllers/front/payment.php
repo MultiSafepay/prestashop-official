@@ -45,7 +45,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
         $selectedPaymentOption = $this->getSelectedPaymentOption();
 
         try {
-            $validate = $this->module->validateOrder(
+            $this->module->validateOrder(
                 $this->context->cart->id,
                 Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED'),
                 0,
