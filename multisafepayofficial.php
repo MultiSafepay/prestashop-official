@@ -4,7 +4,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-require __DIR__ . '/vendor/autoload.php';
+require _PS_MODULE_DIR_ . 'multisafepayofficial/vendor/autoload.php';
 
 use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
 use MultiSafepay\PrestaShop\Helper\Installer;
