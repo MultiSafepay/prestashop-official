@@ -13,6 +13,7 @@ use MultiSafepay\ValueObject\Customer\EmailAddress;
 use MultiSafepay\ValueObject\Customer\PhoneNumber;
 use Order;
 use State;
+use Tools;
 
 /**
  * Class CustomerService
@@ -180,7 +181,7 @@ class CustomerService
     {
         $locale = Language::getLanguageCodeByIso($isoCode);
         $parts = explode('-', (string) $locale);
-        $languageCode = $parts[0] . '_' . strtoupper($parts[1]);
+        $languageCode = $parts[0] . '_' . Tools::strtoupper($parts[1]);
         return $languageCode;
     }
 

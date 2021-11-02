@@ -12,6 +12,7 @@ use Media;
 use Context;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use Symfony\Component\Finder\Finder;
+use Tools;
 
 /**
  * Class PaymentOptionService
@@ -134,7 +135,7 @@ class PaymentOptionService
         }
 
         // Logo by language
-        $logoLocale = _PS_MODULE_DIR_ . $this->module->name . '/views/img/' . str_replace('.png', '', $name) . '-'. strtolower(substr(Context::getContext()->language->locale, 0, 2)).'.png';
+        $logoLocale = _PS_MODULE_DIR_ . $this->module->name . '/views/img/' . str_replace('.png', '', $name) . '-'. Tools::strtolower(Tools::substr(Context::getContext()->language->locale, 0, 2)).'.png';
         if (file_exists($logoLocale)) {
             return Media::getMediaPath($logoLocale);
         }

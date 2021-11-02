@@ -8,6 +8,7 @@ use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use Context;
+use Tools;
 
 /**
  * Class TokenizationService
@@ -173,7 +174,7 @@ class TokenizationService
      */
     private function formatExpiryDate($expiryDate): string
     {
-        if (is_null($expiryDate) || strlen((string)$expiryDate) !== 4) {
+        if (is_null($expiryDate) || Tools::strlen((string)$expiryDate) !== 4) {
             return '--';
         }
 

@@ -396,9 +396,9 @@ class SettingsBuilder
             $orderStatusesSettingsFields['form']['input'][] = [
                 'tab'         => 'order_status',
                 'type'        => 'select',
-                'name'        => 'MULTISAFEPAY_OFFICIAL_OS_' . strtoupper($orderStatus),
+                'name'        => 'MULTISAFEPAY_OFFICIAL_OS_' . Tools::strtoupper($orderStatus),
                 'desc'        => 'Select the order status for which an order should change if MultiSafepay notification reports the order as ' . $orderStatus,
-                'label'       => $this->module->l(ucfirst(str_replace('_', ' ', $orderStatus))),
+                'label'       => $this->module->l(Tools::ucfirst(str_replace('_', ' ', $orderStatus))),
                 'options'     => $this->getPrestaShopOrderStatusesOptions(),
                 'section'     => 'default'
             ];
