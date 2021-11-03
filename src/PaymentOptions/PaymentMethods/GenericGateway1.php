@@ -24,6 +24,9 @@ class GenericGateway1 extends BasePaymentOption
         return 'GENERIC1';
     }
 
+    /**
+     * @phpcs:disable Generic.Files.LineLength.TooLong
+     */
     public function getGatewaySettings(): array
     {
         $options = parent::getGatewaySettings();

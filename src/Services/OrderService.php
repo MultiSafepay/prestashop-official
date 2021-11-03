@@ -227,6 +227,8 @@ class OrderService
      * @param Order $order
      *
      * @return  PaymentOptions
+     *
+     * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     private function createPaymentOptions(Order $order): PaymentOptions
     {
@@ -247,8 +249,7 @@ class OrderService
                     'order-confirmation',
                     null,
                     Context::getContext()->language->id,
-                    'id_cart='.$order->id_cart.'&id_order='.$order->id.'&id_module='.$this->module->id.'&key='.Context::getContext(
-                    )->customer->secure_key
+                    'id_cart='.$order->id_cart.'&id_order='.$order->id.'&id_module='.$this->module->id.'&key='.Context::getContext()->customer->secure_key
                 )
             );
     }

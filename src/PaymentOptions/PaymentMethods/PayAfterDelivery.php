@@ -19,6 +19,9 @@ class PayAfterDelivery extends BasePaymentOption
     protected $hasConfigurableDirect = true;
     protected $canProcessRefunds = false;
 
+    /**
+     * @phpcs:disable Generic.Files.LineLength.TooLong
+     */
     public function getTransactionType(): string
     {
         $checkoutVars = Tools::getAllValues();

@@ -160,8 +160,6 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     }
 
     /**
-     * Override this function if you need input fields for a direct payment method, also set $hasConfigurableDirect to true
-     *
      * @return array
      */
     public function getDirectTransactionInputFields(): array
@@ -177,6 +175,9 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         return $this->getGatewayCode();
     }
 
+    /**
+     * @phpcs:disable Generic.Files.LineLength.TooLong
+     */
     public function getSortOrderPosition(): int
     {
         if (!isset($this->sortOrderPosition)) {
@@ -188,6 +189,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
     /**
      * @return array
+     * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     public function getGatewaySettings(): array
     {

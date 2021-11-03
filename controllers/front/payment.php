@@ -19,6 +19,8 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
      * @return mixed
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
+     *
+     * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     public function postProcess()
     {

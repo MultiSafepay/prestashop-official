@@ -48,7 +48,7 @@ class TokenizationService
     {
         $tokenManager = $this->sdkService->getSdk()->getTokenManager();
 
-        // The API will raise an error if there are no tokens for a customer, therefore we catch the error and return an empty array
+        // The API will raise an error if there are no tokens for a customer, therefore we return an empty array
         try {
             return $tokenManager->getListByGatewayCode($customerId, $gatewayCode);
         } catch (ApiException $exception) {
@@ -66,7 +66,7 @@ class TokenizationService
     {
         $tokenManager = $this->sdkService->getSdk()->getTokenManager();
 
-        // The API will raise an error if there are no tokens for a customer, therefore we catch the error and return an empty array
+        // The API will raise an error if there are no tokens for a customer, therefore we return an empty array
         try {
             return $tokenManager->getList($customerId);
         } catch (ApiException $exception) {

@@ -126,6 +126,8 @@ class PaymentOptionService
     /**
      * @param string $name
      * @return string
+     *
+     * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     private function getLogoByName(string $name): string
     {
@@ -154,6 +156,8 @@ class PaymentOptionService
      * @param BasePaymentOption $paymentMethod
      * @param Cart $cart
      * @return bool
+     *
+     * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     private function excludePaymentOptionByPaymentOptionSettings(BasePaymentOption $paymentMethod, Cart $cart)
     {

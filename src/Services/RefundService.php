@@ -61,6 +61,8 @@ class RefundService
      * @throws \PrestaShopDatabaseException
      * @throws PrestaShopException
      * @throws \Psr\Http\Client\ClientExceptionInterface
+     *
+     * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     public function processRefund(Order $order, array $productList): bool
     {
@@ -73,7 +75,10 @@ class RefundService
 
         // Do not process refunds for gateways that requires ShoppingCart
         if (!$paymentOption->canProcessRefunds()) {
-            $this->handleMessage($order, "Refund for Order ID: $order->id has failed, because the Payment Method used for this Order does not support refunds.");
+            $this->handleMessage(
+                $order,
+                "Refund for Order ID: $order->id has failed, because the Payment Method used for this Order does not support refunds."
+            );
 
             return false;
         }
@@ -188,19 +193,28 @@ class RefundService
         }
 
         if (!isset($productList)) {
-            $this->handleMessage($order, "Refund for Order ID: $order->id has failed, due to a missing productList");
+            $this->handleMessage(
+                $order,
+                "Refund for Order ID: $order->id has failed, due to a missing productList"
+            );
 
             return false;
         }
 
         if ($this->isVoucherRefund()) {
-            $this->handleMessage($order, "Refund for Order ID: $order->id will not be processed, due to a voucher being generated");
+            $this->handleMessage(
+                $order,
+                "Refund for Order ID: $order->id will not be processed, due to a voucher being generated"
+            );
 
             return false;
         }
 
         if ($this->isSplitOrder($order->reference)) {
-            $this->handleMessage($order, "Refund for Order ID: $order->id has failed, due to the order coming from a split shopping cart");
+            $this->handleMessage(
+                $order,
+                "Refund for Order ID: $order->id has failed, due to the order coming from a split shopping cart"
+            );
 
             return false;
         }

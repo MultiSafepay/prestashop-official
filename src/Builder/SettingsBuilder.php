@@ -42,6 +42,8 @@ class SettingsBuilder
      * Return an array of config fields names and default values
      *
      * @return array
+     *
+     * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     public static function getConfigFieldsAndDefaultValues(): array
     {
@@ -105,6 +107,8 @@ class SettingsBuilder
      * Return an array with the structure of the settings page form.
      *
      * @return array
+     *
+     * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     protected function getConfigForm(): array
     {
@@ -329,7 +333,9 @@ class SettingsBuilder
                 'customer_groups' => $groups
             ]
         );
-        return Context::getContext()->smarty->fetch('module:multisafepayofficial/views/templates/admin/settings/payment-methods.tpl');
+        return Context::getContext()->smarty->fetch(
+            'module:multisafepayofficial/views/templates/admin/settings/payment-methods.tpl'
+        );
     }
 
     /**
@@ -340,7 +346,9 @@ class SettingsBuilder
      */
     public function getSupportHtmlContent(): string
     {
-        return Context::getContext()->smarty->fetch('module:multisafepayofficial/views/templates/admin/settings/support.tpl');
+        return Context::getContext()->smarty->fetch(
+            'module:multisafepayofficial/views/templates/admin/settings/support.tpl'
+        );
     }
 
     /**
@@ -387,6 +395,8 @@ class SettingsBuilder
     /**
      * Return an array of settings input for OrderStatuses
      * @return array
+     *
+     * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     private function getOrderStatusesSettingFields(): array
     {

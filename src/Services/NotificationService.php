@@ -43,6 +43,8 @@ class NotificationService
      * @param MultisafepayOfficial $module
      * @param SdkService $sdkService
      * @param PaymentOptionService $paymentOptionService
+     *
+     * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     public function __construct(MultisafepayOfficial $module, SdkService $sdkService, PaymentOptionService $paymentOptionService)
     {

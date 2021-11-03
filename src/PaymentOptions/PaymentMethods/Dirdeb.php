@@ -18,6 +18,9 @@ class Dirdeb extends BasePaymentOption
     protected $gatewayCode = 'DIRDEB';
     protected $logo = 'dirdeb.png';
 
+    /**
+     * @phpcs:disable Generic.Files.LineLength.TooLong
+     */
     public function getTransactionType(): string
     {
         $checkoutVars = Tools::getAllValues();

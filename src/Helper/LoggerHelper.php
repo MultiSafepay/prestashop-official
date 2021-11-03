@@ -25,6 +25,8 @@ class LoggerHelper
      * @param string $message
      * @param int $level
      * @return string
+     *
+     * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     private static function formatMessage(string $message, int $level): string
     {
@@ -39,7 +41,11 @@ class LoggerHelper
      */
     public static function logEmergency(string $message): bool
     {
-        return (bool) file_put_contents(self::MULTISAFEPAY_LOG_DESTINATION, self::formatMessage($message, 0), FILE_APPEND);
+        return (bool) file_put_contents(
+            self::MULTISAFEPAY_LOG_DESTINATION,
+            self::formatMessage($message, 0),
+            FILE_APPEND
+        );
     }
 
     /**
@@ -50,7 +56,11 @@ class LoggerHelper
      */
     public static function logAlert(string $message): bool
     {
-        return (bool) file_put_contents(self::MULTISAFEPAY_LOG_DESTINATION, self::formatMessage($message, 1), FILE_APPEND);
+        return (bool) file_put_contents(
+            self::MULTISAFEPAY_LOG_DESTINATION,
+            self::formatMessage($message, 1),
+            FILE_APPEND
+        );
     }
 
     /**
@@ -61,7 +71,11 @@ class LoggerHelper
      */
     public static function logCritical(string $message): bool
     {
-        return (bool) file_put_contents(self::MULTISAFEPAY_LOG_DESTINATION, self::formatMessage($message, 2), FILE_APPEND);
+        return (bool) file_put_contents(
+            self::MULTISAFEPAY_LOG_DESTINATION,
+            self::formatMessage($message, 2),
+            FILE_APPEND
+        );
     }
 
     /**
@@ -72,7 +86,11 @@ class LoggerHelper
      */
     public static function logError(string $message): bool
     {
-        return (bool) file_put_contents(self::MULTISAFEPAY_LOG_DESTINATION, self::formatMessage($message, 3), FILE_APPEND);
+        return (bool) file_put_contents(
+            self::MULTISAFEPAY_LOG_DESTINATION,
+            self::formatMessage($message, 3),
+            FILE_APPEND
+        );
     }
 
     /**
@@ -83,7 +101,11 @@ class LoggerHelper
      */
     public static function logWarning(string $message): bool
     {
-        return (bool) file_put_contents(self::MULTISAFEPAY_LOG_DESTINATION, self::formatMessage($message, 4), FILE_APPEND);
+        return (bool) file_put_contents(
+            self::MULTISAFEPAY_LOG_DESTINATION,
+            self::formatMessage($message, 4),
+            FILE_APPEND
+        );
     }
 
     /**
@@ -94,7 +116,11 @@ class LoggerHelper
      */
     public static function logNotice(string $message): bool
     {
-        return (bool) file_put_contents(self::MULTISAFEPAY_LOG_DESTINATION, self::formatMessage($message, 5), FILE_APPEND);
+        return (bool) file_put_contents(
+            self::MULTISAFEPAY_LOG_DESTINATION,
+            self::formatMessage($message, 5),
+            FILE_APPEND
+        );
     }
 
     /**
@@ -105,7 +131,11 @@ class LoggerHelper
      */
     public static function logInfo(string $message): bool
     {
-        return (bool) file_put_contents(self::MULTISAFEPAY_LOG_DESTINATION, self::formatMessage($message, 6), FILE_APPEND);
+        return (bool) file_put_contents(
+            self::MULTISAFEPAY_LOG_DESTINATION,
+            self::formatMessage($message, 6),
+            FILE_APPEND
+        );
     }
 
     /**
@@ -116,6 +146,10 @@ class LoggerHelper
      */
     public static function logDebug(string $message): bool
     {
-        return (bool) file_put_contents(self::MULTISAFEPAY_LOG_DESTINATION, self::formatMessage($message, 7), FILE_APPEND);
+        return (bool) file_put_contents(
+            self::MULTISAFEPAY_LOG_DESTINATION,
+            self::formatMessage($message, 7),
+            FILE_APPEND
+        );
     }
 }

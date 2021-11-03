@@ -220,6 +220,7 @@ class ShoppingCartService
      * @param string $currencyIsoCode
      *
      * @return CartItem
+     * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     private function createShippingItem(array $cartSummary, string $currencyIsoCode): CartItem
     {

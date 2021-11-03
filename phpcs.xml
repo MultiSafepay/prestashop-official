@@ -9,10 +9,12 @@
         <exclude name="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
         <exclude name="PEAR.Functions.ValidDefaultValue"/>
         <exclude name="PSR1.Files.SideEffects.FoundWithSymbols"/>
-        <exclude name="Generic.Files.LineLength.TooLong"/>
         <exclude name="PSR2.Methods.MethodDeclaration.Underscore"/>
         <exclude name="PSR2.Classes.PropertyDeclaration.Underscore"/>
     </rule>
     <rule ref="Squiz.NamingConventions.ValidVariableName.NotCamelCaps"/>
     <rule ref="Generic.Arrays.DisallowLongArraySyntax.Found"/>
+    <rule ref="Generic.Files.LineLength.TooLong">
+        <exclude-pattern>*/tests</exclude-pattern>
+    </rule>
 </ruleset>
