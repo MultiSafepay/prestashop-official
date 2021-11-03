@@ -59,7 +59,7 @@
                                         <div class="col-lg-9">
                                             <select name="{$optionId}[]" id="{$optionId}[]"  multiple class="chosen">
                                                 {foreach $option['options'] as $multiSelectOption}
-                                                    <option value="{$multiSelectOption['id']}" {if {$multiSelectOption['id']|in_array:$option['value']}} selected {/if}>{$multiSelectOption['name']}</option>
+                                                    <option value="{$multiSelectOption['id']}" {if {$multiSelectOption['id']|escape:'htmlall':'UTF-8'|in_array:$option['value']}} selected {/if}>{$multiSelectOption['name']}</option>
                                                 {/foreach}
                                             </select>
                                             {if isset($option['helperText'])}
