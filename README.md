@@ -15,7 +15,7 @@ The supported Payment Methods & Giftcards for this plugin can be found over here
 
 ## Requirements
 - To use the plugin you need a MultiSafepay account. You can create a test account on https://testmerchant.multisafepay.com/signup
-- PrestaShop 1.7
+- PrestaShop 1.7.6 or higher
 
 ## Installation through backend
 1) Login in your backend and navigate to Modules.
@@ -24,7 +24,7 @@ The supported Payment Methods & Giftcards for this plugin can be found over here
 
 ## Installation through SFTP
 1) Extract Plugin_PrestaShop_5.x.x.zip
-2) Upload the multisafepay folder to prestashop_root/modules/multisafepayofficial/
+2) Upload the multisafepayofficial folder to prestashop_root/modules/multisafepayofficial/
 
 For additional information or instructions please see our [installation & configuration manual](https://docs.multisafepay.com/plugins/prestashop-1-7/manual/)
 
@@ -32,10 +32,10 @@ For additional information or instructions please see our [installation & config
 You can create issues on our repository. If you need any additional help or support, please contact <a href="mailto:integration@multisafepay.com">integration@multisafepay.com</a>
 
 ## Refund within PrestaShop
-In version 4.5.0 we've added support for refunding from within Prestashop 1.7.
+In version 5.0.0 we've added support for refunding from within Prestashop 1.7.
 The way you refund is by opening an order and then clicking on 'partial refund', after which you fill in the amount and quantity you want to refund.
 After clicking on the Refund button, the requested refund is sent and processed automatically within MultiSafepay Control.
-The refund in this version is limited to partial refund on orders without discounts which have not been paid with Pay After Delivery, Klarna, E-Invoice or Afterpay
+The refund in this version is limited to full refunds on orders which have not been paid with Pay After Delivery, Klarna, E-Invoice, Betaal per Maand, or Afterpay. For other payment methods it is possible to process partial refunds.
 
 ## A gift for your contribution
 We look forward to receiving your input. Have you seen an opportunity to change things for better? We would like to invite you to create a pull request on GitHub.
