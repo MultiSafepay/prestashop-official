@@ -4,6 +4,7 @@ install:
 	docker-compose exec -T app php bin/console prestashop:module install multisafepayofficial
 	docker-compose exec -T app rm -rf /var/www/html/var/cache/dev
 	docker-compose exec -T app rm -rf /var/www/html/var/cache/prod
+	docker-compose exec -T app chown -R www-data:www-data /var/www/html
 
 .PHONY: phpcs
 phpcs:
