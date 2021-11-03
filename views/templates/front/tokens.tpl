@@ -8,13 +8,13 @@
     {if isset($success)}
         <div class="alert alert-success alert-dismissible" role="alert">
             <button type="button" class="close" data-dismiss="alert" aria-label="{l s='Close' mod='multisafepayofficial'}"><span aria-hidden="true">&times;</span></button>
-            {$success}
+            {$success|escape:'html':'UTF-8'}
         </div>
     {/if}
     {if isset($error)}
         <div class="alert alert-danger alert-dismissible" role="alert">
             <button type="button" class="close" data-dismiss="alert" aria-label="{l s='Close' mod='multisafepayofficial'}"><span aria-hidden="true">&times;</span></button>
-            {$error}
+            {$error|escape:'html':'UTF-8'}
         </div>
     {/if}
 {/block}
@@ -33,18 +33,18 @@
             </thead>
             <tbody>
                 {foreach from=$tokens item=token}
-                    <form method="POST" action="{$action}">
+                    <form method="POST" action="{$action|escape:'htmlall':'UTF-8'}">
                         <input type="hidden" name="submitRemoveToken" value="1" />
-                        <input type="hidden" name="tokenId" value="{$token.tokenId}">
+                        <input type="hidden" name="tokenId" value="{$token.tokenId|escape:'html':'UTF-8'}">
                         <tr>
                             <th>
-                                {$token.paymentOptionName}
+                                {$token.paymentOptionName|escape:'html':'UTF-8'}
                             </th>
                             <td>
-                                {$token.display}
+                                {$token.display|escape:'html':'UTF-8'}
                             </td>
                             <td>
-                                {$token.expiryDate}
+                                {$token.expiryDate|escape:'html':'UTF-8'}
                             </td>
                             <td style="text-align:center">
                                 <button type="submit" class="btn btn-primary">
