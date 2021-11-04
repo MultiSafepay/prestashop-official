@@ -15,7 +15,7 @@ class ApplePay extends BasePaymentOption
     {
         $context->controller->registerJavascript(
             'module-multisafepay-applepay-javascript',
-            'modules/multisafepay/views/js/multisafepay-applepay.js',
+            'modules/multisafepayofficial/views/js/multisafepay-applepay.js',
             [
                 'priority'   => 200,
                 'attributes' => 'defer',
