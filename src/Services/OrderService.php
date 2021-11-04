@@ -248,7 +248,7 @@ class OrderService
      *
      * @return  PaymentOptions
      *
-     * @phpcs:disable Generic.Files.LineLength.TooLong
+     * @codingStandardsIgnoreStart
      */
     private function createPaymentOptions(Order $order): PaymentOptions
     {

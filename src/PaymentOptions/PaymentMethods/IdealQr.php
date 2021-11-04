@@ -33,8 +33,16 @@ class IdealQr extends BasePaymentOption
     protected $gatewayCode = 'IDEALQR';
     protected $logo = 'ideal-qr.png';
 
+    /**
+     * @param Order $order
+     * @param array $data
+     * @return GatewayInfoInterface
+     *
+     * @phpcs:disable -- Disable to avoid trigger a warning in validator about unused parameter
+     */
     public function getGatewayInfo(Order $order, array $data = []): GatewayInfoInterface
     {
         return new QrCode();
+        // phpcs:enable
     }
 }

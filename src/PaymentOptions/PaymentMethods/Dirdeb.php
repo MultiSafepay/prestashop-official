@@ -71,6 +71,13 @@ class Dirdeb extends BasePaymentOption
         ];
     }
 
+    /**
+     * @param Order $order
+     * @param array $data
+     * @return GatewayInfoInterface|null
+     *
+     * @phpcs:disable -- Disable to avoid trigger a warning in validator about unused parameter
+     */
     public function getGatewayInfo(Order $order, array $data = []): ?GatewayInfoInterface
     {
         if (empty($data['bankaccount']) && empty($data['account_holder_name'])) {
@@ -88,5 +95,6 @@ class Dirdeb extends BasePaymentOption
         $gatewayInfo->addAccountHolderIban($ibanNumber);
         $gatewayInfo->addAccountHolderName($data['account_holder_name']);
         return $gatewayInfo;
+        // phpcs:enable
     }
 }

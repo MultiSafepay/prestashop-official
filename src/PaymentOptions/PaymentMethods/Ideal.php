@@ -56,6 +56,13 @@ class Ideal extends BasePaymentOption
         ];
     }
 
+    /**
+     * @param Order $order
+     * @param array $data
+     * @return GatewayInfoInterface|null
+     *
+     * @phpcs:disable -- Disable to avoid trigger a warning in validator about unused parameter
+     */
     public function getGatewayInfo(Order $order, array $data = []): ?GatewayInfoInterface
     {
         if (!isset($data['issuer_id'])) {
@@ -64,5 +71,6 @@ class Ideal extends BasePaymentOption
         $gatewayInfo = new \MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Ideal();
         $gatewayInfo->addIssuerId($data['issuer_id']);
         return $gatewayInfo;
+        // phpcs:enable
     }
 }

@@ -393,9 +393,12 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      * @param array $data
      *
      * @return GatewayInfoInterface|null
+     *
+     * @phpcs:disable -- Disable to avoid trigger a warning in validator about unused parameter
      */
     public function getGatewayInfo(Order $order, array $data = []): ?GatewayInfoInterface
     {
+        // phpcs:enable
         return null;
     }
 
@@ -429,8 +432,11 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      * @param Context $context
      *
      * @return void
+     *
+     * @phpcs:disable -- Disable to avoid trigger a warning in validator about unused parameter
      */
     public function registerJavascript(Context $context): void
     {
+        // phpcs:enable
     }
 }
