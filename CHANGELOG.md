@@ -6,13 +6,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.0.0-RC-2
+Release date: Nov 11th, 2021
+
+### Added
+PRES-227: Add Payment Component for Credit Card Payment Option.
+PRES-203: Add logo uploader field for generic gateways.
+
+## Fixed:
+PRES-248: Fix method getLanguageCode to support language codes with two characters
+PRES-243: Handle error response if a GET request reach the notification url, which is expecting only POST requests.
+
+## Changed
+PRES-244: Replace logo of Bancontact with new one
+
+***
+
 ## 5.0.0-RC-1
 Release date: Oct 27th, 2021
 
 5.0.0 is a complete rewrite of the MultiSafepay payment module for PrestaShop.
 The 5.x plugin can work simultaneously with an older version of the plugin without producing errors between them.
 If you are upgrading from a 4.x version of our plugin, it is recommended to only disable the payment methods without uninstalling the version 4.x module until you are sure that all orders created through a payment method from that plugin has been fully processed. Once you are sure about that you can safely disable and remove the 4.x version of the plugin and leave only the latest version 5.x.
-
 
 ### Changed
 + Complete rewrite of the plugin.
