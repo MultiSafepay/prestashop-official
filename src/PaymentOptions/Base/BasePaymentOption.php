@@ -508,7 +508,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                             'currency' => (new Currency(Context::getContext()->cart->id_currency))->iso_code,
                             'amount'   => Context::getContext()->cart->getOrderTotal(true, Cart::BOTH),
                             'customer' => [
-                                'locale'    => Tools::substr(Language::getLanguageCodeByIso(Language::getIsoById((int) Context::getContext()->customer->id_lang)), 0, 2),
+                                'locale'    => Tools::substr(Context::getContext()->language->getLanguageCode(), 0, 2),
                                 'country'   => (new Country((new Address((int) Context::getContext()->cart->id_address_invoice))->id_country))->iso_code,
                             ],
                             'template' => [
