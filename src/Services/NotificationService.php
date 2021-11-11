@@ -81,6 +81,12 @@ class NotificationService
     public function processNotification(string $body): void
     {
 
+        if (!Tools::getValue('transactionid') || empty(Tools::file_get_contents('php://input'))) {
+            $message = "It seems the notification URL has been triggered but does not contain the required information";
+            LoggerHelper::logWarning($message);
+            throw new PrestaShopException($message);
+        }
+
         if (!Notification::verifyNotification($body, $_SERVER['HTTP_AUTH'], $this->sdkService->getApiKey())) {
             $message = "Notification for transaction ID " . Tools::getValue('transactionid') . " has been received but is not valid";
             LoggerHelper::logWarning($message);
