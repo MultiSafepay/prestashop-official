@@ -200,8 +200,13 @@ class CustomerService
     private function getLanguageCode(string $isoCode): string
     {
         $locale = Language::getLanguageCodeByIso($isoCode);
+
+        if (strlen($locale) === 2) {
+            return Tools::strtolower($locale) . '_' . Tools::strtoupper($locale);
+        }
+
         $parts = explode('-', (string) $locale);
-        $languageCode = $parts[0] . '_' . Tools::strtoupper($parts[1]);
+        $languageCode = Tools::strtolower($parts[0]) . '_' . Tools::strtoupper($parts[1]);
         return $languageCode;
     }
 
