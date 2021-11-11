@@ -28,13 +28,22 @@ use Context;
 use Country;
 use Currency;
 use Group;
+use Media;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
+use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\PrestaShop\Services\TokenizationService;
 use MultisafepayOfficial;
 use Order;
+use Tools;
+use Cart;
+use Address;
+use Language;
 
 abstract class BasePaymentOption implements BasePaymentOptionInterface
 {
+
+    public const MULTISAFEPAY_COMPONENT_JS_URL  = 'https://pay.multisafepay.com/sdk/components/v2/components.js';
+    public const MULTISAFEPAY_COMPONENT_CSS_URL = 'https://pay.multisafepay.com/sdk/components/v2/components.css';
     public const REDIRECT_TYPE = 'redirect';
     public const DIRECT_TYPE = 'direct';
 
@@ -77,6 +86,11 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      * @var bool
      */
     protected $hasConfigurableTokenization = false;
+
+    /**
+     * @var bool
+     */
+    protected $hasConfigurablePaymentComponent = false;
 
     /**
      * @var MultisafepayOfficial
@@ -164,6 +178,20 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             $inputFields         = array_merge(
                 $inputFields,
                 $tokenizationService->createTokenizationSavePaymentDetailsCheckbox()
+            );
+        }
+
+        if ($this->allowPaymentComponent()) {
+            $inputFields         = array_merge(
+                $inputFields,
+                [
+                    [
+                        'type'          => 'hidden',
+                        'name'          => 'payload',
+                        'placeholder'   => '',
+                        'value'         => '',
+                    ]
+                ]
             );
         }
 
@@ -347,6 +375,19 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             ];
         }
 
+        if ($this->hasConfigurablePaymentComponent) {
+            $settings['MULTISAFEPAY_OFFICIAL_COMPONENT_'.$this->getUniqueName()] = [
+                'type'       => 'switch',
+                'name'       => $this->module->l('Enable payment component'),
+                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_COMPONENT_'.$this->getUniqueName()) ?? 0,
+                'helperText' => $this->module->l(
+                    'If enabled, embedded form will be used during checkout.'
+                ),
+                'default'    => '0',
+                'order'      => 13,
+            ];
+        }
+
         return $this->sortInputFields($settings);
     }
 
@@ -427,16 +468,85 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         return false;
     }
 
+    /**
+     * @return bool
+     */
+    public function allowPaymentComponent(): bool
+    {
+        if ($this->hasConfigurablePaymentComponent) {
+            return (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_COMPONENT_'.$this->getUniqueName());
+        }
+
+        return false;
+    }
+
 
     /**
-     * @param Context $context
-     *
      * @return void
-     *
-     * @phpcs:disable -- Disable to avoid trigger a warning in validator about unused parameter
+     * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     public function registerJavascript(Context $context): void
     {
-        // phpcs:enable
+        if ($this->allowPaymentComponent()) {
+            $context->controller->registerJavascript(
+                'module-multisafepay-payment-component-javascript',
+                self::MULTISAFEPAY_COMPONENT_JS_URL,
+                [
+                    'server'     => 'remote'
+                ]
+            );
+
+            /** @var SdkService $sdkService */
+            $sdkService = $this->module->get('multisafepay.sdk_service');
+            Media::addJsDef(
+                [
+                    'multisafepayPaymentComponentConfig' => [
+                        'debug'     => (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE') ?? false,
+                        'env'       => $sdkService->getTestMode() ? 'test' : 'live',
+                        'apiToken'  => ($sdkService->getSdk()->getApiTokenManager()->get())->getApiToken(),
+                        'orderData' => [
+                            'currency' => (new Currency(Context::getContext()->cart->id_currency))->iso_code,
+                            'amount'   => Context::getContext()->cart->getOrderTotal(true, Cart::BOTH),
+                            'customer' => [
+                                'locale'    => Tools::substr(Language::getLanguageCodeByIso(Language::getIsoById((int) Context::getContext()->customer->id_lang)), 0, 2),
+                                'country'   => (new Country((new Address((int) Context::getContext()->cart->id_address_invoice))->id_country))->iso_code,
+                            ],
+                            'template' => [
+                                'settings' => [
+                                    'embed_mode' => true
+                                ],
+                            ],
+                        ],
+                    ],
+                ]
+            );
+
+            Media::addJsDef([
+                'multisafepayPaymentComponentGateways' => [
+                    $this->getGatewayCode()
+                ]
+            ]);
+
+            $context->controller->registerJavascript(
+                'module-multisafepay-initialize-payment-component-javascript',
+                'modules/multisafepayofficial/views/js/multisafepayofficial.js',
+            );
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public function registerCss(Context $context): void
+    {
+        if ($this->allowPaymentComponent()) {
+            $context->controller->registerStylesheet(
+                'module-multisafepay-payment-component',
+                self::MULTISAFEPAY_COMPONENT_CSS_URL,
+                [
+                    'server'     => 'remote'
+                ]
+            );
+        }
     }
 }

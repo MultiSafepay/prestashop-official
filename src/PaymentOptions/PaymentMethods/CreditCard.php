@@ -27,6 +27,7 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 class CreditCard extends BasePaymentOption
 {
     protected $hasConfigurableTokenization = true;
+    protected $hasConfigurablePaymentComponent = true;
     protected $name = 'Credit card';
     protected $gatewayCode = 'CREDITCARD';
     protected $logo = 'creditcard.png';

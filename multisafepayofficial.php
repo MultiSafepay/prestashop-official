@@ -161,8 +161,10 @@ class MultisafepayOfficial extends PaymentModule
         $paymentOptionService = $this->get('multisafepay.payment_option_service');
 
         $paymentOptions = $paymentOptionService->getActivePaymentOptions();
+        /** @var BasePaymentOption $paymentOption */
         foreach ($paymentOptions as $paymentOption) {
             $paymentOption->registerJavascript($this->context);
+            $paymentOption->registerCss($this->context);
         }
     }
 

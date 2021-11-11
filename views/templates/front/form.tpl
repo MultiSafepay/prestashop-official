@@ -22,7 +22,13 @@
 {assign var="gateway" value=$paymentOption->getGatewayCode()|escape:'html':'UTF-8'|lower}
 {assign var="inputs" value=$paymentOption->getInputFields()}
 {assign var="tokenization" value=$paymentOption->allowTokenization()}
+{assign var="paymentComponent" value=$paymentOption->allowPaymentComponent()}
 <form action="{$action|escape:'htmlall':'UTF-8'}" id="multisafepay-form-{$gateway|escape:'html':'UTF-8'}" method="POST" class="additional-information{if $tokenization} multisafepay-tokenization{/if}">
+    {if $paymentComponent}
+        <div class="form-group">
+            <div id="multisafepay-payment-component-{$gateway|escape:'html':'UTF-8'}"></div>
+        </div>
+    {/if}
     {foreach from=$inputs item=inputField}
         {if $inputField.type == 'hidden'}
             <input type="hidden" name="{$inputField['name']|escape:'html':'UTF-8'}" value="{$inputField.value|escape:'html':'UTF-8'}"/>

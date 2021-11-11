@@ -150,6 +150,11 @@ class OrderService
             }
         }
 
+        if ($paymentOption->allowPaymentComponent() && Tools::getValue('payload')) {
+            $orderRequest->addData(['payment_data' => ['payload' => Tools::getValue('payload')]]);
+            $orderRequest->addType('direct');
+        }
+
         return $orderRequest;
     }
 
