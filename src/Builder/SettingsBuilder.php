@@ -33,6 +33,8 @@ use Tools;
 use Context;
 use OrderState;
 use Group;
+use Uploader;
+use ImageManager;
 
 /**
  * Class SettingsBuilder
@@ -378,7 +380,7 @@ class SettingsBuilder
      */
     public function postProcess(): void
     {
-        $formValues = $this->getConfigFormValues();
+        $formValues = $this->filterToProcessConfigForm($this->getConfigFormValues());
 
         foreach ($formValues as $key => $value) {
             if (is_array($value)) {
@@ -391,8 +393,50 @@ class SettingsBuilder
                 Configuration::updateValue($key, Tools::getValue($key));
             }
         }
+
+        if (!empty($_FILES)) {
+            $this->processFiles();
+        }
     }
 
+    /**
+     * @param array $fields
+     * @return array
+     */
+    private function filterToProcessConfigForm(array $fields): array
+    {
+        unset($fields['MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_GENERIC1']);
+        unset($fields['MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_GENERIC2']);
+        unset($fields['MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_GENERIC3']);
+        return $fields;
+    }
+
+    /**
+     * Process $_FILES from generic gateway images
+     */
+    private function processFiles(): void
+    {
+        foreach ($_FILES as $key => $file) {
+            // User are submitting a file. New one or updating
+            if (!empty($file['tmp_name']) && !(bool)$file['error'] &&
+                ImageManager::isCorrectImageFileExt($file['name']) &&
+                is_uploaded_file($file['tmp_name']) &&
+                ImageManager::isRealImage($file['tmp_name'], $file['type'])
+            ) {
+                $uploader = new Uploader($key);
+                $result = $uploader->process();
+                if (!(bool)$result[0]['error']) {
+                    Configuration::updateValue($key, $result[0]['save_path']);
+                }
+            }
+
+            // User are not submitting a file, but he want to remove the current one assigned.
+            // In these cases $_POST variable contains remove as value and $_FILE is empty.
+            if (empty($file['tmp_name']) && (bool)$file['error'] && $_POST[$key] === 'remove') {
+                Configuration::updateValue($key, null);
+            }
+        }
+    }
 
     /**
      * @return array
@@ -436,7 +480,6 @@ class SettingsBuilder
         return $orderStatusesSettingsFields;
     }
 
-
     /**
      * Return the MultiSafepay transaction status with default status
      *
@@ -472,7 +515,7 @@ class SettingsBuilder
         /** @var BasePaymentOptionInterface $paymentOption */
         foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
             foreach ($paymentOption->getGatewaySettings() as $settingKey => $settings) {
-                $configFormValues[$settingKey] = $settings['value'];
+                $configFormValues[$settingKey] = $settings['value'] ?? '';
             }
         }
 

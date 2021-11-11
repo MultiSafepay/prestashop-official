@@ -45,3 +45,4 @@ parameters:
     - '#Call to an undefined method AdminController\|FrontController::registerStylesheet\(\)#'
     - '#Call to an undefined method AdminController\|FrontController::registerJavascript\(\).#'
     - '#Property CustomerMessageCore::\$private \(bool\) does not accept int.#'
+    - '#Parameter \#1 \$name of class Uploader constructor expects null, string given.#'

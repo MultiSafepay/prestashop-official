@@ -104,6 +104,12 @@
     font-family: 'FontAwesome';
     color: forestgreen;
 }
+.multisafepay-panel-payment-option .panel-body .form-group .col-lg-9 .form-group .col-lg-12 div img {
+    padding: 10px;
+    border: 1px solid #bbcdd2;
+    text-align: center;
+    margin-bottom: 10px;
+}
 .drag-active {
     position: relative;
     background: #fcfcfc;

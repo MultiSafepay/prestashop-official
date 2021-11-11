@@ -89,6 +89,19 @@
                                         </div>
                                     </div>
                                 {/if}
+                                {if $option['type'] == 'file'}
+                                    <div class="form-group">
+                                        <label class="control-label col-lg-3">
+                                            {$option['name']}
+                                        </label>
+                                        <div class="col-lg-9">
+                                            {$option['render']}
+                                            {if isset($option['helperText'])}
+                                                <p class="help-block">{$option['helperText']|escape:'html':'UTF-8'}</p>
+                                            {/if}
+                                        </div>
+                                    </div>
+                                {/if}
                             {/foreach}
                         </div>
                     </div>

@@ -152,8 +152,8 @@ class PaymentOptionService
     private function getLogoByName(string $name): string
     {
         // If Generic Gateway, this will return a full URL
-        if ((strpos($name, 'http')) !== false) {
-            return $name;
+        if (file_exists($name)) {
+            return Media::getMediaPath($name);
         }
 
         // Logo by language

@@ -43,6 +43,17 @@ $(document).ready(function () {
 
     });
 
+    // Unset the image from uploader field
+    $('.multisafepay-panel-payment-option .panel-body .form-group .col-lg-9 .form-group .col-lg-12 div a').click(function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        $(this).closest('.form-group').next().find('input[type=file]').attr('value', '');
+        $(this).closest('.form-group').next().find('input[type=text]').css('text-indent', '999px');
+        $(this).closest('.form-group').next().find('input[type=text]').attr('value', 'remove');
+        $(this).closest('.form-group').remove();
+    });
+
+
 });
 
 function togglePaymentOptionIconStatus(paymentOptionIdPanel, active)

@@ -24,6 +24,10 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use Configuration;
+use HelperUploader;
+use Context;
+use Media;
+use Validate;
 
 class GenericGateway1 extends BasePaymentOption
 {
@@ -36,7 +40,7 @@ class GenericGateway1 extends BasePaymentOption
 
     public function getLogo(): string
     {
-        return (Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_'.$this->getUniqueName()) ?: '');
+        return Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_' . $this->getUniqueName()) ?? '';
     }
 
     public function getUniqueName(): string
@@ -59,14 +63,44 @@ class GenericGateway1 extends BasePaymentOption
             'order' => 31,
         ];
         $options['MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_'.$this->getUniqueName()] = [
-            'type' => 'text',
-            'name' => $this->module->l('Gateway icon'),
-            'value' => Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_'.$this->getUniqueName()),
-            'helperText' => $this->module->l('Upload the file via FTP to your server and enter the full URL of the payment method icon. Recommended size: 420px * 180px. Recommended format: .png'),
-            'default' => '',
-            'order' => 32,
+            'type'           => 'file',
+            'image'          => Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_' . $this->getUniqueName()) ?? '',
+            'name'           => $this->module->l('Gateway icon'),
+            'default'        => '',
+            'order'          => 32,
+            'helperText'     => $this->module->l('Recommended size: 420px * 180px. Recommended format: .png'),
         ];
 
+
+        $isBackoffice = Validate::isLoadedObject(Context::getContext()->employee);
+        if ($isBackoffice) {
+            $options['MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_'.$this->getUniqueName()]['render'] = $this->getRenderedUploaderField();
+        }
+
         return $this->sortInputFields($options);
+    }
+
+    public function getRenderedUploaderField(): string
+    {
+        $uploader = new HelperUploader();
+        $uploader->setContext(Context::getContext());
+        $uploader->setId($this->getUniqueName());
+        $uploader->setName('MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_'.$this->getUniqueName());
+        $uploader->setUseAjax(false);
+        if (!empty(Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_' . $this->getUniqueName()))) {
+            $uploader->setFiles(
+                [
+                    0 => [
+                        'type' => HelperUploader::TYPE_IMAGE,
+                        'image' => Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_' . $this->getUniqueName()) ? '<img src="' . Media::getMediaPath(Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_' . $this->getUniqueName())) . '" width="80" />' :  null,
+                        'size' => null,
+                        'delete_url' =>  '#',
+                        'name' => Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_' . $this->getUniqueName()) ? '<img src="' . Media::getMediaPath(Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_' . $this->getUniqueName())) . '" width="80" />' :  null,
+                        'title' => Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_' . $this->getUniqueName()) ? '<img src="' . Media::getMediaPath(Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_' . $this->getUniqueName())) . '" width="80" />' :  null,
+                    ],
+                ]
+            );
+        }
+        return $uploader->render();
     }
 }
