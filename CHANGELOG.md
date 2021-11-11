@@ -10,15 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Release date: Nov 11th, 2021
 
 ### Added
-PRES-227: Add Payment Component for Credit Card Payment Option.
-PRES-203: Add logo uploader field for generic gateways.
++ PRES-227: Add Payment Component for Credit Card Payment Option.
++ PRES-203: Add logo uploader field for generic gateways.
 
 ## Fixed:
-PRES-248: Fix method getLanguageCode to support language codes with two characters
-PRES-243: Handle error response if a GET request reach the notification url, which is expecting only POST requests.
++ PRES-248: Fix method getLanguageCode to support language codes with two characters
++ PRES-243: Handle error response if a GET request reach the notification url, which is expecting only POST requests.
 
 ## Changed
-PRES-244: Replace logo of Bancontact with new one
++ PRES-244: Replace logo of Bancontact with new one
 
 ***
 
