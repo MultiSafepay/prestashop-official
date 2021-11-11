@@ -144,6 +144,7 @@ class OrderService
                 $orderRequest->addRecurringModel('cardOnFile');
             }
             if ($this->getToken() !== null && 'new' !== $this->getToken()) {
+                $orderRequest->addRecurringModel('cardOnFile');
                 $orderRequest->addRecurringId($this->getToken());
                 $orderRequest->addType(BasePaymentOption::DIRECT_TYPE);
             }
