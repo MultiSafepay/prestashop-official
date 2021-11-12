@@ -13,11 +13,11 @@ Release date: Nov 11th, 2021
 + PRES-227: Add Payment Component for Credit Card Payment Option.
 + PRES-203: Add logo uploader field for generic gateways.
 
-## Fixed:
+### Fixed:
 + PRES-248: Fix method getLanguageCode to support language codes with two characters
 + PRES-243: Handle error response if a GET request reach the notification url, which is expecting only POST requests.
 
-## Changed
+### Changed
 + PRES-244: Replace logo of Bancontact with new one
 
 ***
