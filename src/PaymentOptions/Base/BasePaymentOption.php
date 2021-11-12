@@ -529,7 +529,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
             $context->controller->registerJavascript(
                 'module-multisafepay-initialize-payment-component-javascript',
-                'modules/multisafepayofficial/views/js/multisafepayofficial.js',
+                'modules/multisafepayofficial/views/js/multisafepayofficial.js'
             );
         }
     }
