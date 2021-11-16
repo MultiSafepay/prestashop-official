@@ -127,6 +127,7 @@ class PaymentOptionService
             }
 
             $option = new PaymentOption();
+            $option->setModuleName($paymentMethod->getGatewayCode());
             $option->setCallToActionText($paymentMethod->getFrontEndName());
             $option->setAction($paymentMethod->getAction());
             $option->setForm($this->module->getMultiSafepayPaymentOptionForm($paymentMethod));
