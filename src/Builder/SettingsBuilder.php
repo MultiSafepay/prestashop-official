@@ -71,8 +71,8 @@ class SettingsBuilder
     {
         return [
             'MULTISAFEPAY_OFFICIAL_TEST_MODE'                => ['default' => '0'],
-            'MULTISAFEPAY_OFFICIAL_API_KEY'                  => ['default' => 'live_api_key'],
-            'MULTISAFEPAY_OFFICIAL_TEST_API_KEY'             => ['default' => 'test_api_key'],
+            'MULTISAFEPAY_OFFICIAL_API_KEY'                  => ['default' => ''],
+            'MULTISAFEPAY_OFFICIAL_TEST_API_KEY'             => ['default' => ''],
             'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE'        => ['default' => '30'],
             'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT'         => ['default' => self::DAYS],
             'MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID'      => ['default' => ''],

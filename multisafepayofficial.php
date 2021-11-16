@@ -145,6 +145,10 @@ class MultisafepayOfficial extends PaymentModule
             return;
         }
 
+        if (!$this->hasSetApiKey()) {
+            return;
+        }
+
         $this->context->controller->registerStylesheet(
             'module-multisafepay-styles',
             'modules/multisafepayofficial/views/css/front.css'
@@ -181,6 +185,11 @@ class MultisafepayOfficial extends PaymentModule
         }
 
         if (!$this->checkCurrency($params['cart'])) {
+            return null;
+        }
+
+        if (!$this->hasSetApiKey()) {
+            LoggerHelper::logAlert('API Key has not been set up properly');
             return null;
         }
 
@@ -363,5 +372,14 @@ class MultisafepayOfficial extends PaymentModule
     public function hookPaymentReturn(array $params)
     {
         return false;
+    }
+
+    private function hasSetApiKey(): bool
+    {
+        /** @var SdkService $sdkService */
+        $sdkService = $this->get('multisafepay.sdk_service');
+        $apiKey = $sdkService->getApiKey();
+
+        return !empty($apiKey);
     }
 }
