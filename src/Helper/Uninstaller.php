@@ -108,8 +108,20 @@ class Uninstaller
 
         if (!empty($orderStatuses)) {
             foreach ($orderStatuses as $orderStatus) {
-                $orderStatus->softDelete();
+                $this->orderStateSoftDelete($orderStatus);
             }
         }
+    }
+
+    /**
+     * @param OrderState $orderStatus
+     *
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
+     */
+    private function orderStateSoftDelete(OrderState $orderStatus): void
+    {
+        $orderStatus->deleted = true;
+        $orderStatus->update();
     }
 }
