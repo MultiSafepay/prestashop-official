@@ -249,12 +249,12 @@ class ShoppingCartServiceTest extends BaseMultiSafepayTest
         $weight = 1
     ): array {
         return [
-            'name'                 => $name,
-            'id_product'           => $idProduct,
-            'quantity'             => $quantity,
-            'price_with_reduction' => $priceWithReduction,
-            'rate'                 => $rate,
-            'weight'               => $weight,
+            'name'       => $name,
+            'id_product' => $idProduct,
+            'quantity'   => $quantity,
+            'price_wt'   => $priceWithReduction,
+            'rate'       => $rate,
+            'weight'     => $weight,
         ];
     }
 }

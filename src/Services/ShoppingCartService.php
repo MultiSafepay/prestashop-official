@@ -149,7 +149,7 @@ class ShoppingCartService
         }
 
         $taxRate = (float)$product['rate'];
-        $price   = $product['price_with_reduction'];
+        $price   = $product['price_wt'] ? $product['price_wt'] : $product['price_with_reduction'];
 
         /**
          * If rounding mode is set to round per item, we have to round the price of each item before
