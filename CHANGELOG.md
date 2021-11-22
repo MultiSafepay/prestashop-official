@@ -6,6 +6,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.0.0
+Release date: Nov 22th, 2021
+
+### Added
++ PRES-269: Add message in settings page if current version is not latest one.
++ PRES-261: Use tokenization feature within the Payment Component.
++ PRES-263: Add placeholder to text fields in the settings page.
++ PRES-268: Log cart summary.
+
+### Fixed:
++ PRES-262: Fix uninstaller due to missing method ObjectModel->softDelete() on versions lower than 1.7.6.
++ PRES-260: Fix missing method Language->getLanguageCode producing errors when Payment Component loads on versions lower than 1.7.6.
+
+### Changed
++ PRES-253: Allow API Key fields to be empty.
++ PRES-266: Change hook used to load JS and CSS in backoffice.
+
+***
+
 ## 5.0.0-RC-2
 Release date: Nov 11th, 2021
 
