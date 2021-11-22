@@ -139,7 +139,7 @@ class OrderService
             $orderRequest->addGatewayInfo($gatewayInfo);
         }
 
-        if ($paymentOption->allowTokenization()) {
+        if ($paymentOption->allowTokenization() && !$paymentOption->allowPaymentComponent()) {
             if ($this->shouldSaveToken()) {
                 $orderRequest->addRecurringModel('cardOnFile');
             }

@@ -156,7 +156,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             ],
         ];
 
-        if ($this->allowTokenization()) {
+        if ($this->allowTokenization() && !$this->allowPaymentComponent()) {
             /** @var TokenizationService $tokenizationService */
             $tokenizationService = $this->module->get('multisafepay.tokenization_service');
             $inputFields         = array_merge(
@@ -172,7 +172,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             $inputFields = array_merge($inputFields, $this->getDirectTransactionInputFields());
         }
 
-        if ($this->allowTokenization()) {
+        if ($this->allowTokenization() && !$this->allowPaymentComponent()) {
             /** @var TokenizationService $tokenizationService */
             $tokenizationService = $this->module->get('multisafepay.tokenization_service');
             $inputFields         = array_merge(
@@ -510,6 +510,10 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                             'customer' => [
                                 'locale'    => Tools::substr(Context::getContext()->language->getLocale(), 0, 2),
                                 'country'   => (new Country((new Address((int) Context::getContext()->cart->id_address_invoice))->id_country))->iso_code,
+                                'reference' => $this->allowTokenization() ? Context::getContext()->customer->id : null,
+                            ],
+                            'recurring' => [
+                                'model' => $this->allowTokenization() ? 'cardOnFile': null,
                             ],
                             'template' => [
                                 'settings' => [
