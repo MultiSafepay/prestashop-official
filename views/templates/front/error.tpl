@@ -22,7 +22,7 @@
 {extends file=$layout}
 
 {block name='content'}
-    <p>{l s='An error occured during your payment.' mod='multisafepayofficial'}</p>
+    <p>{l s='An error occurred during your payment.' mod='multisafepayofficial'}</p>
     <ul>
         <li>{$error_message|escape:'html':'UTF-8'}</li>
     </ul>
