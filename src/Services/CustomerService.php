@@ -201,7 +201,7 @@ class CustomerService
     {
         $locale = Language::getLanguageCodeByIso($isoCode);
 
-        if (strlen($locale) === 2) {
+        if (Tools::strlen($locale) === 2) {
             return Tools::strtolower($locale) . '_' . Tools::strtoupper($locale);
         }
 

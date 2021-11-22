@@ -446,7 +446,7 @@ class SettingsBuilder
 
             // User are not submitting a file, but he want to remove the current one assigned.
             // In these cases $_POST variable contains remove as value and $_FILE is empty.
-            if (empty($file['tmp_name']) && (bool)$file['error'] && $_POST[$key] === 'remove') {
+            if (empty($file['tmp_name']) && (bool)$file['error'] && Tools::getValue($key) === 'remove') {
                 Configuration::updateValue($key, null);
             }
         }
@@ -550,7 +550,7 @@ class SettingsBuilder
             ]
         ];
         $context = stream_context_create($options);
-        $content = file_get_contents('https://api.github.com/repos/multisafepay/prestashop-official/releases/latest', false, $context);
+        $content = Tools::file_get_contents('https://api.github.com/repos/multisafepay/prestashop-official/releases/latest', false, $context);
         if ($content) {
             $information = json_decode($content);
             if (version_compare($information->tag_name, $this->module->version, '>')) {

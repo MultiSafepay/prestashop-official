@@ -92,7 +92,7 @@
                                 {if $option['type'] == 'file'}
                                     <div class="form-group">
                                         <label class="control-label col-lg-3">
-                                            {$option['name']}
+                                            {$option['name']|escape:'html':'UTF-8'}
                                         </label>
                                         <div class="col-lg-9">
                                             {$option['render']}
