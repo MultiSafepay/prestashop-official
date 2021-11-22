@@ -45,6 +45,7 @@ class SettingsBuilder
     public const SECONDS = 'seconds';
     public const HOURS = 'hours';
     public const DAYS = 'days';
+    public const MULTISAFEPAY_RELEASES_GITHUB_URL = 'https://github.com/MultiSafepay/prestashop-official/releases';
 
     /**
      * @var MultisafepayOfficial
@@ -120,6 +121,14 @@ class SettingsBuilder
 
         if ($success) {
             $configForm[0]['form'] = ['success' => $this->module->l('Settings updated')] + $configForm[0]['form'];
+        }
+
+        if ($this->isThereAnUpdateAvailable()) {
+            $configForm[0]['form'] = [
+                    'description' => $this->module->l(
+                        'There is a new version for MultiSafepay payment module. '
+                    ) . '<a href="' . self::MULTISAFEPAY_RELEASES_GITHUB_URL . '" target="_blank">Click here, to read more information</a>'
+                ] + $configForm[0]['form'];
         }
 
         return $helper->generateForm($configForm);
@@ -525,5 +534,29 @@ class SettingsBuilder
         }
 
         return $configFormValues;
+    }
+
+    /**
+     * Compare the version with
+     * @return bool
+     */
+    private function isThereAnUpdateAvailable(): bool
+    {
+        $options = [
+            'http'=> [
+                'method'=>"GET",
+                'header'=> "Accept-language: en\r\n" .
+                    "User-Agent: PHP\r\n"
+            ]
+        ];
+        $context = stream_context_create($options);
+        $content = file_get_contents('https://api.github.com/repos/multisafepay/prestashop-official/releases/latest', false, $context);
+        if ($content) {
+            $information = json_decode($content);
+            if (version_compare($information->tag_name, $this->module->version, '>')) {
+                return true;
+            }
+        }
+        return false;
     }
 }
