@@ -82,7 +82,7 @@ class MultisafepayOfficial extends PaymentModule
 
         return $install &&
             $this->registerHook('actionFrontControllerSetMedia') &&
-            $this->registerHook('backOfficeHeader') &&
+            $this->registerHook('actionAdminControllerSetMedia') &&
             $this->registerHook('paymentReturn') &&
             $this->registerHook('paymentOptions') &&
             $this->registerHook('actionSetInvoice') &&
@@ -124,8 +124,8 @@ class MultisafepayOfficial extends PaymentModule
      * Add the CSS & JavaScript files you want to be loaded in the BO.
      *
      * @return void
-    */
-    public function hookBackOfficeHeader(): void
+     */
+    public function hookActionAdminControllerSetMedia(array $params): void
     {
         $this->context->controller->addCSS($this->_path.'views/css/multisafepay-icon.css');
         if ('multisafepayofficial' === $this->name) {
