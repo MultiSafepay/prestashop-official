@@ -74,6 +74,12 @@ class ShoppingCartService
         $products    = $shoppingCart->getProductsWithSeparatedGifts();
         $cartSummary = $shoppingCart->getSummaryDetails();
 
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
+            LoggerHelper::logInfo(
+                'Cart Summary for Shopping Cart ID ' . $shoppingCart->id . ', contains: ' . json_encode($cartSummary)
+            );
+        }
+
         $cartItems = [];
         foreach ($products as $product) {
             $cartItems[] = $this->createCartItemFromProduct($product, $currencyIsoCode, $orderRoundType, $weightUnit);
