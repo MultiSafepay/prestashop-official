@@ -65,7 +65,7 @@
                                             {$option['name']|escape:'html':'UTF-8'}
                                         </label>
                                         <div class="col-lg-9">
-                                            <input type="text" name="{$optionId|escape:'html':'UTF-8'}" id="{$optionId|escape:'html':'UTF-8'}" value="{$option['value']|escape:'html':'UTF-8'}" class="{if isset($option['class'])}{$option['class']|escape:'html':'UTF-8'}{/if}">
+                                            <input type="text" name="{$optionId|escape:'html':'UTF-8'}" placeholder="{$option['name']|escape:'html':'UTF-8'}" id="{$optionId|escape:'html':'UTF-8'}" value="{$option['value']|escape:'html':'UTF-8'}" class="{if isset($option['class'])}{$option['class']|escape:'html':'UTF-8'}{/if}">
                                             {if isset($option['helperText'])}
                                                 <p class="help-block">{$option['helperText']|escape:'html':'UTF-8'}</p>
                                             {/if}

@@ -166,20 +166,22 @@ class SettingsBuilder
                         'section' => 'default'
                     ],
                     [
-                        'type'  => 'text',
-                        'tab'   => 'account_settings',
-                        'desc'  => $this->module->l('Enter a valid live API key'),
-                        'name'  => 'MULTISAFEPAY_OFFICIAL_API_KEY',
-                        'label' => $this->module->l('Live API key'),
-                        'section' => 'default'
+                        'type'        => 'text',
+                        'tab'         => 'account_settings',
+                        'desc'        => $this->module->l('Enter a valid live API key'),
+                        'name'        => 'MULTISAFEPAY_OFFICIAL_API_KEY',
+                        'label'       => $this->module->l('Live API key'),
+                        'placeholder' => $this->module->l('Live API key'),
+                        'section'     => 'default'
                     ],
                     [
-                        'type'  => 'text',
-                        'tab'   => 'account_settings',
-                        'desc'  => $this->module->l('Enter a valid test API key'),
-                        'name'  => 'MULTISAFEPAY_OFFICIAL_TEST_API_KEY',
-                        'label' => $this->module->l('Test API key'),
-                        'section' => 'default'
+                        'type'        => 'text',
+                        'tab'         => 'account_settings',
+                        'desc'        => $this->module->l('Enter a valid test API key'),
+                        'name'        => 'MULTISAFEPAY_OFFICIAL_TEST_API_KEY',
+                        'label'       => $this->module->l('Test API key'),
+                        'placeholder' => $this->module->l('Test API key'),
+                        'section'     => 'default'
                     ],
                     [
                         'type'    => 'switch',
@@ -245,20 +247,22 @@ class SettingsBuilder
                         'section' => 'default'
                     ],
                     [
-                        'tab'   => 'general_settings',
-                        'type'  => 'text',
-                        'desc'  => $this->module->l('Enter a valid Google Analytics ID'),
-                        'name'  => 'MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID',
-                        'label' => $this->module->l('Google Analytics ID'),
-                        'section' => 'default'
+                        'tab'         => 'general_settings',
+                        'type'        => 'text',
+                        'desc'        => $this->module->l('Enter a valid Google Analytics ID'),
+                        'name'        => 'MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID',
+                        'label'       => $this->module->l('Google Analytics ID'),
+                        'placeholder' => $this->module->l('Google Analytics ID'),
+                        'section'     => 'default'
                     ],
                     [
-                        'tab'   => 'general_settings',
-                        'type'  => 'text',
-                        'desc'  => $this->module->l('A text which will be shown with the order in MultiSafepay Control. If the customer’s bank supports it this description will also be shown on the customer’s bank statement. You can include the order number using {order_reference}'),
-                        'name'  => 'MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION',
-                        'label' => $this->module->l('Order description'),
-                        'section' => 'default'
+                        'tab'         => 'general_settings',
+                        'type'        => 'text',
+                        'desc'        => $this->module->l('A text which will be shown with the order in MultiSafepay Control. If the customer’s bank supports it this description will also be shown on the customer’s bank statement. You can include the order number using {order_reference}'),
+                        'name'        => 'MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION',
+                        'label'       => $this->module->l('Order description'),
+                        'placeholder' => $this->module->l('Payment for order: {order_reference}'),
+                        'section'     => 'default'
                     ],
                     [
                         'tab'   => 'general_settings',
@@ -270,12 +274,13 @@ class SettingsBuilder
                         'section' => 'default'
                     ],
                     [
-                        'tab'   => 'general_settings',
-                        'type'  => 'text',
-                        'desc'  => $this->module->l('Lifetime of payment link value'),
-                        'name'  => 'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE',
-                        'label' => $this->module->l('Lifetime of payment link value'),
-                        'section' => 'default'
+                        'tab'         => 'general_settings',
+                        'type'        => 'text',
+                        'desc'        => $this->module->l('Lifetime of payment link value'),
+                        'name'        => 'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE',
+                        'label'       => $this->module->l('Lifetime of payment link value'),
+                        'placeholder' => $this->module->l('Lifetime of payment link'),
+                        'section'     => 'default'
                     ],
                     [
                         'tab'     => 'general_settings',
