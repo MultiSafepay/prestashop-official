@@ -6,7 +6,7 @@
 
 Easily integrate MultiSafepay payment solutions into your PrestaShop 1.7 webshop with the free and completely new MultiSafepay plugin.
 
-[![Latest Stable Version](https://img.shields.io/github/release/multisafepay/prestashop.svg)](https://github.com/MultiSafepay/PrestaShop)
+[![Latest Stable Version](https://img.shields.io/github/release/multisafepay/prestashop-official.svg)](https://github.com/MultiSafepay/prestashop-official)
 
 ## About MultiSafepay ##
 MultiSafepay is a collecting payment service provider which means we take care of the agreements, technical details and payment collection required for each payment method. You can start selling online today and manage all your transactions from one place.
