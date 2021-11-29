@@ -107,7 +107,9 @@ var MultiSafepayPaymentComponent = function (config, gateway) {
 
 $(document).ready(function () {
     $.each(multisafepayPaymentComponentGateways, function (index, gateway) {
-        new MultiSafepayPaymentComponent(multisafepayPaymentComponentConfig, gateway);
+        if ($('#multisafepay-form-' + gateway.toLowerCase()).length > 0) {
+            new MultiSafepayPaymentComponent(multisafepayPaymentComponentConfig, gateway);
+        }
     });
 });
 
