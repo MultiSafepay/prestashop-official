@@ -39,9 +39,9 @@ class MultisafepayOfficialTokensModuleFrontController extends ModuleFrontControl
             $tokenizationService = $this->get('multisafepay.tokenization_service');
 
             if ($tokenizationService->deleteToken((string)$this->context->customer->id, Tools::getValue('tokenId'))) {
-                $this->success[] = $this->module->l('Payment details have been removed');
+                $this->success[] = $this->module->l('Payment details have been removed', 'tokens');
             } else {
-                $this->errors[] = $this->module->l('There was an error while deleting the payment details');
+                $this->errors[] = $this->module->l('There was an error while deleting the payment details', 'tokens');
             }
         }
     }

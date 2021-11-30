@@ -33,6 +33,7 @@ use Context;
 
 class PayAfterDelivery extends BasePaymentOption
 {
+    public const CLASS_NAME = 'PayAfterDelivery';
     protected $name = 'Pay After Delivery';
     protected $gatewayCode = 'PAYAFTER';
     protected $logo = 'payafter.png';
@@ -54,13 +55,13 @@ class PayAfterDelivery extends BasePaymentOption
             [
                 'type'          => 'date',
                 'name'          => 'birthday',
-                'placeholder'   => $this->module->l('Birthday'),
+                'placeholder'   => $this->module->l('Birthday', self::CLASS_NAME),
                 'value'         => Context::getContext()->customer->birthday ?? '',
             ],
             [
                 'type'          => 'text',
                 'name'          => 'bankaccount',
-                'placeholder'   => $this->module->l('Bank Account'),
+                'placeholder'   => $this->module->l('Bank Account', self::CLASS_NAME),
                 'value'         => '',
             ]
         ];

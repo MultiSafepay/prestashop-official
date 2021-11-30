@@ -36,6 +36,8 @@ use Tools;
  */
 class TokenizationService
 {
+    public const CLASS_NAME = 'TokenizationService';
+
     /**
      * @var MultisafepayOfficial
      */
@@ -135,7 +137,7 @@ class TokenizationService
             }
 
             $options[] = [
-                'name'    => $this->module->l('Use new payment details'),
+                'name'    => $this->module->l('Use new payment details', self::CLASS_NAME),
                 'value'   => 'new',
             ];
 
@@ -144,7 +146,7 @@ class TokenizationService
                 'name'        => 'selectedToken',
                 'class'       => 'form-group-token-list',
                 'options'     => $options,
-                'placeholder' => $this->module->l('Payment details'),
+                'placeholder' => $this->module->l('Payment details', self::CLASS_NAME),
             ];
         }
 
@@ -158,7 +160,7 @@ class TokenizationService
             [
                 'type'  => 'checkbox',
                 'name'  => 'saveToken',
-                'label' => $this->module->l('Save payment details for future purchases.'),
+                'label' => $this->module->l('Save payment details for future purchases.', self::CLASS_NAME),
             ]
         ];
     }

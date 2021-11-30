@@ -31,6 +31,7 @@ use Validate;
 
 class GenericGateway1 extends BasePaymentOption
 {
+    public const CLASS_NAME = 'GenericGateway1';
     protected $name = 'Generic Gateway 1';
 
     public function getGatewayCode(): string
@@ -57,7 +58,7 @@ class GenericGateway1 extends BasePaymentOption
 
         $options['MULTISAFEPAY_OFFICIAL_GATEWAY_CODE_'.$this->getUniqueName()] = [
             'type' => 'text',
-            'name' => $this->module->l('Gateway code'),
+            'name' => $this->module->l('Gateway code', self::CLASS_NAME),
             'value' => Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_CODE_'.$this->getUniqueName()),
             'default' => '',
             'order' => 31,
@@ -65,10 +66,10 @@ class GenericGateway1 extends BasePaymentOption
         $options['MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_'.$this->getUniqueName()] = [
             'type'           => 'file',
             'image'          => Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_' . $this->getUniqueName()) ?? '',
-            'name'           => $this->module->l('Gateway icon'),
+            'name'           => $this->module->l('Gateway icon', self::CLASS_NAME),
             'default'        => '',
             'order'          => 32,
-            'helperText'     => $this->module->l('Recommended size: 420px * 180px. Recommended format: .png'),
+            'helperText'     => $this->module->l('Recommended size: 420px * 180px. Recommended format: .png', self::CLASS_NAME),
         ];
 
 

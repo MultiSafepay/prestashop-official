@@ -382,4 +382,9 @@ class MultisafepayOfficial extends PaymentModule
 
         return !empty($apiKey);
     }
+
+    public function isUsingNewTranslationSystem(): bool
+    {
+        return false;
+    }
 }

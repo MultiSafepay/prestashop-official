@@ -32,6 +32,7 @@ use Context;
 
 class AfterPay extends BasePaymentOption
 {
+    public const CLASS_NAME = 'AfterPay';
     protected $name = 'AfterPay';
     protected $gatewayCode = 'AFTERPAY';
     protected $logo = 'afterpay.png';
@@ -53,7 +54,7 @@ class AfterPay extends BasePaymentOption
             [
                 'type'          => 'select',
                 'name'          => 'gender',
-                'placeholder'   => $this->module->l('Salutation'),
+                'placeholder'   => $this->module->l('Salutation', self::CLASS_NAME),
                 'options'       => [
                     [
                         'value' => 'male',
@@ -68,7 +69,7 @@ class AfterPay extends BasePaymentOption
             [
                 'type'          => 'date',
                 'name'          => 'birthday',
-                'placeholder'   => $this->module->l('Birthday'),
+                'placeholder'   => $this->module->l('Birthday', self::CLASS_NAME),
                 'value'         => Context::getContext()->customer->birthday ?? '',
             ]
         ];

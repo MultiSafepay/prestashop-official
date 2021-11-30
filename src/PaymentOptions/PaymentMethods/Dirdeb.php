@@ -32,6 +32,7 @@ use Order;
 
 class Dirdeb extends BasePaymentOption
 {
+    public const CLASS_NAME = 'Dirdeb';
     protected $hasConfigurableDirect = true;
     protected $hasConfigurableTokenization = true;
     protected $name = 'SEPA Direct Debit';
@@ -53,13 +54,13 @@ class Dirdeb extends BasePaymentOption
             [
                 'type'          => 'text',
                 'name'          => 'account_holder_name',
-                'placeholder'   => $this->module->l('Account Holder Name'),
+                'placeholder'   => $this->module->l('Account Holder Name', self::CLASS_NAME),
                 'value'         => '',
             ],
             [
                 'type'          => 'text',
                 'name'          => 'bankaccount',
-                'placeholder'   => $this->module->l('Bank Account'),
+                'placeholder'   => $this->module->l('Bank Account', self::CLASS_NAME),
                 'value'         => '',
             ],
             [

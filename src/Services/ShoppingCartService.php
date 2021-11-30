@@ -40,6 +40,7 @@ use Tools;
  */
 class ShoppingCartService
 {
+    public const CLASS_NAME = 'ShoppingCartService';
     public const PRESTASHOP_ROUNDING_PRECISION = 2;
 
     /**
@@ -177,7 +178,7 @@ class ShoppingCartService
     private function createDiscountCartItem(float $totalDiscount, string $currencyIsoCode): CartItem
     {
         return $this->createCartItem(
-            $this->module->l('Discount'),
+            $this->module->l('Discount', self::CLASS_NAME),
             1,
             'Discount',
             -$totalDiscount,
@@ -195,7 +196,7 @@ class ShoppingCartService
     private function createWrappingCartItem(float $totalWrapping, string $currencyIsoCode): CartItem
     {
         return $this->createCartItem(
-            $this->module->l('Wrapping'),
+            $this->module->l('Wrapping', self::CLASS_NAME),
             1,
             'Wrapping',
             $totalWrapping,
@@ -256,7 +257,7 @@ class ShoppingCartService
         $shippingTaxRate  = $cartSummary['total_shipping'] > 0 ? ($totalShippingTax * 100) / ($cartSummary['total_shipping'] - $totalShippingTax) : 0;
 
         return $shippingItem
-            ->addName(($cartSummary['carrier']->name ?? $this->module->l('Shipping')))
+            ->addName(($cartSummary['carrier']->name ?? $this->module->l('Shipping', self::CLASS_NAME)))
             ->addQuantity(1)
             ->addUnitPrice(
                 MoneyHelper::createMoney((float)$cartSummary['total_shipping_tax_exc'], $currencyIsoCode)

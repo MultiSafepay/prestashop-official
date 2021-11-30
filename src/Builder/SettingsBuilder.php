@@ -46,6 +46,7 @@ class SettingsBuilder
     public const HOURS = 'hours';
     public const DAYS = 'days';
     public const MULTISAFEPAY_RELEASES_GITHUB_URL = 'https://github.com/MultiSafepay/prestashop-official/releases';
+    public const CLASS_NAME = 'SettingsBuilder';
 
     /**
      * @var MultisafepayOfficial
@@ -120,13 +121,14 @@ class SettingsBuilder
         $configForm = $this->getConfigForm();
 
         if ($success) {
-            $configForm[0]['form'] = ['success' => $this->module->l('Settings updated')] + $configForm[0]['form'];
+            $configForm[0]['form'] = ['success' => $this->module->l('Settings updated', self::CLASS_NAME)] + $configForm[0]['form'];
         }
 
         if ($this->isThereAnUpdateAvailable()) {
             $configForm[0]['form'] = [
                     'description' => $this->module->l(
-                        'There is a new version for MultiSafepay payment module. '
+                        'There is a new version for MultiSafepay payment module. ',
+                        self::CLASS_NAME
                     ) . '<a href="' . self::MULTISAFEPAY_RELEASES_GITHUB_URL . '" target="_blank">Click here, to read more information</a>'
                 ] + $configForm[0]['form'];
         }
@@ -146,30 +148,30 @@ class SettingsBuilder
         $form           = [
             'form' => [
                 'tabs'   => [
-                    'account_settings' => $this->module->l('Account settings'),
-                    'general_settings' => $this->module->l('General settings'),
-                    'payment_methods'  => $this->module->l('Payment methods'),
-                    'order_status'     => $this->module->l('Order Statuses'),
-                    'support'          => $this->module->l('Support'),
+                    'account_settings' => $this->module->l('Account settings', self::CLASS_NAME),
+                    'general_settings' => $this->module->l('General settings', self::CLASS_NAME),
+                    'payment_methods'  => $this->module->l('Payment methods', self::CLASS_NAME),
+                    'order_status'     => $this->module->l('Order Statuses', self::CLASS_NAME),
+                    'support'          => $this->module->l('Support', self::CLASS_NAME),
                 ],
                 'input'  => [
                     [
                         'type'    => 'switch',
                         'tab'     => 'account_settings',
-                        'label'   => $this->module->l('Test mode'),
+                        'label'   => $this->module->l('Test mode', self::CLASS_NAME),
                         'name'    => 'MULTISAFEPAY_OFFICIAL_TEST_MODE',
                         'is_bool' => true,
-                        'desc'    => $this->module->l('Use this module in test mode'),
+                        'desc'    => $this->module->l('Use this module in test mode', self::CLASS_NAME),
                         'values'  => [
                             [
                                 'id'    => 'active_on',
                                 'value' => true,
-                                'label' => $this->module->l('Enabled'),
+                                'label' => $this->module->l('Enabled', self::CLASS_NAME),
                             ],
                             [
                                 'id'    => 'active_off',
                                 'value' => false,
-                                'label' => $this->module->l('Disabled'),
+                                'label' => $this->module->l('Disabled', self::CLASS_NAME),
                             ],
                         ],
                         'section' => 'default'
@@ -177,38 +179,38 @@ class SettingsBuilder
                     [
                         'type'        => 'text',
                         'tab'         => 'account_settings',
-                        'desc'        => $this->module->l('Enter a valid live API key'),
+                        'desc'        => $this->module->l('Enter a valid live API key', self::CLASS_NAME),
                         'name'        => 'MULTISAFEPAY_OFFICIAL_API_KEY',
-                        'label'       => $this->module->l('Live API key'),
-                        'placeholder' => $this->module->l('Live API key'),
+                        'label'       => $this->module->l('Live API key', self::CLASS_NAME),
+                        'placeholder' => $this->module->l('Live API key', self::CLASS_NAME),
                         'section'     => 'default'
                     ],
                     [
                         'type'        => 'text',
                         'tab'         => 'account_settings',
-                        'desc'        => $this->module->l('Enter a valid test API key'),
+                        'desc'        => $this->module->l('Enter a valid test API key', self::CLASS_NAME),
                         'name'        => 'MULTISAFEPAY_OFFICIAL_TEST_API_KEY',
-                        'label'       => $this->module->l('Test API key'),
-                        'placeholder' => $this->module->l('Test API key'),
+                        'label'       => $this->module->l('Test API key', self::CLASS_NAME),
+                        'placeholder' => $this->module->l('Test API key', self::CLASS_NAME),
                         'section'     => 'default'
                     ],
                     [
                         'type'    => 'switch',
                         'tab'     => 'general_settings',
-                        'label'   => $this->module->l('Debug mode'),
+                        'label'   => $this->module->l('Debug mode', self::CLASS_NAME),
                         'name'    => 'MULTISAFEPAY_OFFICIAL_DEBUG_MODE',
                         'is_bool' => true,
-                        'desc'    => $this->module->l('Use this module in debug mode'),
+                        'desc'    => $this->module->l('Use this module in debug mode', self::CLASS_NAME),
                         'values'  => [
                             [
                                 'id'    => 'active_on',
                                 'value' => true,
-                                'label' => $this->module->l('Enabled'),
+                                'label' => $this->module->l('Enabled', self::CLASS_NAME),
                             ],
                             [
                                 'id'    => 'active_off',
                                 'value' => false,
-                                'label' => $this->module->l('Disabled'),
+                                'label' => $this->module->l('Disabled', self::CLASS_NAME),
                             ],
                         ],
                         'section' => 'default'
@@ -216,20 +218,20 @@ class SettingsBuilder
                     [
                         'type'    => 'switch',
                         'tab'     => 'general_settings',
-                        'label'   => $this->module->l('Second Chance'),
+                        'label'   => $this->module->l('Second Chance', self::CLASS_NAME),
                         'name'    => 'MULTISAFEPAY_OFFICIAL_SECOND_CHANCE',
                         'is_bool' => true,
-                        'desc'    => $this->module->l('When a customer initiates but does not complete a payment, whatever the reason may be, MultiSafepay will send two Second Chance reminder emails. In the emails, MultiSafepay will include a link to allow the consumer to finalize the payment. The first Second Chance email is sent 1 hour after the transaction was initiated and the second after 24 hours. To receive second chance emails, this option must also be activated within your MultiSafepay account, otherwise it will not work.'),
+                        'desc'    => $this->module->l('When a customer initiates but does not complete a payment, whatever the reason may be, MultiSafepay will send two Second Chance reminder emails. In the emails, MultiSafepay will include a link to allow the consumer to finalize the payment. The first Second Chance email is sent 1 hour after the transaction was initiated and the second after 24 hours. To receive second chance emails, this option must also be activated within your MultiSafepay account, otherwise it will not work.', self::CLASS_NAME),
                         'values'  => [
                             [
                                 'id'    => 'active_on',
                                 'value' => true,
-                                'label' => $this->module->l('Enabled'),
+                                'label' => $this->module->l('Enabled', self::CLASS_NAME),
                             ],
                             [
                                 'id'    => 'active_off',
                                 'value' => false,
-                                'label' => $this->module->l('Disabled'),
+                                'label' => $this->module->l('Disabled', self::CLASS_NAME),
                             ],
                         ],
                         'section' => 'default'
@@ -237,20 +239,20 @@ class SettingsBuilder
                     [
                         'type'    => 'switch',
                         'tab'     => 'general_settings',
-                        'label'   => $this->module->l('Send confirmation order email'),
+                        'label'   => $this->module->l('Send confirmation order email', self::CLASS_NAME),
                         'name'    => 'MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL',
                         'is_bool' => true,
-                        'desc'    => $this->module->l('Send an email to the customer with the order details when a customer initiates an order, but has not yet completed the payment.'),
+                        'desc'    => $this->module->l('Send an email to the customer with the order details when a customer initiates an order, but has not yet completed the payment.', self::CLASS_NAME),
                         'values'  => [
                             [
                                 'id'    => 'active_on',
                                 'value' => true,
-                                'label' => $this->module->l('Enabled'),
+                                'label' => $this->module->l('Enabled', self::CLASS_NAME),
                             ],
                             [
                                 'id'    => 'active_off',
                                 'value' => false,
-                                'label' => $this->module->l('Disabled'),
+                                'label' => $this->module->l('Disabled', self::CLASS_NAME),
                             ],
                         ],
                         'section' => 'default'
@@ -258,58 +260,58 @@ class SettingsBuilder
                     [
                         'tab'         => 'general_settings',
                         'type'        => 'text',
-                        'desc'        => $this->module->l('Enter a valid Google Analytics ID'),
+                        'desc'        => $this->module->l('Enter a valid Google Analytics ID', self::CLASS_NAME),
                         'name'        => 'MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID',
-                        'label'       => $this->module->l('Google Analytics ID'),
-                        'placeholder' => $this->module->l('Google Analytics ID'),
+                        'label'       => $this->module->l('Google Analytics ID', self::CLASS_NAME),
+                        'placeholder' => $this->module->l('Google Analytics ID', self::CLASS_NAME),
                         'section'     => 'default'
                     ],
                     [
                         'tab'         => 'general_settings',
                         'type'        => 'text',
-                        'desc'        => $this->module->l('A text which will be shown with the order in MultiSafepay Control. If the customer’s bank supports it this description will also be shown on the customer’s bank statement. You can include the order number using {order_reference}'),
+                        'desc'        => $this->module->l('A text which will be shown with the order in MultiSafepay Control. If the customer’s bank supports it this description will also be shown on the customer’s bank statement. You can include the order number using {order_reference}', self::CLASS_NAME),
                         'name'        => 'MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION',
-                        'label'       => $this->module->l('Order description'),
-                        'placeholder' => $this->module->l('Payment for order: {order_reference}'),
+                        'label'       => $this->module->l('Order description', self::CLASS_NAME),
+                        'placeholder' => $this->module->l('Payment for order: {order_reference}', self::CLASS_NAME),
                         'section'     => 'default'
                     ],
                     [
                         'tab'   => 'general_settings',
                         'type'  => 'select',
-                        'desc'  => $this->module->l('When the order reaches this status, a notification will be sent to MultiSafepay to set the transaction as shipped'),
+                        'desc'  => $this->module->l('When the order reaches this status, a notification will be sent to MultiSafepay to set the transaction as shipped', self::CLASS_NAME),
                         'name'  => 'MULTISAFEPAY_OFFICIAL_OS_TRIGGER_SHIPPED',
-                        'label' => $this->module->l('Set transaction as shipped'),
+                        'label' => $this->module->l('Set transaction as shipped', self::CLASS_NAME),
                         'options' => $this->getPrestaShopOrderStatusesOptions(),
                         'section' => 'default'
                     ],
                     [
                         'tab'         => 'general_settings',
                         'type'        => 'text',
-                        'desc'        => $this->module->l('Lifetime of payment link value'),
+                        'desc'        => $this->module->l('Lifetime of payment link value', self::CLASS_NAME),
                         'name'        => 'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE',
-                        'label'       => $this->module->l('Lifetime of payment link value'),
-                        'placeholder' => $this->module->l('Lifetime of payment link'),
+                        'label'       => $this->module->l('Lifetime of payment link value', self::CLASS_NAME),
+                        'placeholder' => $this->module->l('Lifetime of payment link', self::CLASS_NAME),
                         'section'     => 'default'
                     ],
                     [
                         'tab'     => 'general_settings',
                         'type'    => 'select',
-                        'desc'    => $this->module->l('Lifetime of payment link unit'),
+                        'desc'    => $this->module->l('Lifetime of payment link unit', self::CLASS_NAME),
                         'name'    => 'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT',
-                        'label'   => $this->module->l('Lifetime of payment link unit'),
+                        'label'   => $this->module->l('Lifetime of payment link unit', self::CLASS_NAME),
                         'options' => [
                             'query' => [
                                 [
                                     'id'   => self::SECONDS,
-                                    'name' => $this->module->l('Seconds'),
+                                    'name' => $this->module->l('Seconds', self::CLASS_NAME),
                                 ],
                                 [
                                     'id'   => self::HOURS,
-                                    'name' => $this->module->l('Hours'),
+                                    'name' => $this->module->l('Hours', self::CLASS_NAME),
                                 ],
                                 [
                                     'id'   => self::DAYS,
-                                    'name' => $this->module->l('Days'),
+                                    'name' => $this->module->l('Days', self::CLASS_NAME),
                                 ],
                             ],
                             'id' => 'id',
@@ -339,7 +341,7 @@ class SettingsBuilder
                     ],
                 ],
                 'submit' => [
-                    'title' => $this->module->l('Save'),
+                    'title' => $this->module->l('Save', self::CLASS_NAME),
                 ],
             ],
         ];
@@ -486,7 +488,7 @@ class SettingsBuilder
                 'type'        => 'select',
                 'name'        => 'MULTISAFEPAY_OFFICIAL_OS_' . Tools::strtoupper($orderStatus),
                 'desc'        => 'Select the order status for which an order should change if MultiSafepay notification reports the order as ' . $orderStatus,
-                'label'       => $this->module->l(Tools::ucfirst(str_replace('_', ' ', $orderStatus))),
+                'label'       => $this->module->l(Tools::ucfirst(str_replace('_', ' ', $orderStatus)), self::CLASS_NAME),
                 'options'     => $this->getPrestaShopOrderStatusesOptions(),
                 'section'     => 'default'
             ];

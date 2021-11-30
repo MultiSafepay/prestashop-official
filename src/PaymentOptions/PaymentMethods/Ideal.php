@@ -30,6 +30,7 @@ use Order;
 
 class Ideal extends BasePaymentOption
 {
+    public const CLASS_NAME = 'Ideal';
     protected $name = 'iDEAL';
     protected $gatewayCode = 'IDEAL';
     protected $logo = 'ideal.png';
@@ -50,7 +51,7 @@ class Ideal extends BasePaymentOption
             [
                 'type'        => 'select',
                 'name'        => 'issuer_id',
-                'placeholder' => $this->module->l('Select bank'),
+                'placeholder' => $this->module->l('Select bank', self::CLASS_NAME),
                 'options'     => $issuerService->getIssuers($this->getGatewayCode()),
             ],
         ];

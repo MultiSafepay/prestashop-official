@@ -33,6 +33,7 @@ use Context;
 
 class In3 extends BasePaymentOption
 {
+    public const CLASS_NAME = 'In3';
     protected $name = 'in3';
     protected $gatewayCode = 'IN3';
     protected $logo = 'in3.png';
@@ -64,7 +65,7 @@ class In3 extends BasePaymentOption
             [
                 'type'          => 'select',
                 'name'          => 'gender',
-                'placeholder'   => $this->module->l('Salutation'),
+                'placeholder'   => $this->module->l('Salutation', self::CLASS_NAME),
                 'options'       => [
                     [
                         'value' => 'mr',
@@ -83,7 +84,7 @@ class In3 extends BasePaymentOption
             [
                 'type'          => 'date',
                 'name'          => 'birthday',
-                'placeholder'   => $this->module->l('Birthday'),
+                'placeholder'   => $this->module->l('Birthday', self::CLASS_NAME),
                 'value'         => Context::getContext()->customer->birthday ?? '',
             ]
         ];

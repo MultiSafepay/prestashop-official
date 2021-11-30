@@ -34,6 +34,7 @@ use Context;
 
 class Einvoicing extends BasePaymentOption
 {
+    public const CLASS_NAME = 'Einvoicing';
     protected $name = 'E-Invoicing';
     protected $gatewayCode = 'EINVOICE';
     protected $logo = 'einvoice.png';
@@ -53,13 +54,13 @@ class Einvoicing extends BasePaymentOption
             [
                 'type'          => 'date',
                 'name'          => 'birthday',
-                'placeholder'   => $this->module->l('Birthday'),
+                'placeholder'   => $this->module->l('Birthday', self::CLASS_NAME),
                 'value'         => Context::getContext()->customer->birthday ?? '',
             ],
             [
                 'type'          => 'text',
                 'name'          => 'bankaccount',
-                'placeholder'   => $this->module->l('Bank Account'),
+                'placeholder'   => $this->module->l('Bank Account', self::CLASS_NAME),
                 'value'         => ''
             ]
         ];
