@@ -1,24 +1,19 @@
 includes:
-  - %currentWorkingDirectory%/vendor/prestashop/php-dev-tools/phpstan/ps-module-extension.neon
-
+	  - %currentWorkingDirectory%/vendor/prestashop/php-dev-tools/phpstan/ps-module-extension.neon
 parameters:
   checkMissingIterableValueType: false
   reportUnmatchedIgnoredErrors: false
   level: 6
-  # From Phpstan 0.12, paths are relative to the .neon file.
   paths:
-    - ../../controllers
-    - ../../upgrade
-    - ../../views
     - ../../multisafepayofficial.php
     - ../../src
   excludePaths:
     - ../../tests
   scanFiles:
     - ../../multisafepayofficial.php
-    - ../../../../var/cache/prod/class_stub.php
+    - ../../tests/phpstan/class_stub.php
   scanDirectories:
-    - ../../../../classes
+    - /var/www/html/classes
   ignoreErrors:
     - '#Call to an undefined method [a-zA-Z0-9\\_]+::validateOrder\(\)#'
     - '#Variable \$transaction might not be defined.#'
@@ -46,3 +41,7 @@ parameters:
     - '#Call to an undefined method AdminController\|FrontController::registerJavascript\(\).#'
     - '#Property CustomerMessageCore::\$private \(bool\) does not accept int.#'
     - '#Parameter \#1 \$name of class Uploader constructor expects null, string given.#'
+    - '#Parameter \#4 \$ssl of method LinkCore::getModuleLink\(\) expects null, true given.#'
+    - '#Parameter \#1 \$id of class Currency constructor expects null, int given.#'
+    - '#Call to function is_array\(\) with Currency will always evaluate to false.#'
+    - '#Parameter \#1 \$id of class Customer constructor expects null, int given.#'
