@@ -238,7 +238,7 @@ class PaymentOptionService
     {
         $classNames = [];
         $finder = new Finder();
-        $files = $finder->files()->notName('index.php')->name('*.php')->in(self::PAYMENT_OPTIONS_DIR);
+        $files = $finder->files()->notName('index.php')->notName('IngHomePay.php')->name('*.php')->in(self::PAYMENT_OPTIONS_DIR);
         foreach ($files as $file) {
             $classNames[] = str_replace(".php", "", self::PAYMENT_OPTIONS_NAMESPACE.$file->getFilename());
         }
