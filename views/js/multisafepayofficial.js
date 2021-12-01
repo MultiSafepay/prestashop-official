@@ -129,3 +129,12 @@ if (typeof prestashop !== 'undefined') {
         }
     );
 }
+
+// One Page Checkout PS support
+$(document).on('opc-load-payment:completed', function () {
+    $.each(multisafepayPaymentComponentGateways, function (index, gateway) {
+        if ($('#multisafepay-form-' + gateway.toLowerCase()).length > 0) {
+            new MultiSafepayPaymentComponent(multisafepayPaymentComponentConfig, gateway);
+        }
+    });
+});
