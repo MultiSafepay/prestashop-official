@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.1.0
+Release date: Dec 1st, 2021
+
+### Added
++ PRES-281: Add support for [One Page Checkout PS](https://addons.prestashop.com/en/express-checkout-process/8503-one-page-checkout-ps-easy-fast-intuitive.html) module
++ PRES-278: Add support for [The Checkout](https://addons.prestashop.com/en/express-checkout-process/42005-the-checkout.html) module
+
+### Fixed
++ PRES-282: Fix text not translating properly
++ PRES-277: Avoid initialize Payment Component if container is not present
+
+### Removed
++ PRES-286: Remove ING Home'Pay Payment Option
+
+***
+
 ## 5.0.0
 Release date: Nov 22th, 2021
 
@@ -15,7 +31,7 @@ Release date: Nov 22th, 2021
 + PRES-263: Add placeholder to text fields in the settings page.
 + PRES-268: Log cart summary.
 
-### Fixed:
+### Fixed
 + PRES-262: Fix uninstaller due to missing method ObjectModel->softDelete() on versions lower than 1.7.6.
 + PRES-260: Fix missing method Language->getLanguageCode producing errors when Payment Component loads on versions lower than 1.7.6.
 
@@ -32,7 +48,7 @@ Release date: Nov 11th, 2021
 + PRES-227: Add Payment Component for Credit Card Payment Option.
 + PRES-203: Add logo uploader field for generic gateways.
 
-### Fixed:
+### Fixed
 + PRES-248: Fix method getLanguageCode to support language codes with two characters
 + PRES-243: Handle error response if a GET request reach the notification url, which is expecting only POST requests.
 
