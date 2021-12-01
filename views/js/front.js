@@ -22,33 +22,55 @@
 if (typeof prestashop !== 'undefined') {
     prestashop.on(
         'changedCheckoutStep',
+        function () {
+            triggerCommonMethods();
+        }
+    );
+    prestashop.on(
+        'thecheckout_updatePaymentBlock',
+        function () {
+            triggerCommonMethods();
+        }
+    );
+}
+
+function triggerCommonMethods()
+{
+    preventSubmitOnKeyPress();
+    toggleTokenizationPaymentMethodsFields();
+    adjustPaymentLogoimages();
+}
+
+function adjustPaymentLogoimages()
+{
+    $("[id^='multisafepay-form-']").each(function () {
+        $(this).parent().closest("div").prev("div").find("label img").css("height", "30px");
+    });
+}
+
+function toggleTokenizationPaymentMethodsFields()
+{
+    $(".multisafepay-tokenization").each(function () {
+        var paymentOptionFormId = $(this).attr("id");
+        var tokenListInput = $(this).find(".form-group-token-list");
+        if (tokenListInput.length > 0) {
+            // Initial check on load checkout page.
+            togglePaymentFields(paymentOptionFormId);
+            tokenListInput.change(function () {
+                // Check status on change.
+                togglePaymentFields(paymentOptionFormId);
+            });
+        }
+    });
+}
+
+function preventSubmitOnKeyPress()
+{
+    $("[id^='multisafepay-form-']").keypress(
         function (event) {
-
-            $("[id^='multisafepay-form-']").each(function () {
-                $(this).parent().closest("div").prev("div").find("label img").css("height", "30px");
-            });
-
-            $("[id^='multisafepay-form-']").keypress(
-                function (event) {
-                    if (event.which === 13) {
-                        event.preventDefault();
-                    }
-                }
-            );
-
-            $(".multisafepay-tokenization").each(function () {
-                var paymentOptionFormId = $(this).attr("id");
-                var tokenListInput = $(this).find(".form-group-token-list");
-                if (tokenListInput.length > 0) {
-                    // Initial check on load checkout page.
-                    togglePaymentFields(paymentOptionFormId);
-                    tokenListInput.change(function () {
-                        // Check status on change.
-                        togglePaymentFields(paymentOptionFormId);
-                    });
-                }
-            });
-
+            if (event.which === 13) {
+                event.preventDefault();
+            }
         }
     );
 }

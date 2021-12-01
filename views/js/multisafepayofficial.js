@@ -105,6 +105,7 @@ var MultiSafepayPaymentComponent = function (config, gateway) {
 
 };
 
+// Default checkout
 $(document).ready(function () {
     $.each(multisafepayPaymentComponentGateways, function (index, gateway) {
         if ($('#multisafepay-form-' + gateway.toLowerCase()).length > 0) {
@@ -113,4 +114,18 @@ $(document).ready(function () {
     });
 });
 
-
+// Support for "The Checkout module"
+if (typeof prestashop !== 'undefined') {
+    prestashop.on(
+        'thecheckout_updatePaymentBlock',
+        function (event) {
+            if (event && event.reason === 'update') {
+                $.each(multisafepayPaymentComponentGateways, function (index, gateway) {
+                    if ($('#multisafepay-form-' + gateway.toLowerCase()).length > 0) {
+                        new MultiSafepayPaymentComponent(multisafepayPaymentComponentConfig, gateway);
+                    }
+                });
+            }
+        }
+    );
+}

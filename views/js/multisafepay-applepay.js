@@ -37,6 +37,18 @@ $(document).on('opc-load-payment:completed', function () {
     checkIfDeviceSupportApplePay();
 });
 
+// The Checkout module support
+if (typeof prestashop !== 'undefined') {
+    prestashop.on(
+        'thecheckout_updatePaymentBlock',
+        function (event) {
+            if (event && event.reason === 'update') {
+                checkIfDeviceSupportApplePay();
+            }
+        }
+    );
+}
+
 function checkIfDeviceSupportApplePay()
 {
     try {
