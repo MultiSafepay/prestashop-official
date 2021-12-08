@@ -45,3 +45,4 @@ parameters:
     - '#Parameter \#1 \$id of class Currency constructor expects null, int given.#'
     - '#Call to function is_array\(\) with Currency will always evaluate to false.#'
     - '#Parameter \#1 \$id of class Customer constructor expects null, int given.#'
+    - '#Negated boolean expression is always false.#'

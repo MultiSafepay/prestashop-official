@@ -275,6 +275,11 @@ class MultisafepayOfficial extends PaymentModule
 
         /** @var OrderInvoice $orderInvoice */
         $orderInvoice = OrderInvoice::getInvoiceByNumber($params['OrderInvoice']->id);
+
+        if (!$orderInvoice) {
+            return;
+        }
+
         $orderInvoiceNumber = $orderInvoice->getInvoiceNumberFormatted($order->id_lang, $order->id_shop);
 
         // Update order with invoice shipping information
