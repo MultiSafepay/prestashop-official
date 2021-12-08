@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.1.1
+Release date: Dec 8th, 2021
+
+### Fixed
++ PRES-289: Prevent sending invoice id when invoice has not been properly generated
+
+***
+
 ## 5.1.0
 Release date: Dec 1st, 2021
 
