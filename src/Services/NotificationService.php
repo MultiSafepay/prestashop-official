@@ -161,6 +161,7 @@ class NotificationService
             foreach ($payments->getResults() as $payment) {
                 $payment->transaction_id = $transaction->getTransactionId();
                 $payment->amount         = $transaction->getAmount() / 100;
+                $payment->payment_method = $order->payment;
                 $payment->update();
             }
         }
