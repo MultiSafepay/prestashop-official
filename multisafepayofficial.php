@@ -113,8 +113,8 @@ class MultisafepayOfficial extends PaymentModule
         $settingsBuilder = new SettingsBuilder($this);
 
         if (true === Tools::isSubmit('submitMultisafepayOfficialModule')) {
-            $settingsBuilder->postProcess();
-            return $settingsBuilder->renderForm(true);
+            $result = $settingsBuilder->postProcess();
+            return $settingsBuilder->renderForm($result);
         }
 
         return $settingsBuilder->renderForm();

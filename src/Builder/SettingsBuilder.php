@@ -35,6 +35,7 @@ use OrderState;
 use Group;
 use Uploader;
 use ImageManager;
+use PrestaShopException;
 
 /**
  * Class SettingsBuilder
@@ -95,11 +96,11 @@ class SettingsBuilder
     }
 
     /**
-     * @param bool $success
+     * @param array $result
      * @return string
-     * @throws \PrestaShopException
+     * @throws PrestaShopException
      */
-    public function renderForm(bool $success = false)
+    public function renderForm(array $result = [])
     {
         $helper = new HelperForm();
 
@@ -120,8 +121,12 @@ class SettingsBuilder
 
         $configForm = $this->getConfigForm();
 
-        if ($success) {
+        if (isset($result['success'])) {
             $configForm[0]['form'] = ['success' => $this->module->l('Settings updated', self::CLASS_NAME)] + $configForm[0]['form'];
+        }
+
+        if (isset($result['error'])) {
+            $configForm[0]['form'] = ['error' => $result['error']] + $configForm[0]['form'];
         }
 
         if ($this->isThereAnUpdateAvailable()) {
@@ -392,10 +397,12 @@ class SettingsBuilder
     /**
      * Save form data.
      *
-     * @return void
+     * @return array
      */
-    public function postProcess(): void
+    public function postProcess(): array
     {
+        $result = ['success' => true];
+
         $formValues = $this->filterToProcessConfigForm($this->getConfigFormValues());
 
         foreach ($formValues as $key => $value) {
@@ -411,8 +418,14 @@ class SettingsBuilder
         }
 
         if (!empty($_FILES)) {
-            $this->processFiles();
+            try {
+                $this->processFiles();
+            } catch (PrestaShopException $exception) {
+                $result['error'] = $exception->getMessage();
+            }
         }
+
+        return $result;
     }
 
     /**
@@ -434,15 +447,17 @@ class SettingsBuilder
     {
         foreach ($_FILES as $key => $file) {
             // User are submitting a file. New one or updating
-            if (!empty($file['tmp_name']) && !(bool)$file['error'] &&
-                ImageManager::isCorrectImageFileExt($file['name']) &&
-                is_uploaded_file($file['tmp_name']) &&
-                ImageManager::isRealImage($file['tmp_name'], $file['type'])
-            ) {
-                $uploader = new Uploader($key);
-                $result = $uploader->process();
-                if (!(bool)$result[0]['error']) {
-                    Configuration::updateValue($key, $result[0]['save_path']);
+            if (!empty($file['tmp_name']) && !(bool)$file['error']) {
+                if (ImageManager::isCorrectImageFileExt($file['name']) &&
+                    is_uploaded_file($file['tmp_name']) &&
+                    ImageManager::isRealImage($file['tmp_name'], $file['type'])) {
+                    $uploader = new Uploader($key);
+                    $result = $uploader->process();
+                    if (!(bool)$result[0]['error']) {
+                        Configuration::updateValue($key, $result[0]['save_path']);
+                    }
+                } else {
+                    throw new PrestaShopException('There was an error uploading the image.');
                 }
             }
 
