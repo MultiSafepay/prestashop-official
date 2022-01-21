@@ -175,18 +175,20 @@ class NotificationService
      */
     private function updateOrderPaymentMethod(Order $order, string $paymentMethodName): void
     {
+        // There is a special case for orders initialized with "Credit card" payment method.
+        // Notification will return with the name of the gateway instead of credit card
+        // However there is no need to add a note in these cases.
+        if ($order->payment !== 'Credit card') {
+            $message = 'Notification received with a different payment method for Order ID: ' . $order->id . ' and Order Reference: ' . $order->reference . ' on ' . date('d/m/Y H:i:s') . '. Payment method changed from ' . $order->payment . ' to ' . $paymentMethodName . '.';
+            OrderMessageHelper::addMessage($order, $message);
+            if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
+                LoggerHelper::logInfo($message);
+            }
+        }
 
         // Update payment method
         $order->payment = $paymentMethodName;
         $order->save();
-
-        // Add Order Note
-        $message = 'Notification received with a different payment method for Order ID: ' . $order->id . ' and Order Reference: ' . $order->reference . ' on ' . date('d/m/Y H:i:s') . '. Payment method changed from ' . $order->payment . ' to ' . $paymentMethodName . '.';
-        OrderMessageHelper::addMessage($order, $message);
-
-        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-            LoggerHelper::logInfo($message);
-        }
     }
 
     /**
