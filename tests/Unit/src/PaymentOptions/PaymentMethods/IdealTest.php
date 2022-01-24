@@ -41,16 +41,6 @@ class IdealTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getName
-     */
-    public function testGetName()
-    {
-        $output = $this->idealPaymentOption->getName();
-        self::assertEquals('iDEAL', $output);
-        self::assertIsString($output);
-    }
-
-    /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getDescription
      */
     public function testGetDescription()

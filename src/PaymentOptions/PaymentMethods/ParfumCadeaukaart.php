@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class ParfumCadeaukaart extends BasePaymentOption
 {
-    protected $name = 'Parfum cadeaukaart';
+    public const CLASS_NAME = 'ParfumCadeaukaart';
     protected $gatewayCode = 'PARFUMCADEAUKAART';
     protected $logo = 'parfumcadeaukaart.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Parfum cadeaukaart', self::CLASS_NAME);
+    }
 }

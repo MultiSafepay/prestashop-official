@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class VvvCadeaukaart extends BasePaymentOption
 {
-    protected $name = 'VVV Cadeaukaart';
+    public const CLASS_NAME = 'VvvCadeaukaart';
     protected $gatewayCode = 'VVVGIFTCRD';
     protected $logo = 'vvv.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('VVV Cadeaukaart', self::CLASS_NAME);
+    }
 }

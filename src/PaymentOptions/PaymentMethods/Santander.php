@@ -34,9 +34,16 @@ use PaymentModule;
 class Santander extends BasePaymentOption
 {
     public const CLASS_NAME = 'Santander';
-    protected $name = 'Santander Consumer Finance | Pay per month';
     protected $gatewayCode = 'SANTANDER';
     protected $logo = 'betaalplan.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Santander Consumer Finance | Pay per month', self::CLASS_NAME);
+    }
 
     public function isDirect(): bool
     {

@@ -35,11 +35,18 @@ use Context;
 class Einvoicing extends BasePaymentOption
 {
     public const CLASS_NAME = 'Einvoicing';
-    protected $name = 'E-Invoicing';
     protected $gatewayCode = 'EINVOICE';
     protected $logo = 'einvoice.png';
     protected $hasConfigurableDirect = true;
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('E-Invoicing', self::CLASS_NAME);
+    }
 
     public function getTransactionType(): string
     {

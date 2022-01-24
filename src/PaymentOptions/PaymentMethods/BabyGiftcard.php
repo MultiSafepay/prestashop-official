@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class BabyGiftcard extends BasePaymentOption
 {
-    protected $name = 'Baby Giftcard';
+    public const CLASS_NAME = 'BabyGiftcard';
     protected $gatewayCode = 'BABYCAD';
     protected $logo = 'babycad.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Baby Giftcard', self::CLASS_NAME);
+    }
 }

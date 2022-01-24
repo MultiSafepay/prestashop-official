@@ -26,7 +26,15 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class RequestToPay extends BasePaymentOption
 {
-    protected $name = 'Request to Pay powered by Deutsche Bank';
+    public const CLASS_NAME = 'RequestToPay';
     protected $gatewayCode = 'DBRTP';
     protected $logo = 'dbrtp.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Request to Pay powered by Deutsche Bank', self::CLASS_NAME);
+    }
 }

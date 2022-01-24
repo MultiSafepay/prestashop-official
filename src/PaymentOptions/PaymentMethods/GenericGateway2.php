@@ -24,10 +24,18 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 class GenericGateway2 extends GenericGateway1
 {
-    protected $name = 'Generic Gateway 2';
+    public const CLASS_NAME = 'GenericGateway2';
 
     public function getUniqueName(): string
     {
         return 'GENERIC2';
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Generic Gateway 2', self::CLASS_NAME);
     }
 }

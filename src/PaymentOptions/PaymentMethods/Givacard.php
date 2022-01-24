@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Givacard extends BasePaymentOption
 {
-    protected $name = 'Givacard';
+    public const CLASS_NAME = 'Givacard';
     protected $gatewayCode = 'GIVACARD';
     protected $logo = 'givacard.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Givacard', self::CLASS_NAME);
+    }
 }

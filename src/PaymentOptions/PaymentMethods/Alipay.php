@@ -26,7 +26,15 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Alipay extends BasePaymentOption
 {
-    protected $name = 'Alipay';
+    public const CLASS_NAME = 'Alipay';
     protected $gatewayCode = 'ALIPAY';
     protected $logo = 'alipay.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Alipay', self::CLASS_NAME);
+    }
 }

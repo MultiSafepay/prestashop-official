@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Visa extends BasePaymentOption
 {
-    protected $name = 'Visa';
+    public const CLASS_NAME = 'Visa';
     protected $gatewayCode = 'VISA';
     protected $logo = 'visa.png';
     protected $hasConfigurableTokenization = true;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Visa', self::CLASS_NAME);
+    }
 }

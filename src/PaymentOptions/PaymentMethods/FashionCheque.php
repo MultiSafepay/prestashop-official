@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class FashionCheque extends BasePaymentOption
 {
-    protected $name = 'Fashioncheque';
+    public const CLASS_NAME = 'FashionCheque';
     protected $gatewayCode = 'FASHIONCHEQUE';
     protected $logo = 'fashioncheque.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Fashioncheque', self::CLASS_NAME);
+    }
 }

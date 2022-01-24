@@ -27,9 +27,17 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class ApplePay extends BasePaymentOption
 {
-    protected $name = 'Apple Pay';
+    public const CLASS_NAME = 'ApplePay';
     protected $gatewayCode = 'APPLEPAY';
     protected $logo = 'applepay.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Apple Pay', self::CLASS_NAME);
+    }
 
     public function registerJavascript(Context $context): void
     {

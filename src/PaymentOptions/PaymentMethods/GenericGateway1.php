@@ -32,7 +32,14 @@ use Validate;
 class GenericGateway1 extends BasePaymentOption
 {
     public const CLASS_NAME = 'GenericGateway1';
-    protected $name = 'Generic Gateway 1';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Generic Gateway 1', self::CLASS_NAME);
+    }
 
     public function getGatewayCode(): string
     {

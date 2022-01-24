@@ -26,7 +26,15 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class GooglePay extends BasePaymentOption
 {
-    protected $name = 'Google Pay';
+    public const CLASS_NAME = 'GooglePay';
     protected $gatewayCode = 'GOOGLEPAY';
     protected $logo = 'googlepay.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Google Pay', self::CLASS_NAME);
+    }
 }

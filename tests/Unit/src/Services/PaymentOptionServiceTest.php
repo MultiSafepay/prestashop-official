@@ -38,7 +38,7 @@ class PaymentOptionServiceTest extends BaseMultiSafepayTest
 
         $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
         $mockMultisafepay->method('get')->willReturnCallback([$this, 'multisafepayGetCallback']);
-
+        $mockMultisafepay->method('l')->willReturn('');
         $this->paymentOptionsService = new PaymentOptionService($mockMultisafepay);
     }
 

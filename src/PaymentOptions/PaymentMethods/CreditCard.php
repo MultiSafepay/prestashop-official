@@ -26,9 +26,17 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class CreditCard extends BasePaymentOption
 {
+    public const CLASS_NAME = 'CreditCard';
     protected $hasConfigurableTokenization = true;
     protected $hasConfigurablePaymentComponent = true;
-    protected $name = 'Credit card';
     protected $gatewayCode = 'CREDITCARD';
     protected $logo = 'creditcard.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Credit card', self::CLASS_NAME);
+    }
 }

@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class WellnessGiftCard extends BasePaymentOption
 {
-    protected $name = 'Wellness gift card';
+    public const CLASS_NAME = 'WellnessGiftCard';
     protected $gatewayCode = 'WELLNESSGIFTCARD';
     protected $logo = 'wellnessgiftcard.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Wellness gift card', self::CLASS_NAME);
+    }
 }

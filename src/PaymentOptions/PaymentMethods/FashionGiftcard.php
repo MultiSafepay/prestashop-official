@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class FashionGiftcard extends BasePaymentOption
 {
-    protected $name = 'Fashion gift card';
+    public const CLASS_NAME = 'FashionGiftcard';
     protected $gatewayCode = 'FASHIONGIFTCARD';
     protected $logo = 'fashiongiftcard.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Fashion gift card', self::CLASS_NAME);
+    }
 }

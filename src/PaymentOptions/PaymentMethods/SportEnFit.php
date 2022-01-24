@@ -23,11 +23,20 @@
 namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
+use Tools;
 
 class SportEnFit extends BasePaymentOption
 {
-    protected $name = 'Sport & Fit';
+    public const CLASS_NAME = 'SportEnFit';
     protected $gatewayCode = 'SPORTENFIT';
     protected $logo = 'sportenfit.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return Tools::htmlentitiesDecodeUTF8($this->module->l('Sport & Fit', self::CLASS_NAME));
+    }
 }

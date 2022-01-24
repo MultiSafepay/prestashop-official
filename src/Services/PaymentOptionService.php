@@ -60,6 +60,7 @@ class PaymentOptionService
      * Get all MultiSafepay payment options
      *
      * @return array
+     * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     public function getMultiSafepayPaymentOptions(): array
     {

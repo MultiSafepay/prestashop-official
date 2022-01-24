@@ -26,7 +26,15 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Sofort extends BasePaymentOption
 {
-    protected $name = 'Sofort';
+    public const CLASS_NAME = 'Sofort';
     protected $gatewayCode = 'DIRECTBANK';
     protected $logo = 'sofort.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Sofort', self::CLASS_NAME);
+    }
 }

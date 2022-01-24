@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Fietsenbon extends BasePaymentOption
 {
-    protected $name = 'Fietsenbon';
+    public const CLASS_NAME = 'Fietsenbon';
     protected $gatewayCode = 'FIETSENBON';
     protected $logo = 'fietsenbon.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Fietsenbon', self::CLASS_NAME);
+    }
 }

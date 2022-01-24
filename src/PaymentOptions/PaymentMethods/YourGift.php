@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class YourGift extends BasePaymentOption
 {
-    protected $name = 'YourGift';
+    public const CLASS_NAME = 'YourGift';
     protected $gatewayCode = 'YOURGIFT';
     protected $logo = 'yourgift.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('YourGift', self::CLASS_NAME);
+    }
 }

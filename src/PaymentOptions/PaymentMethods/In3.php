@@ -34,11 +34,18 @@ use Context;
 class In3 extends BasePaymentOption
 {
     public const CLASS_NAME = 'In3';
-    protected $name = 'in3';
     protected $gatewayCode = 'IN3';
     protected $logo = 'in3.png';
     protected $hasConfigurableDirect = true;
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('in3', self::CLASS_NAME);
+    }
 
     /**
      * @phpcs:disable Generic.Files.LineLength.TooLong

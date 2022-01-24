@@ -26,7 +26,15 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class WeChatPay extends BasePaymentOption
 {
-    protected $name = 'WeChat Pay';
+    public const CLASS_NAME = 'WeChatPay';
     protected $gatewayCode = 'WECHAT';
     protected $logo = 'wechatpay.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('WeChat Pay', self::CLASS_NAME);
+    }
 }

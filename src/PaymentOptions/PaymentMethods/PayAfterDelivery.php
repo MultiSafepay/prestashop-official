@@ -34,11 +34,18 @@ use Context;
 class PayAfterDelivery extends BasePaymentOption
 {
     public const CLASS_NAME = 'PayAfterDelivery';
-    protected $name = 'Pay After Delivery';
     protected $gatewayCode = 'PAYAFTER';
     protected $logo = 'payafter.png';
     protected $hasConfigurableDirect = true;
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('PayAfterDelivery', self::CLASS_NAME);
+    }
 
     /**
      * @phpcs:disable Generic.Files.LineLength.TooLong

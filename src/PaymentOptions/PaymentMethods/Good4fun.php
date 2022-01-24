@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Good4fun extends BasePaymentOption
 {
-    protected $name = 'Good4fun Giftcard';
+    public const CLASS_NAME = 'Good4fun';
     protected $gatewayCode = 'GOOD4FUN';
     protected $logo = 'good4fun.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Good4fun', self::CLASS_NAME);
+    }
 }

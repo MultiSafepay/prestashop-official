@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Boekenbon extends BasePaymentOption
 {
-    protected $name = 'Boekenbon';
+    public const CLASS_NAME = 'Boekenbon';
     protected $gatewayCode = 'BOEKENBON';
     protected $logo = 'boekenbon.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Boekenbon', self::CLASS_NAME);
+    }
 }

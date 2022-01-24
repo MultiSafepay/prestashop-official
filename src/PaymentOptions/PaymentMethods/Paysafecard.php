@@ -26,7 +26,15 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Paysafecard extends BasePaymentOption
 {
-    protected $name = 'Paysafecard';
+    public const CLASS_NAME = 'Paysafecard';
     protected $gatewayCode = 'PSAFECARD';
     protected $logo = 'paysafecard.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Paysafecard', self::CLASS_NAME);
+    }
 }

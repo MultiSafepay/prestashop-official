@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Maestro extends BasePaymentOption
 {
+    public const CLASS_NAME = 'Maestro';
     protected $hasConfigurableTokenization = true;
-    protected $name = 'Maestro';
     protected $gatewayCode = 'MAESTRO';
     protected $logo = 'maestro.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Maestro', self::CLASS_NAME);
+    }
 }

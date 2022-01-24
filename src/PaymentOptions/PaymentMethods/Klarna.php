@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Klarna extends BasePaymentOption
 {
-    protected $name = 'Klarna - Pay in 30 days';
+    public const CLASS_NAME = 'Klarna';
     protected $gatewayCode = 'KLARNA';
     protected $logo = 'klarna.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Klarna - Pay in 30 days', self::CLASS_NAME);
+    }
 }

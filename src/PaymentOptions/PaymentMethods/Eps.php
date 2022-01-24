@@ -26,7 +26,15 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Eps extends BasePaymentOption
 {
-    protected $name = 'EPS';
+    public const CLASS_NAME = 'Eps';
     protected $gatewayCode = 'EPS';
     protected $logo = 'eps.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('EPS', self::CLASS_NAME);
+    }
 }

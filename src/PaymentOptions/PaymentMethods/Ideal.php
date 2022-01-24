@@ -31,11 +31,18 @@ use Order;
 class Ideal extends BasePaymentOption
 {
     public const CLASS_NAME = 'Ideal';
-    protected $name = 'iDEAL';
     protected $gatewayCode = 'IDEAL';
     protected $logo = 'ideal.png';
     protected $hasConfigurableDirect = true;
     protected $hasConfigurableTokenization = true;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('iDEAL', self::CLASS_NAME);
+    }
 
     public function getTransactionType(): string
     {

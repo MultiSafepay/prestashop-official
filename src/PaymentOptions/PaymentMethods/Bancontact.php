@@ -26,7 +26,15 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Bancontact extends BasePaymentOption
 {
-    protected $name = 'Bancontact';
+    public const CLASS_NAME = 'Bancontact';
     protected $gatewayCode = 'MISTERCASH';
     protected $logo = 'bancontact.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Bancontact', self::CLASS_NAME);
+    }
 }

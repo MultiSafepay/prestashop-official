@@ -50,11 +50,6 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     /**
      * @var string
      */
-    protected $name = '';
-
-    /**
-     * @var string
-     */
     protected $description = '';
 
     /**
@@ -100,11 +95,6 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     public function __construct(MultisafepayOfficial $module)
     {
         $this->module = $module;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
     }
 
     public function getGatewayCode(): string
@@ -244,7 +234,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         $settings = [
             'MULTISAFEPAY_OFFICIAL_GATEWAY_'.$this->getUniqueName()         => [
                 'type'    => 'switch',
-                'name'    => $this->name,
+                'name'    => $this->getName(),
                 'value'   => Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_'.$this->getUniqueName()),
                 'default' => '0',
                 'order'   => 10,
@@ -253,7 +243,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'type'       => 'text',
                 'name'       => $this->module->l('Title', self::CLASS_NAME),
                 'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_TITLE_'.$this->getUniqueName()),
-                'helperText' => $this->module->l('The title will be shown to the customer at the checkout page.', self::CLASS_NAME),
+                'helperText' => $this->module->l('The title will be shown to the customer at the checkout page. When using translations, please leave this field empty.', self::CLASS_NAME),
                 'default'    => '',
                 'order'      => 20,
             ],

@@ -26,7 +26,15 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Dotpay extends BasePaymentOption
 {
-    protected $name = 'Dotpay';
+    public const CLASS_NAME = 'Dotpay';
     protected $gatewayCode = 'DOTPAY';
     protected $logo = 'dotpay.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Dotpay', self::CLASS_NAME);
+    }
 }

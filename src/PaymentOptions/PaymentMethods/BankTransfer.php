@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class BankTransfer extends BasePaymentOption
 {
+    public const CLASS_NAME = 'BankTransfer';
     public $hasConfigurableDirect = true;
-    protected $name = 'Bank Transfer';
     protected $gatewayCode = 'BANKTRANS';
     protected $logo = 'banktrans.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Bank Transfer', self::CLASS_NAME);
+    }
 }

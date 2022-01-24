@@ -26,7 +26,15 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Giropay extends BasePaymentOption
 {
-    protected $name = 'Giropay';
+    public const CLASS_NAME = 'Giropay';
     protected $gatewayCode = 'GIROPAY';
     protected $logo = 'giropay.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Giropay', self::CLASS_NAME);
+    }
 }

@@ -33,11 +33,18 @@ use Context;
 class AfterPay extends BasePaymentOption
 {
     public const CLASS_NAME = 'AfterPay';
-    protected $name = 'AfterPay';
     protected $gatewayCode = 'AFTERPAY';
     protected $logo = 'afterpay.png';
     protected $hasConfigurableDirect = true;
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('AfterPay', self::CLASS_NAME);
+    }
 
     /**
      * @phpcs:disable Generic.Files.LineLength.TooLong

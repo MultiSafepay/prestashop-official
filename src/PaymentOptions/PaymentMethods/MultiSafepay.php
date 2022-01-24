@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class MultiSafepay extends BasePaymentOption
 {
-    protected $name = 'MultiSafepay';
+    public const CLASS_NAME = 'MultiSafepay';
     protected $logo = 'multisafepay.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('MultiSafepay', self::CLASS_NAME);
+    }
 
     public function getUniqueName(): string
     {

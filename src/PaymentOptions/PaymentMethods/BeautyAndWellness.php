@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class BeautyAndWellness extends BasePaymentOption
 {
-    protected $name = 'Beauty and wellness';
+    public const CLASS_NAME = 'BeautyAndWellness';
     protected $gatewayCode = 'BEAUTYANDWELLNESS';
     protected $logo = 'beautywellness.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Beauty and wellness', self::CLASS_NAME);
+    }
 }

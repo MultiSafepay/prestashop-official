@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Goodcard extends BasePaymentOption
 {
-    protected $name = 'Goodcard';
+    public const CLASS_NAME = 'Goodcard';
     protected $gatewayCode = 'GOODCARD';
     protected $logo = 'goodcard.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Goodcard', self::CLASS_NAME);
+    }
 }

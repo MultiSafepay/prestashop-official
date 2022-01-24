@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Winkelcheque extends BasePaymentOption
 {
-    protected $name = 'Winkelcheque';
+    public const CLASS_NAME = 'Winkelcheque';
     protected $gatewayCode = 'WINKELCHEQUE';
     protected $logo = 'winkelcheque.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Winkelcheque', self::CLASS_NAME);
+    }
 }

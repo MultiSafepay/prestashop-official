@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class NationaleTuinbon extends BasePaymentOption
 {
-    protected $name = 'Nationale tuinbon';
+    public const CLASS_NAME = 'NationaleTuinbon';
     protected $gatewayCode = 'NATIONALETUINBON';
     protected $logo = 'nationaletuinbon.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Nationale tuinbon', self::CLASS_NAME);
+    }
 }

@@ -26,7 +26,15 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Belfius extends BasePaymentOption
 {
-    protected $name = 'Belfius';
+    public const CLASS_NAME = 'Belfius';
     protected $gatewayCode = 'BELFIUS';
     protected $logo = 'belfius.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Belfius', self::CLASS_NAME);
+    }
 }

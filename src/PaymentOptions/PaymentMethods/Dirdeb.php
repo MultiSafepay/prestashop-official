@@ -35,9 +35,16 @@ class Dirdeb extends BasePaymentOption
     public const CLASS_NAME = 'Dirdeb';
     protected $hasConfigurableDirect = true;
     protected $hasConfigurableTokenization = true;
-    protected $name = 'SEPA Direct Debit';
     protected $gatewayCode = 'DIRDEB';
     protected $logo = 'dirdeb.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('SEPA Direct Debit', self::CLASS_NAME);
+    }
 
     /**
      * @phpcs:disable Generic.Files.LineLength.TooLong

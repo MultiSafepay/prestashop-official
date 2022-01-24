@@ -26,7 +26,15 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class PayPal extends BasePaymentOption
 {
-    protected $name = 'PayPal';
+    public const CLASS_NAME = 'PayPal';
     protected $gatewayCode = 'PAYPAL';
     protected $logo = 'paypal.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('PayPal', self::CLASS_NAME);
+    }
 }

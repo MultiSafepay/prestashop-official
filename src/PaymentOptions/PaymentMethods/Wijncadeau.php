@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Wijncadeau extends BasePaymentOption
 {
-    protected $name = 'Wijncadeau';
+    public const CLASS_NAME = 'Wijncadeau';
     protected $gatewayCode = 'WIJNCADEAU';
     protected $logo = 'wijncadeau.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Wijncadeau', self::CLASS_NAME);
+    }
 }

@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Mastercard extends BasePaymentOption
 {
+    public const CLASS_NAME = 'Mastercard';
     protected $hasConfigurableTokenization = true;
-    protected $name = 'Mastercard';
     protected $gatewayCode = 'MASTERCARD';
     protected $logo = 'mastercard.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Mastercard', self::CLASS_NAME);
+    }
 }

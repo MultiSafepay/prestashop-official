@@ -24,17 +24,6 @@ class MultiSafepayTest extends BaseMultiSafepayTest
         $this->multiSafepayPaymentMethod = $mockMultiSafepay;
     }
 
-
-    /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getName
-     */
-    public function testGetName()
-    {
-        $output = $this->multiSafepayPaymentMethod->getName();
-        self::assertEquals('MultiSafepay', $output);
-        self::assertIsString($output);
-    }
-
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getDescription
      */

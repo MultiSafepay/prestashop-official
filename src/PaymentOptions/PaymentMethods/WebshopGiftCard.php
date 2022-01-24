@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class WebshopGiftCard extends BasePaymentOption
 {
-    protected $name = 'Webshop gift card';
+    public const CLASS_NAME = 'WebshopGiftCard';
     protected $gatewayCode = 'WEBSHOPGIFTCARD';
     protected $logo = 'webshopgiftcard.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Webshop gift card', self::CLASS_NAME);
+    }
 }

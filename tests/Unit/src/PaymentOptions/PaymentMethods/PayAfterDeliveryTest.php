@@ -20,17 +20,6 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
         $this->payAfterDeliveryPaymentMethod = $mockPayAfterDelivery;
     }
 
-
-    /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getName
-     */
-    public function testGetName()
-    {
-        $output = $this->payAfterDeliveryPaymentMethod->getName();
-        self::assertEquals('Pay After Delivery', $output);
-        self::assertIsString($output);
-    }
-
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getDescription
      */

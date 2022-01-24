@@ -29,9 +29,17 @@ use Order;
 
 class IdealQr extends BasePaymentOption
 {
-    protected $name = 'iDEAL QR';
+    public const CLASS_NAME = 'IdealQr';
     protected $gatewayCode = 'IDEALQR';
     protected $logo = 'ideal-qr.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('iDEAL QR', self::CLASS_NAME);
+    }
 
     /**
      * @param Order $order

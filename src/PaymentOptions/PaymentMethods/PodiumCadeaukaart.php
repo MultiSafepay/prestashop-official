@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class PodiumCadeaukaart extends BasePaymentOption
 {
-    protected $name = 'Podium cadeaukaart';
+    public const CLASS_NAME = 'PodiumCadeaukaart';
     protected $gatewayCode = 'PODIUM';
     protected $logo = 'podium.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Podium cadeaukaart', self::CLASS_NAME);
+    }
 }

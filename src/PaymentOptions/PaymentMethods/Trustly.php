@@ -26,7 +26,15 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Trustly extends BasePaymentOption
 {
-    protected $name = 'Trustly';
+    public const CLASS_NAME = 'Trustly';
     protected $gatewayCode = 'TRUSTLY';
     protected $logo = 'trustly.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Trustly', self::CLASS_NAME);
+    }
 }

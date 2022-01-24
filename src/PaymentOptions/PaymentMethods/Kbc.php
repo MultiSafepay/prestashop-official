@@ -26,7 +26,15 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Kbc extends BasePaymentOption
 {
-    protected $name = 'KBC';
+    public const CLASS_NAME = 'Kbc';
     protected $gatewayCode = 'KBC';
     protected $logo = 'kbc.png';
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('KBC', self::CLASS_NAME);
+    }
 }

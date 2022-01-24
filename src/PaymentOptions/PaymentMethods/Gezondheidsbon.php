@@ -26,8 +26,16 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
 class Gezondheidsbon extends BasePaymentOption
 {
-    protected $name = 'Gezondheidsbon';
+    public const CLASS_NAME = 'Gezondheidsbon';
     protected $gatewayCode = 'GEZONDHEIDSBON';
     protected $logo = 'gezondheidsbon.png';
     protected $canProcessRefunds = false;
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->module->l('Gezondheidsbon', self::CLASS_NAME);
+    }
 }
