@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ***
 
 ## 5.2.0
+Release date: Jan 25th, 2021
 
 ### Added
 + PRES-293: Add payment component support for payment options: Visa, Mastercard, Maestro and American Express
