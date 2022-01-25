@@ -28,6 +28,7 @@ class Mastercard extends BasePaymentOption
 {
     public const CLASS_NAME = 'Mastercard';
     protected $hasConfigurableTokenization = true;
+    protected $hasConfigurablePaymentComponent = true;
     protected $gatewayCode = 'MASTERCARD';
     protected $logo = 'mastercard.png';
 

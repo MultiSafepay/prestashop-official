@@ -16,4 +16,13 @@ class MoneyHelperTest extends TestCase
         $output = MoneyHelper::createMoney(525);
         self::assertInstanceOf(Money::class, $output);
     }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Helper\MoneyHelper::priceToCents
+     */
+    public function testPriceToCents()
+    {
+        $output = MoneyHelper::priceToCents(34.75);
+        self::assertEquals(3475, $output);
+    }
 }

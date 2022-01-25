@@ -28,6 +28,7 @@ class Maestro extends BasePaymentOption
 {
     public const CLASS_NAME = 'Maestro';
     protected $hasConfigurableTokenization = true;
+    protected $hasConfigurablePaymentComponent = true;
     protected $gatewayCode = 'MAESTRO';
     protected $logo = 'maestro.png';
 

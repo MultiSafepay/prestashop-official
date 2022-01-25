@@ -91,18 +91,4 @@ class IdealTest extends BaseMultiSafepayTest
         self::assertArrayHasKey('type', $output[0]);
         self::assertEquals('select', $output[0]['type']);
     }
-
-    /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getInputFields
-     */
-    public function testGetHiddenGatewayField()
-    {
-        $output = $this->idealPaymentOption->getInputFields();
-        self::assertIsArray($output);
-        self::assertContains([
-            'type'  => 'hidden',
-            'name'  => 'gateway',
-            'value' => 'IDEAL'
-        ], $output);
-    }
 }

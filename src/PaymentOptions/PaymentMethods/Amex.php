@@ -27,6 +27,7 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 class Amex extends BasePaymentOption
 {
     public const CLASS_NAME = 'Amex';
+    protected $hasConfigurablePaymentComponent = true;
     protected $hasConfigurableTokenization = true;
     protected $gatewayCode = 'AMEX';
     protected $logo = 'amex.png';

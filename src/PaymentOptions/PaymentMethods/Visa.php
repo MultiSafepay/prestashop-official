@@ -30,6 +30,7 @@ class Visa extends BasePaymentOption
     protected $gatewayCode = 'VISA';
     protected $logo = 'visa.png';
     protected $hasConfigurableTokenization = true;
+    protected $hasConfigurablePaymentComponent = true;
 
     /**
      * @return string

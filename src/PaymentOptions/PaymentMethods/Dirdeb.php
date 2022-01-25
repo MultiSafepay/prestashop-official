@@ -34,7 +34,6 @@ class Dirdeb extends BasePaymentOption
 {
     public const CLASS_NAME = 'Dirdeb';
     protected $hasConfigurableDirect = true;
-    protected $hasConfigurableTokenization = true;
     protected $gatewayCode = 'DIRDEB';
     protected $logo = 'dirdeb.png';
 

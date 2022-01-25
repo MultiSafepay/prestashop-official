@@ -80,18 +80,4 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
             'value'       => ''
         ], $output);
     }
-
-    /**
-     * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getInputFields
-     */
-    public function testGetHiddenGatewayField()
-    {
-        $output = $this->payAfterDeliveryPaymentMethod->getInputFields();
-        self::assertIsArray($output);
-        self::assertContains([
-            'type'  => 'hidden',
-            'name'  => 'gateway',
-            'value' => 'PAYAFTER'
-        ], $output);
-    }
 }

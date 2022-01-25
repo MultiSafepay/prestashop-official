@@ -35,6 +35,7 @@ services:
       - "@multisafepay"
       - "@multisafepay.customer_service"
       - "@multisafepay.shopping_cart_service"
+      - "@multisafepay.sdk_service"
 
   multisafepay.tokenization_service:
     class: MultiSafepay\PrestaShop\Services\TokenizationService

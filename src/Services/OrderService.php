@@ -22,9 +22,11 @@
 
 namespace MultiSafepay\PrestaShop\Services;
 
+use Address;
 use Cart;
 use Configuration;
 use Context;
+use Country;
 use Currency;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GoogleAnalytics;
@@ -62,6 +64,16 @@ class OrderService
     private $shoppingCartService;
 
     /**
+     * @var SdkService
+     */
+    private $sdkService;
+
+    /**
+     * @var string
+     */
+    private $paymentComponentApiToken = null;
+
+    /**
      * OrderService constructor.
      *
      * @param MultisafepayOfficial $module
@@ -71,11 +83,13 @@ class OrderService
     public function __construct(
         MultisafepayOfficial $module,
         CustomerService $customerService,
-        ShoppingCartService $shoppingCartService
+        ShoppingCartService $shoppingCartService,
+        SdkService $sdkService
     ) {
         $this->module              = $module;
         $this->customerService     = $customerService;
         $this->shoppingCartService = $shoppingCartService;
+        $this->sdkService          = $sdkService;
     }
 
     /**
@@ -217,6 +231,45 @@ class OrderService
     }
 
     /**
+     * @param string|null $customerString
+     * @param string|null $recurringModel
+     *
+     * @return array
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
+     */
+    public function createPaymentComponentOrder(?string $customerString, ?string $recurringModel): array
+    {
+        return
+            [
+                'debug'     => (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE') ?? false,
+                'env'       => $this->sdkService->getTestMode() ? 'test' : 'live',
+                'apiToken'  => $this->getPaymentComponentApiToken(),
+                'orderData' => [
+                    'currency'  => (new Currency(Context::getContext()->cart->id_currency))->iso_code,
+                    'amount'    => MoneyHelper::priceToCents(
+                        Context::getContext()->cart->getOrderTotal(true, Cart::BOTH)
+                    ),
+                    'customer'  => [
+                        'locale'    => Tools::substr(Context::getContext()->language->getLocale(), 0, 2),
+                        'country'   => (new Country(
+                            (new Address((int)Context::getContext()->cart->id_address_invoice))->id_country
+                        ))->iso_code,
+                        'reference' => $customerString,
+                    ],
+                    'recurring' => [
+                        'model' => $recurringModel,
+                    ],
+                    'template'  => [
+                        'settings' => [
+                            'embed_mode' => true,
+                        ],
+                    ],
+                ],
+            ];
+    }
+
+    /**
      * Return SecondsActive
      *
      * @return int
@@ -261,7 +314,9 @@ class OrderService
         $paymentOptions = new PaymentOptions();
 
         return $paymentOptions
-            ->addNotificationUrl(Context::getContext()->link->getModuleLink('multisafepayofficial', 'notification', [], true))
+            ->addNotificationUrl(
+                Context::getContext()->link->getModuleLink('multisafepayofficial', 'notification', [], true)
+            )
             ->addCancelUrl(
                 Context::getContext()->link->getModuleLink(
                     'multisafepayofficial',
@@ -275,7 +330,8 @@ class OrderService
                     'order-confirmation',
                     null,
                     Context::getContext()->language->id,
-                    'id_cart='.$order->id_cart.'&id_order='.$order->id.'&id_module='.$this->module->id.'&key='.Context::getContext()->customer->secure_key
+                    'id_cart='.$order->id_cart.'&id_order='.$order->id.'&id_module='.$this->module->id.'&key='.Context::getContext(
+                    )->customer->secure_key
                 )
             );
     }
@@ -301,6 +357,7 @@ class OrderService
 
     /**
      * @param int $currencyId
+     *
      * @return string
      */
     private function getCurrencyIsoCodeById(int $currencyId): string
@@ -322,5 +379,17 @@ class OrderService
     private function getToken(): ?string
     {
         return Tools::getValue('selectedToken', null);
+    }
+
+    /**
+     * @return string
+     */
+    public function getPaymentComponentApiToken(): string
+    {
+        if (!isset($this->paymentComponentApiToken)) {
+            $this->paymentComponentApiToken = ($this->sdkService->getSdk()->getApiTokenManager()->get())->getApiToken();
+        }
+
+        return $this->paymentComponentApiToken;
     }
 }

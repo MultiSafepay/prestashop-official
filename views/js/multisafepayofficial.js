@@ -29,11 +29,11 @@ var MultiSafepayPaymentComponent = function (config, gateway) {
     };
 
     var getPaymentComponent = function () {
-        if ( ! this.paymentComponent ) {
-            this.paymentComponent = getNewPaymentComponent();
+        if ( ! paymentComponent ) {
+            paymentComponent = getNewPaymentComponent();
         }
 
-        return this.paymentComponent;
+        return paymentComponent;
     };
 
     var getNewPaymentComponent = function () {
@@ -67,30 +67,18 @@ var MultiSafepayPaymentComponent = function (config, gateway) {
         });
     };
 
-    var isUsingToken = function () {
-        if ($('#multisafepay-form-' + gateway.toLowerCase() + ' .form-group-token-list').length === 0) {
-            return false;
-        }
-        if ($('#multisafepay-form-' + gateway.toLowerCase() + ' .form-group-token-list input[name=\'selectedToken\']:checked').val() === 'new') {
-            return false;
-        }
-        return true;
-    };
-
     var onSubmitCheckoutForm = function () {
         $('#multisafepay-form-' + gateway.toLowerCase()).submit(function (event) {
-            if (!isUsingToken()) {
-                if (getPaymentComponent().hasErrors()) {
-                    logger(getPaymentComponent().getErrors());
-                    $('#payment-confirmation button').removeClass('disabled');
-                    event.preventDefault();
-                    event.stopPropagation();
-                    return;
-                }
-                var payload = getPaymentComponent().getPaymentData().payload;
-                insertPayload(payload);
-            }
             removePayload();
+            if (getPaymentComponent().hasErrors()) {
+                logger(getPaymentComponent().getErrors());
+                $('#payment-confirmation button').removeClass('disabled');
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+            var payload = getPaymentComponent().getPaymentData().payload;
+            insertPayload(payload);
             $('#multisafepay-form-' + gateway.toLowerCase()).unbind('submit').submit();
         });
     };
@@ -105,13 +93,16 @@ var MultiSafepayPaymentComponent = function (config, gateway) {
 
 };
 
+function createMultiSafepayPaymentComponents()
+{
+    $("[id^='multisafepay-payment-component-']").each(function () {
+        new MultiSafepayPaymentComponent(window['multisafepayPaymentComponentConfig' + $(this).data('gateway')], $(this).data('gateway'));
+    });
+}
+
 // Default checkout
 $(document).ready(function () {
-    $.each(multisafepayPaymentComponentGateways, function (index, gateway) {
-        if ($('#multisafepay-form-' + gateway.toLowerCase()).length > 0) {
-            new MultiSafepayPaymentComponent(multisafepayPaymentComponentConfig, gateway);
-        }
-    });
+    createMultiSafepayPaymentComponents();
 });
 
 // Support for "The Checkout module"
@@ -120,11 +111,7 @@ if (typeof prestashop !== 'undefined') {
         'thecheckout_updatePaymentBlock',
         function (event) {
             if (event && event.reason === 'update') {
-                $.each(multisafepayPaymentComponentGateways, function (index, gateway) {
-                    if ($('#multisafepay-form-' + gateway.toLowerCase()).length > 0) {
-                        new MultiSafepayPaymentComponent(multisafepayPaymentComponentConfig, gateway);
-                    }
-                });
+                createMultiSafepayPaymentComponents();
             }
         }
     );
@@ -132,9 +119,5 @@ if (typeof prestashop !== 'undefined') {
 
 // One Page Checkout PS support
 $(document).on('opc-load-payment:completed', function () {
-    $.each(multisafepayPaymentComponentGateways, function (index, gateway) {
-        if ($('#multisafepay-form-' + gateway.toLowerCase()).length > 0) {
-            new MultiSafepayPaymentComponent(multisafepayPaymentComponentConfig, gateway);
-        }
-    });
+    createMultiSafepayPaymentComponents();
 });

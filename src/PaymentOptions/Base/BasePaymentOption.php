@@ -30,14 +30,10 @@ use Currency;
 use Group;
 use Media;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
-use MultiSafepay\PrestaShop\Services\SdkService;
+use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\PrestaShop\Services\TokenizationService;
 use MultisafepayOfficial;
 use Order;
-use Tools;
-use Cart;
-use Address;
-use Language;
 
 abstract class BasePaymentOption implements BasePaymentOptionInterface
 {
@@ -138,13 +134,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
     public function getInputFields(): array
     {
-        $inputFields = [
-            [
-                'type'  => 'hidden',
-                'name'  => 'gateway',
-                'value' => $this->getGatewayCode(),
-            ],
-        ];
+        $inputFields = [];
 
         if ($this->allowTokenization() && !$this->allowPaymentComponent()) {
             /** @var TokenizationService $tokenizationService */
@@ -171,28 +161,17 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
             );
         }
 
-        if ($this->allowPaymentComponent()) {
-            $inputFields         = array_merge(
-                $inputFields,
-                [
-                    [
-                        'type'          => 'hidden',
-                        'name'          => 'payload',
-                        'placeholder'   => '',
-                        'value'         => '',
-                    ]
-                ]
-            );
-        }
-
         return $inputFields;
     }
 
     public function sortInputFields(array $inputFields): array
     {
-        uasort($inputFields, function ($a, $b) {
-            return $a['order'] - $b['order'];
-        });
+        uasort(
+            $inputFields,
+            function ($a, $b) {
+                return $a['order'] - $b['order'];
+            }
+        );
 
         return $inputFields;
     }
@@ -219,7 +198,9 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     public function getSortOrderPosition(): int
     {
         if (!isset($this->sortOrderPosition)) {
-            $this->sortOrderPosition = (int)Configuration::get('MULTISAFEPAY_OFFICIAL_SORT_ORDER_'.$this->getUniqueName());
+            $this->sortOrderPosition = (int)Configuration::get(
+                'MULTISAFEPAY_OFFICIAL_SORT_ORDER_'.$this->getUniqueName()
+            );
         }
 
         return $this->sortOrderPosition;
@@ -251,7 +232,10 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'type'       => 'text',
                 'name'       => $this->module->l('Description', self::CLASS_NAME),
                 'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_DESCRIPTION_'.$this->getUniqueName()),
-                'helperText' => $this->module->l('The description will be shown to the customer at the checkout page.', self::CLASS_NAME),
+                'helperText' => $this->module->l(
+                    'The description will be shown to the customer at the checkout page.',
+                    self::CLASS_NAME
+                ),
                 'default'    => '',
                 'order'      => 30,
             ],
@@ -335,7 +319,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'value'   => Configuration::get('MULTISAFEPAY_OFFICIAL_SORT_ORDER_'.$this->getUniqueName()),
                 'default' => '',
                 'order'   => 90,
-                'class'   => 'sort-order'
+                'class'   => 'sort-order',
             ],
         ];
 
@@ -485,44 +469,22 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'module-multisafepay-payment-component-javascript',
                 self::MULTISAFEPAY_COMPONENT_JS_URL,
                 [
-                    'server'     => 'remote'
+                    'server' => 'remote',
                 ]
             );
 
-            /** @var SdkService $sdkService */
-            $sdkService = $this->module->get('multisafepay.sdk_service');
+            /** @var OrderService $orderService */
+            $orderService = $this->module->get('multisafepay.order_service');
+
             Media::addJsDef(
                 [
-                    'multisafepayPaymentComponentConfig' => [
-                        'debug'     => (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE') ?? false,
-                        'env'       => $sdkService->getTestMode() ? 'test' : 'live',
-                        'apiToken'  => ($sdkService->getSdk()->getApiTokenManager()->get())->getApiToken(),
-                        'orderData' => [
-                            'currency' => (new Currency(Context::getContext()->cart->id_currency))->iso_code,
-                            'amount'   => Context::getContext()->cart->getOrderTotal(true, Cart::BOTH),
-                            'customer' => [
-                                'locale'    => Tools::substr(Context::getContext()->language->getLocale(), 0, 2),
-                                'country'   => (new Country((new Address((int) Context::getContext()->cart->id_address_invoice))->id_country))->iso_code,
-                                'reference' => $this->allowTokenization() ? Context::getContext()->customer->id : null,
-                            ],
-                            'recurring' => [
-                                'model' => $this->allowTokenization() ? 'cardOnFile': null,
-                            ],
-                            'template' => [
-                                'settings' => [
-                                    'embed_mode' => true
-                                ],
-                            ],
-                        ],
-                    ],
+                    'multisafepayPaymentComponentConfig'.$this->getGatewayCode(
+                    ) => $orderService->createPaymentComponentOrder(
+                        $this->allowTokenization() ? (string) Context::getContext()->customer->id : null,
+                        $this->allowTokenization() ? 'cardOnFile' : null
+                    )
                 ]
             );
-
-            Media::addJsDef([
-                'multisafepayPaymentComponentGateways' => [
-                    $this->getGatewayCode()
-                ]
-            ]);
 
             $context->controller->registerJavascript(
                 'module-multisafepay-initialize-payment-component-javascript',
@@ -541,7 +503,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'module-multisafepay-payment-component',
                 self::MULTISAFEPAY_COMPONENT_CSS_URL,
                 [
-                    'server'     => 'remote'
+                    'server' => 'remote',
                 ]
             );
         }

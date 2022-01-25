@@ -144,7 +144,6 @@ class PaymentOptionService
         return $paymentOptions;
     }
 
-
     /**
      * @param string $name
      * @return string

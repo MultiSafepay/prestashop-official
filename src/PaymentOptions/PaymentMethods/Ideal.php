@@ -34,7 +34,6 @@ class Ideal extends BasePaymentOption
     protected $gatewayCode = 'IDEAL';
     protected $logo = 'ideal.png';
     protected $hasConfigurableDirect = true;
-    protected $hasConfigurableTokenization = true;
 
     /**
      * @return string
