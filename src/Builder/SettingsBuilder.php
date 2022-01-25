@@ -464,9 +464,24 @@ class SettingsBuilder
             // User are not submitting a file, but he want to remove the current one assigned.
             // In these cases $_POST variable contains remove as value and $_FILE is empty.
             if (empty($file['tmp_name']) && (bool)$file['error'] && Tools::getValue($key) === 'remove') {
-                Configuration::updateValue($key, null);
+                $this->removeFile($key);
             }
         }
+    }
+
+    /**
+     * Remove file when is unassigned in a Generic gateway.
+     *
+     * @param string $key
+     */
+    private function removeFile(string $key): void
+    {
+        // Remove the file.
+        if (file_exists(Configuration::get($key))) {
+            @unlink(Configuration::get($key));
+        }
+        // Unset the value.
+        Configuration::updateValue($key, null);
     }
 
     /**
