@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.2.0
+
+### Added
++ PRES-293: Add payment component support for payment options: Visa, Mastercard, Maestro and American Express
++ PRES-252: Delete the file, when remove the logo image assigned to a generic gateway
++ PRES-190: Add support to translate payment methods names using PrestaShop translation system
++ PRES-250: Return error messages in settings page when there is an error uploading the file for a generic gateway image
+
+### Changed
++ PRES-296: Set the payment option name (payment method), within the OrderPayment object when register the payment instead register the name of the payment module.
+
+### Fixed
++ PRES-300: Fix order notes when an order has been created using credit card payment option
+
+***
+
 ## 5.1.1
 Release date: Dec 8th, 2021
 
