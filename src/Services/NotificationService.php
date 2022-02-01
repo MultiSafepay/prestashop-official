@@ -24,16 +24,20 @@ namespace MultiSafepay\PrestaShop\Services;
 
 use Configuration;
 use MultiSafepay\Api\Transactions\TransactionResponse;
+use MultiSafepay\Api\Transactions\Transaction;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\OrderMessageHelper;
 use MultiSafepay\Util\Notification;
 use MultisafepayOfficial;
 use Order;
+use OrderDetail;
 use OrderHistory;
 use OrderPayment;
 use PrestaShopException;
 use Tools;
+use OrderInvoice;
+use Cache;
 
 /**
  * Class OrderService
@@ -80,7 +84,6 @@ class NotificationService
      */
     public function processNotification(string $body): void
     {
-
         if (!Tools::getValue('transactionid') || empty(Tools::file_get_contents('php://input'))) {
             $message = "It seems the notification URL has been triggered but does not contain the required information";
             LoggerHelper::logWarning($message);
@@ -112,6 +115,12 @@ class NotificationService
 
             // If the PrestaShop order status is the same as the one received in the notification
             if ((int)$order->current_state === (int)$this->getOrderStatusId($transaction->getStatus())) {
+                continue;
+            }
+
+            // If transaction status is initialized, but the current order status is PS_OS_OUTOFSTOCK_UNPAID
+            // because this one changes quickly after order creation when there aren't products in stock
+            if (Transaction::INITIALIZED === $transaction->getStatus() && (int)$order->current_state === (int)Configuration::get('PS_OS_OUTOFSTOCK_UNPAID')) {
                 continue;
             }
 
@@ -147,24 +156,88 @@ class NotificationService
      */
     private function updateOrderData(Order $order, TransactionResponse $transaction): void
     {
-        // Set order status ID.
         $orderStatusId     = (int)$this->getOrderStatusId($transaction->getStatus());
         $history           = new OrderHistory();
         $history->id_order = $order->id;
         $history->changeIdOrderState($orderStatusId, $order->id, true);
         $history->addWithemail();
 
-        // Set PSP ID within the order information
         if ('completed' === $transaction->getStatus()) {
-            $payments = $order->getOrderPaymentCollection();
-            /** @var OrderPayment $payment */
-            foreach ($payments->getResults() as $payment) {
-                $payment->transaction_id = $transaction->getTransactionId();
-                $payment->amount         = $transaction->getAmount() / 100;
-                $payment->payment_method = $order->payment;
-                $payment->update();
+            // Check in the order details list if the order contains product without stock
+            if ($this->checkIfOrderContainsProductsWithoutStock($order)) {
+                $this->processOrderStatusChangesForBackorders($order);
+            }
+
+            // Update OrderPayment with payment method name, amount, and PSP ID
+            $this->updateOrderPaymentWithPaymentMethodName($order, $transaction);
+        }
+    }
+
+    /**
+     * OrderPayment object register by default the name of the PaymentModule
+     * and not the name of the PaymentOption.
+     *
+     * @param Order $order
+     * @param TransactionResponse $transaction
+     */
+    private function updateOrderPaymentWithPaymentMethodName(Order $order, TransactionResponse $transaction): void
+    {
+        $payments = $order->getOrderPaymentCollection();
+        /** @var OrderPayment $payment */
+        foreach ($payments->getResults() as $payment) {
+            $payment->transaction_id = $transaction->getTransactionId();
+            $payment->amount = $transaction->getAmount() / 100;
+            $payment->payment_method = $order->payment;
+            $payment->update();
+        }
+    }
+
+    /**
+     * @param Order $order
+     */
+    private function processOrderStatusChangesForBackorders(Order $order): void
+    {
+        // Remove the cache is needed since OrderInvoice::getTotalPaid will return a wrong value, and for this reason
+        // a new OrderPayment object will be generated within the method OrderHistory::changeIdOrderState()
+        /** @var OrderInvoice[] $invoices */
+        $invoices = $order->getInvoicesCollection();
+        /** @var OrderInvoice $invoice */
+        foreach ($invoices as $invoice) {
+            $cacheId = 'order_invoice_paid_' . (int) $invoice->id;
+            if (Cache::isStored($cacheId)) {
+                Cache::clean($cacheId);
             }
         }
+
+        // Change Order Status to out of stock paid.
+        $history = new OrderHistory();
+        $history->id_order = (int)$order->id;
+        $history->changeIdOrderState((int)Configuration::get('PS_OS_OUTOFSTOCK_PAID'), $order, true);
+        $history->addWithemail();
+    }
+
+    /**
+     * @param Order $order
+     * @return bool
+     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     */
+    private function checkIfOrderContainsProductsWithoutStock(Order $order): bool
+    {
+        /** @var array $orderDetailList */
+        $orderDetailList = $order->getOrderDetailList();
+        foreach ($orderDetailList as $orderDetail) {
+            $orderDetailObject = new OrderDetail($orderDetail['id_order_detail']);
+            if (Configuration::get('PS_STOCK_MANAGEMENT') &&
+                (
+                    ($orderDetailObject->getStockState() || $orderDetailObject->product_quantity_in_stock <= 0) ||
+                    ($orderDetailObject->product_quantity > $orderDetailObject->product_quantity_in_stock)
+                )
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
