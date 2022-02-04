@@ -121,6 +121,18 @@ class NotificationService
             // If transaction status is initialized, but the current order status is PS_OS_OUTOFSTOCK_UNPAID
             // because this one changes quickly after order creation when there aren't products in stock
             if (Transaction::INITIALIZED === $transaction->getStatus() && (int)$order->current_state === (int)Configuration::get('PS_OS_OUTOFSTOCK_UNPAID')) {
+                if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
+                    LoggerHelper::logInfo('A notification has been received but is being ignored since the transaction status is initialized, and the current order status is PS_OS_OUTOFSTOCK_UNPAID');
+                }
+                continue;
+            }
+
+            // If transaction status is completed, but the current order status is PS_OS_OUTOFSTOCK_PAID
+            // because this one changes quickly when payment is completed and there aren't products in stock
+            if (Transaction::COMPLETED === $transaction->getStatus() && (int)$order->current_state === (int)Configuration::get('PS_OS_OUTOFSTOCK_PAID')) {
+                if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
+                    LoggerHelper::logInfo('A notification has been received but is being ignored since the transaction status is completed, and the current order status is PS_OS_OUTOFSTOCK_PAID');
+                }
                 continue;
             }
 
@@ -203,7 +215,9 @@ class NotificationService
         $invoices = $order->getInvoicesCollection();
         /** @var OrderInvoice $invoice */
         foreach ($invoices as $invoice) {
-            $cacheId = 'order_invoice_paid_' . (int) $invoice->id;
+            $invoiceId = (int) $invoice->id;
+            $invoiceDate = (string) $invoice->date_add;
+            $cacheId = 'order_invoice_paid_' . $invoiceId;
             if (Cache::isStored($cacheId)) {
                 Cache::clean($cacheId);
             }
@@ -214,6 +228,13 @@ class NotificationService
         $history->id_order = (int)$order->id;
         $history->changeIdOrderState((int)Configuration::get('PS_OS_OUTOFSTOCK_PAID'), $order, true);
         $history->addWithemail();
+
+        // Set invoice_number and invoice date once again in order.
+        if (isset($invoiceId) && isset($invoiceDate)) {
+            $order->invoice_number = $invoiceId;
+            $order->invoice_date = $invoiceDate;
+            $order->save();
+        }
     }
 
     /**
