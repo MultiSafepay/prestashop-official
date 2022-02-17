@@ -84,6 +84,7 @@ class SettingsBuilder
             'MULTISAFEPAY_OFFICIAL_DEBUG_MODE'               => ['default' => '0'],
             'MULTISAFEPAY_OFFICIAL_SECOND_CHANCE'            => ['default' => '1'],
             'MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL' => ['default' => '1'],
+            'MULTISAFEPAY_OFFICIAL_DISABLE_SHOPPING_CART'    => ['default' => '0'],
             'MULTISAFEPAY_OFFICIAL_OS_INITIALIZED'           => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED')],
             'MULTISAFEPAY_OFFICIAL_OS_COMPLETED'             => ['default' => Configuration::get('PS_OS_PAYMENT')],
             'MULTISAFEPAY_OFFICIAL_OS_UNCLEARED'             => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_UNCLEARED')],
@@ -248,6 +249,27 @@ class SettingsBuilder
                         'name'    => 'MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL',
                         'is_bool' => true,
                         'desc'    => $this->module->l('Send an email to the customer with the order details when a customer initiates an order, but has not yet completed the payment.', self::CLASS_NAME),
+                        'values'  => [
+                            [
+                                'id'    => 'active_on',
+                                'value' => true,
+                                'label' => $this->module->l('Enabled', self::CLASS_NAME),
+                            ],
+                            [
+                                'id'    => 'active_off',
+                                'value' => false,
+                                'label' => $this->module->l('Disabled', self::CLASS_NAME),
+                            ],
+                        ],
+                        'section' => 'default'
+                    ],
+                    [
+                        'type'    => 'switch',
+                        'tab'     => 'general_settings',
+                        'label'   => $this->module->l('Disable Shopping Cart', self::CLASS_NAME),
+                        'name'    => 'MULTISAFEPAY_OFFICIAL_DISABLE_SHOPPING_CART',
+                        'is_bool' => true,
+                        'desc'    => $this->module->l('Enable this option to hide the cart items on the MultiSafepay payment page, leaving only the total order amount. Note: If is enabled, the payment methods which require shopping cart won\'t work: Afterpay, E-Invoicing, in3, Klarna and Pay After Delivery.', self::CLASS_NAME),
                         'values'  => [
                             [
                                 'id'    => 'active_on',

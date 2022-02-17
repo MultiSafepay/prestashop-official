@@ -128,8 +128,10 @@ class OrderService
             ->addSecondsActive($this->getTimeActive())
             ->addSecondChance(
                 (new SecondChance())->addSendEmail((bool)Configuration::get('MULTISAFEPAY_OFFICIAL_SECOND_CHANCE'))
-            )
-            ->addShoppingCart(
+            );
+
+        if (!(bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DISABLE_SHOPPING_CART')) {
+            $orderRequest->addShoppingCart(
                 $this->shoppingCartService->createShoppingCart(
                     $shoppingCart,
                     $orderRequestArguments['currency_code'],
@@ -137,6 +139,7 @@ class OrderService
                     $orderRequestArguments['weight_unit']
                 )
             );
+        }
 
         if ($orderRequestArguments['shipping_total'] > 0) {
             $orderRequest->addDelivery((new CustomerService())->createDeliveryDetails($firstOrder));
