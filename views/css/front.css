@@ -2,11 +2,9 @@
     padding: 10px;
     background-color: #FBFBFB;
 }
-
 #multisafepay_payment_button a:hover {
     background-color: #f6f6f6;
 }
-
 #multisafepay_payment_button a:after {
     display: block;
     content: "\f054";
@@ -20,7 +18,9 @@
     width: 14px;
     color: #777777;
 }
-
 #checkout-payment-step .payment-options div div.payment-option label img {
     height: 30px;
+}
+.msp-ui-form-group label[for="extvar4"] {
+    display: inline-block !important;
 }
