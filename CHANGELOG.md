@@ -6,8 +6,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.3.0
+Release date: Mar 2nd, 2022
+
+### Added
++ PRES-313: Add setting field to disable the shopping cart within the Order request
+
+### Fixed
++ PRES-304: Change order status on payment complete to backorder paid, when an order contains items without stock
++ PRES-309: Set invoice_number within the order object, for backorders paid
++ PRES-310: Prevent cancel completed orders
++ PRES-312: Fix the image of credit card within the payment component CVV field
+
+### Changed
++ PRES-306: Replace MultiSafepay logos according with new brand guidelines
++ PRES-311: Move log files to var/log/ directory
+
+***
+
 ## 5.2.0
-Release date: Jan 25th, 2021
+Release date: Jan 25th, 2022
 
 ### Added
 + PRES-293: Add payment component support for payment options: Visa, Mastercard, Maestro and American Express
