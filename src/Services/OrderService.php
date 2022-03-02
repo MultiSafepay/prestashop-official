@@ -324,7 +324,7 @@ class OrderService
                 Context::getContext()->link->getModuleLink(
                     'multisafepayofficial',
                     'cancel',
-                    ['id_cart' => $order->id_cart, 'id_reference' => $order->reference],
+                    ['id_cart' => $order->id_cart, 'id_reference' => $order->reference, 'key' => Context::getContext()->customer->secure_key],
                     true
                 )
             )

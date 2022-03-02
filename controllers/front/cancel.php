@@ -44,13 +44,56 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
             die();
         }
 
-        // Cancel orders
-        CancelOrderHelper::cancelOrder((Order::getByReference(Tools::getValue('id_reference'))));
+        /** @var PrestaShopCollection $orderCollection */
+        $orderCollection = Order::getByReference(Tools::getValue('id_reference'));
 
+        foreach ($orderCollection as $order) {
+            // Prevent to cancel an order with different secure key
+            if (!$this->checkOrderSecureKey($order)) {
+                Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+            }
+
+            // Prevent to cancel an order with current order status completed
+            if ($this->checkIfCurrentOrderStatusIsCompleted($order)) {
+                Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+            }
+        }
+
+        // Cancel orders
+        CancelOrderHelper::cancelOrder($orderCollection);
         // Duplicate cart
         DuplicateCartHelper::duplicateCart((new Cart(Tools::getValue('id_cart'))));
 
         // Redirect to checkout page
         Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+    }
+
+
+    /**
+     * Check the secure key of the order with the one received as a query argument
+     *
+     * @param Order $order
+     * @return bool
+     */
+    private function checkOrderSecureKey(Order $order): bool
+    {
+        if (Tools::getValue('key') === $order->secure_key) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check the current order status
+     *
+     * @param Order $order
+     * @return bool
+     */
+    private function checkIfCurrentOrderStatusIsCompleted(Order $order): bool
+    {
+        if ((int)$order->current_state === (int)Configuration::get('PS_OS_PAYMENT')) {
+            return true;
+        }
+        return false;
     }
 }
