@@ -140,6 +140,30 @@
 .multisafepay-panel-payment-option.drag-active .panel-collapse {
     display: none !important;
 }
+
+#multisafepay-system-status p.submit {
+    clear: both;
+    display: block;
+    min-height: 35px;
+}
+#multisafepay-system-status #multisafepay-system-status-report {
+    display:none;
+    clear: both;
+    padding: 30px 0px;
+}
+#multisafepay-system-status .multisafepay_status_table {
+    margin-top: 30px;
+}
+#multisafepay-system-status .multisafepay_status_table thead tr th {
+    padding-left: 7px;
+}
+#multisafepay-system-status .multisafepay_status_table thead tr th h2 {
+    margin: 0px;
+    padding: 0px;
+    font-size: 15px;
+    text-transform: uppercase;
+    font-weight: bold;
+}
 #multisafepay-support .account-list {
     padding-left: 10px;
     margin-left: 10px;

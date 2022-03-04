@@ -25,6 +25,7 @@ namespace MultiSafepay\PrestaShop\Builder;
 use Country;
 use Currency;
 use HelperForm;
+use MultiSafepay\PrestaShop\Services\SystemStatusService;
 use MultisafepayOfficial;
 use Configuration;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOptionInterface;
@@ -158,6 +159,7 @@ class SettingsBuilder
                     'general_settings' => $this->module->l('General settings', self::CLASS_NAME),
                     'payment_methods'  => $this->module->l('Payment methods', self::CLASS_NAME),
                     'order_status'     => $this->module->l('Order Statuses', self::CLASS_NAME),
+                    'system_status'     => $this->module->l('System Status', self::CLASS_NAME),
                     'support'          => $this->module->l('Support', self::CLASS_NAME),
                 ],
                 'input'  => [
@@ -359,6 +361,16 @@ class SettingsBuilder
                     [
                         'col'                 => '12',
                         'label'               => '',
+                        'name'                => 'System Status',
+                        'tab'                 => 'system_status',
+                        'type'                => 'html',
+                        'html_content'        => $this->getSystemStatusHtmlContent(),
+                        'section'             => 'multisafepay-system-status',
+                        'form_group_class'    => 'form-group-multisafepay-system-status',
+                    ],
+                    [
+                        'col'                 => '12',
+                        'label'               => '',
                         'name'                => 'Support',
                         'tab'                 => 'support',
                         'type'                => 'html',
@@ -400,6 +412,29 @@ class SettingsBuilder
         );
         return Context::getContext()->smarty->fetch(
             'module:multisafepayofficial/views/templates/admin/settings/payment-methods.tpl'
+        );
+    }
+
+
+    /**
+     * Return the view of the System Status tab of the settings page
+     *
+     * @return string
+     * @throws \SmartyException
+     */
+    public function getSystemStatusHtmlContent(): string
+    {
+        /** @var systemStatusService $systemStatusService */
+        $systemStatusService = $this->module->get('multisafepay.system_status_service');
+
+        Context::getContext()->smarty->assign(
+            [
+                'status_report' => $systemStatusService->createSystemStatusReport(),
+                'plain_status_report' => $systemStatusService->createPlainSystemStatusReport()
+            ]
+        );
+        return Context::getContext()->smarty->fetch(
+            'module:multisafepayofficial/views/templates/admin/settings/system-status.tpl'
         );
     }
 
@@ -569,21 +604,24 @@ class SettingsBuilder
     /**
      * Set values for the inputs.
      *
+     * @param bool $includePaymentOptionSettings
      * @return array
      */
-    public function getConfigFormValues(): array
+    public function getConfigFormValues(bool $includePaymentOptionSettings = true): array
     {
         $configFormValues = [];
         foreach (array_keys(self::getConfigFieldsAndDefaultValues()) as $configKey) {
             $configFormValues[$configKey] = Configuration::get($configKey);
         }
 
-        /** @var PaymentOptionService $paymentOptionService */
-        $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
-        /** @var BasePaymentOptionInterface $paymentOption */
-        foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
-            foreach ($paymentOption->getGatewaySettings() as $settingKey => $settings) {
-                $configFormValues[$settingKey] = $settings['value'] ?? '';
+        if ($includePaymentOptionSettings) {
+            /** @var PaymentOptionService $paymentOptionService */
+            $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
+            /** @var BasePaymentOptionInterface $paymentOption */
+            foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
+                foreach ($paymentOption->getGatewaySettings() as $settingKey => $settings) {
+                    $configFormValues[$settingKey] = $settings['value'] ?? '';
+                }
             }
         }
 
