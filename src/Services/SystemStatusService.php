@@ -82,7 +82,7 @@ class SystemStatusService
 
             // Symfony service only available in PrestaShop 1.7.7.0 or higher
             // Class exist in lower versions but is different and is not easy return active modules
-            if (version_compare(_PS_VERSION_, '1.7.7.0', '>=')) {
+            if (version_compare(_PS_VERSION_, '1.7.7.5', '>=')) {
                 $this->systemStatusReport['active_modules'] = $this->getActiveModules();
             }
         }
