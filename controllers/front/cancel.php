@@ -53,8 +53,8 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
                 Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
             }
 
-            // Prevent to cancel an order with current order status completed
-            if ($this->checkIfCurrentOrderStatusIsCompleted($order)) {
+            // Prevent to cancel an order if the current order status is not initialized or backorder unpaid
+            if (!$this->canOrderBeCancelled($order)) {
                 Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
             }
         }
@@ -84,14 +84,15 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
     }
 
     /**
-     * Check the current order status
+     * Check if the current order status is initialized or backorder unpaid
      *
      * @param Order $order
      * @return bool
      */
-    private function checkIfCurrentOrderStatusIsCompleted(Order $order): bool
+    private function canOrderBeCancelled(Order $order): bool
     {
-        if ((int)$order->current_state === (int)Configuration::get('PS_OS_PAYMENT')) {
+        if ((int)$order->current_state === (int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED') ||
+            (int)$order->current_state === (int)Configuration::get('PS_OS_OUTOFSTOCK_UNPAID')) {
             return true;
         }
         return false;
