@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.4.0
+Release date: Mar 17th, 2022
+
+### Added
++ PRES-313: Add System Report section in settings page
+
+### Fixed
++  PRES-310: Prevent cancel order via cancel_url if order have current status is not initialized or backorder unpaid
+
+
+***
+
 ## 5.3.0
 Release date: Mar 2nd, 2022
 
