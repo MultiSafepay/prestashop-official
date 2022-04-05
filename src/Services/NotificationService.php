@@ -330,8 +330,9 @@ class NotificationService
             case 'cancelled':
             case 'expired':
             case 'void':
-            case 'declined':
                 return Configuration::get('PS_OS_CANCELED');
+            case 'declined':
+                return Configuration::get('PS_OS_ERROR');
             case 'completed':
                 return Configuration::get('PS_OS_PAYMENT');
             case 'uncleared':
