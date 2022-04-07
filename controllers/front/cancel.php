@@ -20,6 +20,7 @@
  *
  */
 
+use MultiSafepay\Api\Transactions\Transaction;
 use MultiSafepay\PrestaShop\Helper\CancelOrderHelper;
 use MultiSafepay\PrestaShop\Helper\DuplicateCartHelper;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
@@ -64,8 +65,25 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
         // Duplicate cart
         DuplicateCartHelper::duplicateCart((new Cart(Tools::getValue('id_cart'))));
 
-        // Redirect to checkout page
-        Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+        /** @var \MultiSafepay\PrestaShop\Services\SdkService $sdkService */
+        $sdkService         = $this->get('multisafepay.sdk_service');
+        $transactionManager = $sdkService->getSdk()->getTransactionManager();
+
+        $transaction = $transactionManager->get(Tools::getValue('id_reference'));
+
+        if ($transaction->getStatus() !== Transaction::DECLINED) {
+            // Redirect to checkout page
+            Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+        }
+
+        $this->context->smarty->assign(
+            [
+                'layout'         => 'full-width-template',
+                'error_message'  => $this->l('Your transaction was declined, please try again')
+            ]
+        );
+
+        return $this->setTemplate('module:multisafepayofficial/views/templates/front/error.tpl');
     }
 
 
