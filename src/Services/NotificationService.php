@@ -327,25 +327,25 @@ class NotificationService
     public function getOrderStatusId(string $transactionStatus): string
     {
         switch ($transactionStatus) {
-            case 'cancelled':
-            case 'expired':
-            case 'void':
+            case Transaction::CANCELLED:
+            case Transaction::EXPIRED:
+            case Transaction::VOID:
                 return Configuration::get('PS_OS_CANCELED');
-            case 'declined':
+            case Transaction::DECLINED:
                 return Configuration::get('PS_OS_ERROR');
-            case 'completed':
+            case Transaction::COMPLETED:
                 return Configuration::get('PS_OS_PAYMENT');
-            case 'uncleared':
+            case Transaction::UNCLEARED:
                 return Configuration::get('MULTISAFEPAY_OFFICIAL_OS_UNCLEARED');
-            case 'refunded':
+            case Transaction::REFUNDED:
                 return Configuration::get('PS_OS_REFUND');
-            case 'partial_refunded':
+            case Transaction::PARTIAL_REFUNDED:
                 return Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_REFUNDED');
-            case 'chargedback':
+            case Transaction::CHARGEDBACK:
                 return Configuration::get('MULTISAFEPAY_OFFICIAL_OS_CHARGEBACK');
-            case 'shipped':
+            case Transaction::SHIPPED:
                 return Configuration::get('PS_OS_SHIPPING');
-            case 'initialized':
+            case Transaction::INITIALIZED:
             default:
                 return Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED');
         }
