@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.4.1
+Release date: Apr 7th, 2022
+
+### Fixed
++  PRES-322: Give declined transactions the "Payment error" status
++  PRES-323: Show declined error to the customer when using Payment Component
+
+
+***
+
 ## 5.4.0
 Release date: Mar 17th, 2022
 
