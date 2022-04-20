@@ -78,13 +78,8 @@ class SystemStatusService
                 'multisafepay_payment_method_settings' => $this->getMultiSafepayPaymentOptionsSettings(),
                 'overwritten_files'                    => $this->getOverwrittenMissingOrUpdatedFiles(),
                 'order_statuses_definitions'           => $this->getOrderStatusDefinitions(),
+                'active_modules'                       => $this->getActiveModules(),
             ];
-
-            // Symfony service only available in PrestaShop 1.7.7.0 or higher
-            // Class exist in lower versions but is different and is not easy return active modules
-            if (version_compare(_PS_VERSION_, '1.7.7.5', '>=')) {
-                $this->systemStatusReport['active_modules'] = $this->getActiveModules();
-            }
         }
         return $this->systemStatusReport;
     }
@@ -227,16 +222,19 @@ class SystemStatusService
      */
     public function getActiveModules(): array
     {
-
-        $installedModules = $this->getInstalledModulesInformation();
+        $installedModules = $this->module::getModulesInstalled();
 
         $activeModules = [
             'title' => 'Active plugins',
         ];
 
-        foreach ($installedModules as $key => $value) {
-            $activeModules['settings'][$key]['label'] = $value['name'];
-            $activeModules['settings'][$key]['value'] = $value['info'];
+        foreach ($installedModules as $installedModule) {
+            $module = $this->module::getInstanceByName($installedModule['name']);
+
+            $active = ((bool)$module->active ? "Enabled" : "Disabled");
+
+            $activeModules['settings'][$module->id]['label'] = $module->displayName;
+            $activeModules['settings'][$module->id]['value'] = "Version: $module->version. Status: $active. Author: $module->author.";
         }
 
         return $activeModules;
@@ -468,34 +466,6 @@ class SystemStatusService
         /** @var CheckMissingOrUpdatedFiles $checkMissingOrUpdatedFilesService */
         $checkMissingOrUpdatedFilesService = new CheckMissingOrUpdatedFiles();
         return $checkMissingOrUpdatedFilesService->getListOfUpdatedFiles()['updated'];
-    }
-
-    /**
-     * Return an array with basic information of the installed modules
-     *
-     * @return array
-     * @throws \Exception
-     */
-    private function getInstalledModulesInformation(): array
-    {
-        $installedModules = [];
-
-        /** @var ModuleRepository $moduleRepositoryService */
-        $moduleRepositoryService = $this->module->get('prestashop.core.admin.module.repository');
-
-        /** @var AddonsCollection $modules */
-        $modules = $moduleRepositoryService->getInstalledModulesCollection();
-
-        /** @var Module $module */
-        foreach ($modules as $key => $module) {
-            $installedModules[$key]['name'] = $module->get('displayName');
-            $moduleDescription = Tools::htmlentitiesUTF8($module->get('description'));
-            $moduleAuthor = $module->get('author') ? '. Author: ' . $module->get('author') : '';
-            $moduleVersion = $module->get('version') ? '. Version: ' . $module->get('version') : '';
-            $installedModules[$key]['info'] = $moduleDescription . $moduleAuthor . $moduleVersion;
-        }
-
-        return $installedModules;
     }
 
     /**
