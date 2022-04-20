@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.4.2
+Release date: Apr 20th, 2022
+
+### Fixed
++  PRES-332: Fix missing service error in settings page affecting PrestaShop 1.7.7.5
+
+
+***
+
 ## 5.4.1
 Release date: Apr 7th, 2022
 
