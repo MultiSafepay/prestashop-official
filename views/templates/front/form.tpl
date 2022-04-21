@@ -93,7 +93,11 @@
                         <label class="left">
                             <input type="checkbox" name="{$inputField.name|escape:'html':'UTF-8'}" >
                             {if isset($inputField.label)}
-                                {$inputField.label|escape:'html':'UTF-8'}
+                                {if isset($inputField.url)}
+                                    <a href="{$inputField.url}" target="_blank"> {$inputField.label|escape:'html':'UTF-8'}</a>
+                                {else}
+                                    {$inputField.label|escape:'html':'UTF-8'}
+                                {/if}
                             {/if}
                         </label>
                     </div>

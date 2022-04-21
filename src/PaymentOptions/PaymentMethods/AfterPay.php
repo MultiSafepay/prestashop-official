@@ -33,6 +33,11 @@ use Context;
 class AfterPay extends BasePaymentOption
 {
     public const CLASS_NAME = 'AfterPay';
+    public const DEFAULT_TERMS_AND_CONDITIONS = "https://www.afterpay.nl/en/about/pay-with-afterpay/payment-conditions";
+    public const NL_TERMS_AND_CONDITIONS = "https://www.afterpay.nl/nl/algemeen/betalen-met-afterpay/betalingsvoorwaarden";
+    public const BE_NL_TERMS_AND_CONDITIONS = "https://www.afterpay.be/be/footer/betalen-met-afterpay/betalingsvoorwaarden";
+    public const BE_FR_TERMS_AND_CONDITIONS = "https://www.afterpay.be/fr/footer/payer-avec-afterpay/conditions-de-paiement";
+
     protected $gatewayCode = 'AFTERPAY';
     protected $logo = 'afterpay.png';
     protected $hasConfigurableDirect = true;
@@ -52,7 +57,7 @@ class AfterPay extends BasePaymentOption
     public function getTransactionType(): string
     {
         $checkoutVars = Tools::getAllValues();
-        return (empty($checkoutVars['gender']) || empty($checkoutVars['birthday'])) ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
+        return (empty($checkoutVars['gender']) || empty($checkoutVars['birthday']) || !isset($checkoutVars['terms-conditions'])) ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
     }
 
     public function getDirectTransactionInputFields(): array
@@ -78,6 +83,12 @@ class AfterPay extends BasePaymentOption
                 'name'          => 'birthday',
                 'placeholder'   => $this->module->l('Birthday', self::CLASS_NAME),
                 'value'         => Context::getContext()->customer->birthday ?? '',
+            ],
+            [
+                'type'          => 'checkbox',
+                'name'          => 'terms-conditions',
+                'label'         => $this->module->l('I have read and agreed to the AfterPay payment terms.', self::CLASS_NAME),
+                'url'           => $this->getTermsAndConditionsUrl(Context::getContext()->language->getLocale()),
             ]
         ];
     }
@@ -99,5 +110,27 @@ class AfterPay extends BasePaymentOption
         }
 
         return $gatewayInfo;
+    }
+
+    /**
+     * @param string $locale
+     *
+     * @return string
+     */
+    private function getTermsAndConditionsUrl(string $locale): string
+    {
+        if ($locale === 'nl-NL') {
+            return self::NL_TERMS_AND_CONDITIONS;
+        }
+
+        if ($locale === 'be-NL') {
+            return self::BE_NL_TERMS_AND_CONDITIONS;
+        }
+
+        if ($locale === 'be-FR') {
+            return self::BE_FR_TERMS_AND_CONDITIONS;
+        }
+
+        return self::DEFAULT_TERMS_AND_CONDITIONS;
     }
 }
