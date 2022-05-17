@@ -230,11 +230,11 @@ class SystemStatusService
 
         foreach ($installedModules as $installedModule) {
             $module = $this->module::getInstanceByName($installedModule['name']);
-
-            $active = ((bool)$module->active ? "Enabled" : "Disabled");
-
-            $activeModules['settings'][$module->id]['label'] = $module->displayName;
-            $activeModules['settings'][$module->id]['value'] = "Version: $module->version. Status: $active. Author: $module->author.";
+            if ($module) {
+                $active = ((bool)$module->active ? "Enabled" : "Disabled");
+                $activeModules['settings'][$module->id]['label'] = $module->displayName;
+                $activeModules['settings'][$module->id]['value'] = "Version: $module->version. Status: $active. Author: $module->author.";
+            }
         }
 
         return $activeModules;
