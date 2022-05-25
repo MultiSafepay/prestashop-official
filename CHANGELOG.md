@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.5.0
+Release date: May 25th, 2022
+
+### Added
++ PRES-305: Add a new settings field to switch between order flows. Order can be created after or before the payment
++ DAVAMS-477: Add Alipay+ Payment Option
++ DAVAMS-467: Add a terms and conditions checkbox when AfterPay is set as direct 
+
+### Fixed
++ PRES-335: Fix error in system report section, when a module is active in database but files has been deleted
+
+***
+
 ## 5.4.2
 Release date: Apr 20th, 2022
 
