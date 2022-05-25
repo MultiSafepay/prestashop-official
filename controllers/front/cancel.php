@@ -35,7 +35,7 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
      */
     public function postProcess()
     {
-        if ($this->module->active == false || !Tools::getValue('id_reference') || !Tools::getValue('id_cart')) {
+        if ($this->module->active == false || !Tools::getValue('id_cart')) {
             if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
                 LoggerHelper::logWarning(
                     'It seems postProcess method of cancel controller is being called without the required parameters.'
@@ -48,22 +48,32 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
         /** @var PrestaShopCollection $orderCollection */
         $orderCollection = Order::getByReference(Tools::getValue('id_reference'));
 
-        foreach ($orderCollection as $order) {
-            // Prevent to cancel an order with different secure key
-            if (!$this->checkOrderSecureKey($order)) {
-                Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+        $cartId = Tools::getValue('id_cart');
+        $cart = new Cart($cartId);
+
+        // If order was created before payment, then we need to cancel the order and duplicate the cart
+        if ($cart->orderExists()) {
+            $orderCollection = new PrestaShopCollection('Order');
+            $orderCollection->where('id_cart', '=', $cartId);
+
+            foreach ($orderCollection->getResults() as $order) {
+                // Prevent to cancel an order with different secure key
+                if (!$this->checkOrderSecureKey($order)) {
+                    Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+                }
+
+                // Prevent to cancel an order if the current order status is not initialized or backorder unpaid
+                if (!$this->canOrderBeCancelled($order)) {
+                    Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+                }
             }
 
-            // Prevent to cancel an order if the current order status is not initialized or backorder unpaid
-            if (!$this->canOrderBeCancelled($order)) {
-                Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
-            }
+            // Cancel orders
+            CancelOrderHelper::cancelOrder($orderCollection);
+
+            // Duplicate cart
+            DuplicateCartHelper::duplicateCart($cart);
         }
-
-        // Cancel orders
-        CancelOrderHelper::cancelOrder($orderCollection);
-        // Duplicate cart
-        DuplicateCartHelper::duplicateCart((new Cart(Tools::getValue('id_cart'))));
 
         /** @var \MultiSafepay\PrestaShop\Services\SdkService $sdkService */
         $sdkService         = $this->get('multisafepay.sdk_service');

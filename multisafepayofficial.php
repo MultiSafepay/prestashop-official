@@ -26,15 +26,16 @@ if (!defined('_PS_VERSION_')) {
 
 require _PS_MODULE_DIR_ . 'multisafepayofficial/vendor/autoload.php';
 
+use MultiSafepay\Api\Transactions\UpdateRequest;
+use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
 use MultiSafepay\PrestaShop\Helper\Installer;
+use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\Uninstaller;
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\RefundService;
-use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Services\SdkService;
-use MultiSafepay\Api\Transactions\UpdateRequest;
-use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use Psr\Http\Client\ClientExceptionInterface;
 
 class MultisafepayOfficial extends PaymentModule
@@ -288,7 +289,18 @@ class MultisafepayOfficial extends PaymentModule
         $transactionManager = $sdkService->getSdk()->getTransactionManager();
         $updateOrder        = new UpdateRequest();
         $updateOrder->addData(['invoice_id'  => $orderInvoiceNumber]);
-        $transactionManager->update($order->reference, $updateOrder);
+
+        $orderId = $order->id_cart;
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_CREATE_ORDER_BEFORE_PAYMENT')) {
+            $orderId = $order->reference;
+        }
+
+        try {
+            $transactionManager->update((string) $orderId, $updateOrder);
+        } catch (ApiException $apiException) {
+            LoggerHelper::logAlert('Error when try to set the transaction as invoiced: ' . $apiException->getMessage());
+            return;
+        }
     }
 
     /**
@@ -302,17 +314,14 @@ class MultisafepayOfficial extends PaymentModule
      */
     public function hookActionOrderStatusPostUpdate(array $params): void
     {
-
         if ((int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_TRIGGER_SHIPPED') !== $params['newOrderStatus']->id) {
             return;
         }
 
         $order = new Order((int)$params['id_order']);
-
         if (!$order->module || $order->module !== 'multisafepayofficial') {
             return;
         }
-
         // Update order with invoice shipping information
         /** @var SdkService $sdkService */
         $sdkService         = $this->get('multisafepay.sdk_service');
@@ -326,7 +335,18 @@ class MultisafepayOfficial extends PaymentModule
                 'ship_date' => date('Y-m-d H:i:s')
             ]
         );
-        $transactionManager->update($order->reference, $updateOrder);
+
+        $orderId = $order->id_cart;
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_CREATE_ORDER_BEFORE_PAYMENT')) {
+            $orderId = $order->reference;
+        }
+
+        try {
+            $transactionManager->update((string) $orderId, $updateOrder);
+        } catch (ApiException $apiException) {
+            LoggerHelper::logAlert('Error when try to set the transaction as shipped: ' . $apiException->getMessage());
+            return;
+        }
     }
 
     /**

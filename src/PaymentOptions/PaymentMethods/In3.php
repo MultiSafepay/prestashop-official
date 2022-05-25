@@ -22,6 +22,7 @@
 
 namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
+use Cart;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BaseGatewayInfo;
@@ -97,14 +98,14 @@ class In3 extends BasePaymentOption
         ];
     }
 
-    public function getGatewayInfo(Order $order, array $data = []): ?GatewayInfoInterface
+    public function getGatewayInfo(Cart $cart, array $data = []): ?GatewayInfoInterface
     {
         if (empty($data['gender']) && empty($data['birthday'])) {
             return null;
         }
 
         $gatewayInfo = new Meta();
-        $gatewayInfo->addPhoneAsString((new Address($order->id_address_invoice))->phone);
+        $gatewayInfo->addPhoneAsString((new Address($cart->id_address_invoice))->phone);
         if (!empty($data['gender'])) {
             $gatewayInfo->addGenderAsString($data['gender']);
         }

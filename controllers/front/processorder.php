@@ -20,38 +20,42 @@
  *
  */
 
-namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
-use Cart;
-use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\QrCode;
-use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
-use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
-use Order;
-
-class IdealQr extends BasePaymentOption
+class MultisafepayOfficialProcessorderModuleFrontController extends ModuleFrontController
 {
-    public const CLASS_NAME = 'IdealQr';
-    protected $gatewayCode = 'IDEALQR';
-    protected $logo = 'ideal-qr.png';
 
-    /**
-     * @return string
-     */
-    public function getName(): string
+    public function __construct()
     {
-        return $this->module->l('iDEAL QR', self::CLASS_NAME);
+        parent::__construct();
+        $this->ajax = true;
     }
 
     /**
-     * @param Cart $cart
-     * @param array $data
-     * @return GatewayInfoInterface
+     * Process notification
      *
-     * @phpcs:disable -- Disable to avoid trigger a warning in validator about unused parameter
+     * @return void
+     * @throws JsonException
      */
-    public function getGatewayInfo(Cart $cart, array $data = []): GatewayInfoInterface
+    public function postProcess(): void
     {
-        return new QrCode();
-        // phpcs:enable
+        $transactionId = Tools::getValue('transactionid');
+        $cart = new Cart($transactionId);
+
+        if (! $cart->orderExists()) {
+            http_response_code(400);
+            exit;
+        }
+
+        $orderId = Order::getIdByCartId($cart->id);
+
+        $redirectUrl = Context::getContext()->link->getPageLink(
+            'order-confirmation',
+            null,
+            Context::getContext()->language->id,
+            'id_cart='.$cart->id.'&id_order='.$orderId.'&id_module='.$this->module->id.'&key='.Context::getContext(
+            )->customer->secure_key
+        );
+
+        exit(json_encode(['redirectUrl' => $redirectUrl], JSON_THROW_ON_ERROR));
     }
 }

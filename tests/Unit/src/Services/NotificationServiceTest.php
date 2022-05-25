@@ -24,6 +24,7 @@
 
 namespace MultiSafepay\Tests\Services;
 
+use MultiSafepay\PrestaShop\Services\NotExistingOrderNotificationService;
 use MultisafepayOfficial;
 use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Dirdeb;
@@ -56,8 +57,8 @@ class NotificationServiceTest extends BaseMultiSafepayTest
         );
 
         $mockPaymentOptionService->method('getMultiSafepayPaymentOption')->willReturn($mockDirDeb);
-        $mockNotificationService = $this->getMockBuilder(NotificationService::class)->setConstructorArgs(
-            [$mockMultisafepay, $mockSdk, $mockPaymentOptionService]
+        $mockNotificationService = $this->getMockBuilder(NotExistingOrderNotificationService::class)->setConstructorArgs(
+            [$mockMultisafepay, $mockSdk, $mockPaymentOptionService, $this->container->get('multisafepay.order_service')]
         )->onlyMethods([])->getMock();
 
         $this->notificationService = $mockNotificationService;

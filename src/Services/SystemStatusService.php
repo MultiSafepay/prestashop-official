@@ -290,6 +290,10 @@ class SystemStatusService
                     'label' => 'Confirmation Order Email',
                     'value' => $moduleSettingsValues['MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL'] ? 'Enabled' : 'Disabled',
                 ],
+                'order_flow' => [
+                    'label' => 'Order Flow',
+                    'value' => $moduleSettingsValues['MULTISAFEPAY_OFFICIAL_CREATE_ORDER_BEFORE_PAYMENT'] ? 'Create order before payment' : 'Create order after payment',
+                ],
             ],
         ];
 
@@ -512,8 +516,8 @@ class SystemStatusService
     {
         $output = [];
 
-        /** @var NotificationService $notificationService */
-        $notificationService = $this->module->get('multisafepay.notification_service');
+        /** @var ExistingOrderNotificationService $notificationService */
+        $notificationService = $this->module->get('multisafepay.existing_order_notification_service');
         $transactionStatuses = ['cancelled', 'expired', 'void', 'declined', 'completed', 'uncleared', 'refunded', 'partial_refunded', 'chargedback', 'shipped', 'initialized'];
         foreach ($transactionStatuses as $transactionStatus) {
             $orderStatusId = $notificationService->getOrderStatusId($transactionStatus);

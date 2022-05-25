@@ -23,6 +23,7 @@
 namespace MultiSafepay\PrestaShop\PaymentOptions\Base;
 
 use Carrier;
+use Cart;
 use Configuration;
 use Context;
 use Country;
@@ -407,14 +408,14 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     }
 
     /**
-     * @param Order $order
+     * @param Cart $cart
      * @param array $data
      *
      * @return GatewayInfoInterface|null
      *
      * @phpcs:disable -- Disable to avoid trigger a warning in validator about unused parameter
      */
-    public function getGatewayInfo(Order $order, array $data = []): ?GatewayInfoInterface
+    public function getGatewayInfo(Cart $cart, array $data = []): ?GatewayInfoInterface
     {
         // phpcs:enable
         return null;

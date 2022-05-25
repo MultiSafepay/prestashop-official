@@ -44,6 +44,11 @@ class PaymentOptionService
     public const PAYMENT_OPTIONS_DIR = _PS_ROOT_DIR_.'/modules/multisafepayofficial/src/PaymentOptions/PaymentMethods';
 
     /**
+     * @var array|null
+     */
+    private $paymentOptions = null;
+
+    /**
      * @var MultisafepayOfficial
      */
     private $module;
@@ -64,14 +69,18 @@ class PaymentOptionService
      */
     public function getMultiSafepayPaymentOptions(): array
     {
-        $paymentOptions = [];
-        foreach ($this->getPaymentOptionClassNamesFromDirectory() as $className) {
-            $paymentOptions[] = new $className($this->module);
+        if (! isset($this->paymentOptions)) {
+            $paymentOptions = [];
+            foreach ($this->getPaymentOptionClassNamesFromDirectory() as $className) {
+                $paymentOptions[] = new $className($this->module);
+            }
+            uasort($paymentOptions, function ($a, $b) {
+                return $a->getSortOrderPosition() - $b->getSortOrderPosition() ?: strcasecmp($a->getName(), $b->getName());
+            });
+            $this->paymentOptions = $paymentOptions;
         }
-        uasort($paymentOptions, function ($a, $b) {
-            return $a->getSortOrderPosition() - $b->getSortOrderPosition() ?: strcasecmp($a->getName(), $b->getName());
-        });
-        return $paymentOptions;
+
+        return $this->paymentOptions;
     }
 
     /**
@@ -85,8 +94,7 @@ class PaymentOptionService
             return new MultiSafepay($this->module);
         }
 
-        foreach ($this->getPaymentOptionClassNamesFromDirectory() as $className) {
-            $paymentOption = new $className($this->module);
+        foreach ($this->getMultiSafepayPaymentOptions() as $paymentOption) {
             if ($paymentOption->getGatewayCode() === $gatewayCode) {
                 return $paymentOption;
             }

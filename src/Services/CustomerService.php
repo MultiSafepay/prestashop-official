@@ -23,7 +23,9 @@
 namespace MultiSafepay\PrestaShop\Services;
 
 use Address as PrestaShopAddress;
+use Cart;
 use Country as PrestaShopCountry;
+use Customer;
 use Language;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\CustomerDetails;
 use MultiSafepay\ValueObject\Customer\Address;
@@ -42,12 +44,16 @@ use Tools;
 class CustomerService
 {
     /**
-     * @param Order $order
+     * @param Cart $cart
+     * @param Customer $customer
+     *
      * @return CustomerDetails
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
-    public function createCustomerDetails(Order $order): CustomerDetails
+    public function createCustomerDetails(Cart $cart, Customer $customer): CustomerDetails
     {
-        $invoiceAddress = $this->getCustomerAddress((int) $order->id_address_invoice);
+        $invoiceAddress = $this->getCustomerAddress((int) $cart->id_address_invoice);
 
         $customerAddress = $this->createAddress(
             $invoiceAddress->address1,
@@ -60,25 +66,29 @@ class CustomerService
 
         return $this->createCustomer(
             $customerAddress,
-            $order->getCustomer()->email,
+            $customer->email,
             $invoiceAddress->phone,
             $invoiceAddress->firstname,
             $invoiceAddress->lastname,
             $_SERVER['REMOTE_ADDR'] ?? null,
             $_SERVER['HTTP_USER_AGENT'] ?? null,
-            $this->getLanguageCode(Language::getIsoById((int) $order->id_lang)),
+            $this->getLanguageCode(Language::getIsoById((int) $cart->id_lang)),
             $invoiceAddress->company,
-            (string)$order->id_customer
+            (string)$customer->id
         );
     }
 
     /**
-     * @param Order $order
+     * @param Cart $cart
+     * @param Customer $customer
+     *
      * @return CustomerDetails
+     * @throws \PrestaShopDatabaseException
+     * @throws \PrestaShopException
      */
-    public function createDeliveryDetails(Order $order): CustomerDetails
+    public function createDeliveryDetails(Cart $cart, Customer $customer): CustomerDetails
     {
-        $shippingAddress = $this->getCustomerAddress((int) $order->id_address_delivery);
+        $shippingAddress = $this->getCustomerAddress((int) $cart->id_address_delivery);
 
         $deliveryAddress = $this->createAddress(
             $shippingAddress->address1,
@@ -91,13 +101,13 @@ class CustomerService
 
         return $this->createCustomer(
             $deliveryAddress,
-            $order->getCustomer()->email,
+            $customer->email,
             $shippingAddress->phone,
             $shippingAddress->firstname,
             $shippingAddress->lastname,
             $_SERVER['REMOTE_ADDR'] ?? null,
             $_SERVER['HTTP_USER_AGENT'] ?? null,
-            $this->getLanguageCode(Language::getIsoById((int) $order->id_lang)),
+            $this->getLanguageCode(Language::getIsoById((int) $cart->id_lang)),
             $shippingAddress->company
         );
     }

@@ -28,11 +28,13 @@ use Configuration;
 use Context;
 use Country;
 use Currency;
+use Customer;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GoogleAnalytics;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PaymentOptions;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PluginDetails;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\SecondChance;
+use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultisafepayOfficial;
@@ -78,71 +80,73 @@ class OrderService
      *
      * @param MultisafepayOfficial $module
      * @param CustomerService $customerService
-     * @param ShoppingCartService $shoppingCartService
+     * @param ShoppingCartService $cartService
      */
     public function __construct(
         MultisafepayOfficial $module,
         CustomerService $customerService,
-        ShoppingCartService $shoppingCartService,
+        ShoppingCartService $cartService,
         SdkService $sdkService
     ) {
         $this->module              = $module;
         $this->customerService     = $customerService;
-        $this->shoppingCartService = $shoppingCartService;
+        $this->shoppingCartService = $cartService;
         $this->sdkService          = $sdkService;
     }
 
     /**
-     * @param PrestaShopCollection $orderCollection
+     * @param Cart $cart
+     * @param Customer $customer
      * @param BasePaymentOption $paymentOption
      *
      * @return OrderRequest
      */
     public function createOrderRequest(
-        PrestaShopCollection $orderCollection,
-        BasePaymentOption $paymentOption
+        Cart $cart,
+        Customer $customer,
+        BasePaymentOption $paymentOption,
+        ?Order $order = null
     ): OrderRequest {
-
-        /** @var Order $firstOrder */
-        $firstOrder = $orderCollection->getFirst();
-
-        /** @var Cart $shoppingCart */
-        $shoppingCart = Cart::getCartByOrderId($firstOrder->id);
-
-        $orderRequestArguments = $this->getOrderRequestArgumentsByOrderCollection($orderCollection);
-        $orderRequest          = new OrderRequest();
+        $currencyCode = $this->getCurrencyIsoCodeById($cart->id_currency);
+        $orderRequest = new OrderRequest();
         $orderRequest
-            ->addOrderId((string)$orderRequestArguments['order_id'])
+            ->addOrderId((string)$cart->id)
             ->addMoney(
                 MoneyHelper::createMoney(
-                    (float)$orderRequestArguments['order_total'],
-                    $orderRequestArguments['currency_code']
+                    (float)$cart->getOrderTotal(),
+                    $currencyCode
                 )
             )
             ->addGatewayCode($paymentOption->getGatewayCode())
             ->addType($paymentOption->getTransactionType())
             ->addPluginDetails($this->createPluginDetails())
-            ->addDescriptionText($this->getOrderDescriptionText($orderRequestArguments['order_id']))
-            ->addCustomer($this->customerService->createCustomerDetails($firstOrder))
-            ->addPaymentOptions($this->createPaymentOptions($firstOrder))
+            ->addDescriptionText($this->getOrderDescriptionText($order->reference ?? (string)$cart->id))
+            ->addCustomer($this->customerService->createCustomerDetails($cart, $customer))
+            ->addPaymentOptions($this->createPaymentOptions($cart, $customer->secure_key, $order))
             ->addSecondsActive($this->getTimeActive())
             ->addSecondChance(
                 (new SecondChance())->addSendEmail((bool)Configuration::get('MULTISAFEPAY_OFFICIAL_SECOND_CHANCE'))
-            );
+            )
+            ->addData(['var2' => $cart->id]);
 
         if (!(bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DISABLE_SHOPPING_CART')) {
             $orderRequest->addShoppingCart(
                 $this->shoppingCartService->createShoppingCart(
-                    $shoppingCart,
-                    $orderRequestArguments['currency_code'],
-                    $orderRequestArguments['round_type'],
-                    $orderRequestArguments['weight_unit']
+                    $cart,
+                    $currencyCode,
+                    (int) Configuration::get('PS_ROUND_TYPE'),
+                    Configuration::get('PS_WEIGHT_UNIT')
                 )
             );
         }
 
-        if ($orderRequestArguments['shipping_total'] > 0) {
-            $orderRequest->addDelivery((new CustomerService())->createDeliveryDetails($firstOrder));
+        if ($cart->getTotalShippingCost() > 0) {
+            $orderRequest->addDelivery($this->customerService->createDeliveryDetails($cart, $customer));
+        }
+
+        // If the order exist we use the order reference as transaction id
+        if (isset($order)) {
+            $orderRequest->addOrderId($order->reference);
         }
 
         if (Configuration::get('MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID')) {
@@ -151,7 +155,7 @@ class OrderService
             );
         }
 
-        $gatewayInfo = $paymentOption->getGatewayInfo($firstOrder, Tools::getAllValues());
+        $gatewayInfo = $paymentOption->getGatewayInfo($cart, Tools::getAllValues());
         if ($gatewayInfo !== null) {
             $orderRequest->addGatewayInfo($gatewayInfo);
         }
@@ -306,36 +310,45 @@ class OrderService
     }
 
     /**
-     * @param Order $order
+     * @param Cart $cart
+     * @param string $secureKeyCustomer
      *
-     * @return  PaymentOptions
+     * @return PaymentOptions
      *
      * @codingStandardsIgnoreStart
      */
-    private function createPaymentOptions(Order $order): PaymentOptions
+    private function createPaymentOptions(Cart $cart, string $secureKeyCustomer, ?Order $order): PaymentOptions
     {
         $paymentOptions = new PaymentOptions();
+
+        $redirectUrl = Context::getContext()->link->getModuleLink('multisafepayofficial', 'callback', [], true);
+        $cancelUrl = Context::getContext()->link->getPageLink('order', true, null, ['step' => '3']);
+
+        if (isset($order)) {
+            $redirectUrl = Context::getContext()->link->getPageLink(
+                'order-confirmation',
+                null,
+                Context::getContext()->language->id,
+                'id_cart='.$cart->id.'&id_order='.$order->id.'&id_module='.$this->module->id.'&key='.$secureKeyCustomer
+            );
+
+            $cancelUrl = Context::getContext()->link->getModuleLink(
+                'multisafepayofficial',
+                'cancel',
+                ['id_cart' => $cart->id, 'id_reference' => $order->reference, 'key' => Context::getContext()->customer->secure_key],
+                true
+            );
+        }
 
         return $paymentOptions
             ->addNotificationUrl(
                 Context::getContext()->link->getModuleLink('multisafepayofficial', 'notification', [], true)
             )
             ->addCancelUrl(
-                Context::getContext()->link->getModuleLink(
-                    'multisafepayofficial',
-                    'cancel',
-                    ['id_cart' => $order->id_cart, 'id_reference' => $order->reference, 'key' => Context::getContext()->customer->secure_key],
-                    true
-                )
+                $cancelUrl
             )
             ->addRedirectUrl(
-                Context::getContext()->link->getPageLink(
-                    'order-confirmation',
-                    null,
-                    Context::getContext()->language->id,
-                    'id_cart='.$order->id_cart.'&id_order='.$order->id.'&id_module='.$this->module->id.'&key='.Context::getContext(
-                    )->customer->secure_key
-                )
+                $redirectUrl
             );
     }
 
@@ -394,5 +407,70 @@ class OrderService
         }
 
         return $this->paymentComponentApiToken;
+    }
+
+    /**
+     * @param Cart $cart
+     * @param int $orderStateId
+     * @param float $amount
+     * @param string $paymentMethod
+     * @param string $secureKey
+     *
+     * @throws \PrestaShopException
+     */
+    public function validateOrder(
+        Cart $cart,
+        int $orderStateId,
+        float $amount,
+        string $paymentMethod,
+        string $secureKey,
+        array $extraVars = []
+    ): void {
+        // If order already exist we don't have to validate it again
+        if ($cart->OrderExists()) {
+            return;
+        }
+
+        $this->module->validateOrder(
+            $cart->id,
+            $orderStateId,
+            $amount,
+            $paymentMethod,
+            null,
+            array_merge(['send_email' => (Configuration::get('MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL') ?? false)], $extraVars),
+            $cart->id_currency, // @phpstan-ignore-line
+            false,
+            $secureKey // @phpstan-ignore-line
+        );
+
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
+            $orderCollection = new PrestaShopCollection('Order');
+            $orderCollection->where('id_cart', '=', $cart->id);
+
+            $ordersIds = $this->getOrdersIdsFromCollection($orderCollection);
+            LoggerHelper::logInfo(
+                'Order with Cart ID:'.$cart->id.' has been validated and as result the following orders IDS: '.implode(
+                    ',',
+                    $ordersIds
+                ).' has been registered.'
+            );
+        }
+    }
+
+    /**
+     * Return an array of Orders IDs for the given PrestaShopCollection
+     *
+     * @param PrestaShopCollection $orderCollection
+     *
+     * @return array
+     */
+    public function getOrdersIdsFromCollection(PrestaShopCollection $orderCollection): array
+    {
+        $ordersIds = [];
+        foreach ($orderCollection->getResults() as $order) {
+            $ordersIds[] = $order->id;
+        }
+
+        return $ordersIds;
     }
 }

@@ -46,3 +46,4 @@ parameters:
     - '#Call to function is_array\(\) with Currency will always evaluate to false.#'
     - '#Parameter \#1 \$id of class Customer constructor expects null, int given.#'
     - '#Negated boolean expression is always false.#'
+    - '#Parameter \#9 \$secure_key of method [a-zA-Z0-9\\_]+::validateOrder\(\) expects bool, string given.#'

@@ -65,76 +65,90 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
         }
 
         $selectedPaymentOption = $this->getSelectedPaymentOption();
-
-        try {
-            $this->module->validateOrder(
-                $this->context->cart->id,
-                Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED'),
-                0,
-                $selectedPaymentOption->getFrontEndName(),
-                null,
-                ['send_email' => (Configuration::get('MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL') ?? false)],
-                $this->context->cart->id_currency,
-                false,
-                $this->context->customer->secure_key
-            );
-        } catch (PrestaShopException $prestaShopException) {
-            LoggerHelper::logError('Error when try to create an order using Cart ID '.$this->context->cart->id);
-            LoggerHelper::logError($prestaShopException->getMessage());
-            Tools::redirectLink($this->context->link->getPageLink('order', true, null, ['step' => '3']));
-        }
-
-        $orderCollection = new PrestaShopCollection('Order');
-        $orderCollection->where('id_cart', '=', $this->context->cart->id);
-
-        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-            $ordersIds = $this->getOrdersIdsFromCollection($orderCollection);
-            LoggerHelper::logInfo(
-                'Order with Cart ID:'.$this->context->cart->id.' has been validated and as result the following orders IDS: '.implode(
-                    ',',
-                    $ordersIds
-                ).' has been registered.'
-            );
-        }
+        /** @var Cart $cart */
+        $cart     = $this->context->cart;
+        $customer = new Customer($cart->id_customer);
 
         /** @var OrderService $orderService */
         $orderService = $this->get('multisafepay.order_service');
+
+        $order = null;
+
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_CREATE_ORDER_BEFORE_PAYMENT')) {
+            try {
+                $orderService->validateOrder(
+                    $cart,
+                    (int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED'),
+                    0,
+                    $selectedPaymentOption->getFrontEndName(),
+                    $this->context->customer->secure_key,
+                );
+
+                $orderCollection = new PrestaShopCollection('Order');
+                $orderCollection->where('id_cart', '=', $this->context->cart->id);
+
+                /** @var Order $order */
+                $order = $orderCollection->getFirst();
+            } catch (PrestaShopException $prestaShopException) {
+                LoggerHelper::logError('Error when try to create an order using Cart ID '.$this->context->cart->id);
+                LoggerHelper::logError($prestaShopException->getMessage());
+                Tools::redirectLink($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+            }
+        }
+
         /** @var OrderRequest $orderRequest */
-        $orderRequest = $orderService->createOrderRequest($orderCollection, $selectedPaymentOption);
+        $orderRequest = $orderService->createOrderRequest($cart, $customer, $selectedPaymentOption, $order);
 
         if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
             LoggerHelper::logInfo(
                 'An OrderRequest for the Cart ID: '.$this->context->cart->id.' has been created and contains the following information: '.json_encode(
-                    $orderRequest->getData()
+                    $orderRequest->getData(),
+                    JSON_THROW_ON_ERROR
                 )
             );
         }
 
         try {
-            $transactionManager    = ((new SdkService())->getSdk())->getTransactionManager();
-            $transaction = $transactionManager->create($orderRequest);
+            /** @var SdkService $sdkService */
+            $sdkService         = $this->get('multisafepay.sdk_service');
+            $transactionManager = $sdkService->getSdk()->getTransactionManager();
+            $transaction        = $transactionManager->create($orderRequest);
         } catch (ApiException $apiException) {
-            LoggerHelper::logError('Error when try to create a MultiSafepay transaction using the following OrderRequest data: ' . json_encode($orderRequest->getData()));
+            LoggerHelper::logError(
+                'Error when try to create a MultiSafepay transaction using the following OrderRequest data: '.json_encode(
+                    $orderRequest->getData(),
+                    JSON_THROW_ON_ERROR
+                )
+            );
             LoggerHelper::logError($apiException->getMessage());
-
-            // Cancel orders
-            CancelOrderHelper::cancelOrder($orderCollection);
-
-            // Duplicate cart
-            DuplicateCartHelper::duplicateCart((new Cart($this->context->cart->id)));
 
             $this->context->smarty->assign(
                 [
-                    'layout'         => 'full-width-template',
-                    'error_message'  => $apiException->getMessage()
+                    'layout'        => 'full-width-template',
+                    'error_message' => $apiException->getMessage(),
                 ]
             );
+
+            if (!Configuration::get('MULTISAFEPAY_OFFICIAL_CREATE_ORDER_BEFORE_PAYMENT')) {
+                return $this->setTemplate('module:multisafepayofficial/views/templates/front/error.tpl');
+            }
+
+            if (isset($orderCollection) && $orderCollection->count() > 0) {
+                // Cancel orders
+                CancelOrderHelper::cancelOrder($orderCollection);
+
+                // Duplicate cart
+                DuplicateCartHelper::duplicateCart((new Cart($this->context->cart->id)));
+            }
 
             return $this->setTemplate('module:multisafepayofficial/views/templates/front/error.tpl');
         }
 
         if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-            LoggerHelper::logInfo('Ending payment process. A transaction has been created for Cart ID: ' . $this->context->cart->id . ' with payment link ' . $transaction->getPaymentUrl());
+            LoggerHelper::logInfo(
+                'A transaction has been created for Cart ID: '.$this->context->cart->id.' with payment link '.$transaction->getPaymentUrl(
+                )
+            );
         }
 
         Tools::redirect($transaction->getPaymentUrl());
@@ -154,6 +168,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
                 break;
             }
         }
+
         return $isValid;
     }
 
@@ -178,23 +193,6 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
     }
 
     /**
-     * Return an array of Orders IDs for the given PrestaShopCollection
-     *
-     * @param PrestaShopCollection $orderCollection
-     *
-     * @return array
-     */
-    private function getOrdersIdsFromCollection(PrestaShopCollection $orderCollection): array
-    {
-        $ordersIds = [];
-        foreach ($orderCollection->getResults() as $order) {
-            $ordersIds[] = $order->id;
-        }
-
-        return $ordersIds;
-    }
-
-    /**
      * Return the PaymentOption selected in checkout
      *
      * @return BasePaymentOption
@@ -205,7 +203,8 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
         /** @var PaymentOptionService $paymentOptionService */
         $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
         /** @var BasePaymentOption $paymentOption */
-        $paymentOption        = $paymentOptionService->getMultiSafepayPaymentOption(Tools::getValue('gateway'));
+        $paymentOption = $paymentOptionService->getMultiSafepayPaymentOption(Tools::getValue('gateway'));
+
         return $paymentOption;
     }
 }

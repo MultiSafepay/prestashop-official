@@ -74,26 +74,27 @@ class SettingsBuilder
     public static function getConfigFieldsAndDefaultValues(): array
     {
         return [
-            'MULTISAFEPAY_OFFICIAL_TEST_MODE'                => ['default' => '0'],
-            'MULTISAFEPAY_OFFICIAL_API_KEY'                  => ['default' => ''],
-            'MULTISAFEPAY_OFFICIAL_TEST_API_KEY'             => ['default' => ''],
-            'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE'        => ['default' => '30'],
-            'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT'         => ['default' => self::DAYS],
-            'MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID'      => ['default' => ''],
-            'MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION'        => ['default' => 'Payment for order: {order_reference}'],
-            'MULTISAFEPAY_OFFICIAL_OS_TRIGGER_SHIPPED'       => ['default' => Configuration::get('PS_OS_SHIPPING')],
-            'MULTISAFEPAY_OFFICIAL_DEBUG_MODE'               => ['default' => '0'],
-            'MULTISAFEPAY_OFFICIAL_SECOND_CHANCE'            => ['default' => '1'],
-            'MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL' => ['default' => '1'],
-            'MULTISAFEPAY_OFFICIAL_DISABLE_SHOPPING_CART'    => ['default' => '0'],
-            'MULTISAFEPAY_OFFICIAL_OS_INITIALIZED'           => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED')],
-            'MULTISAFEPAY_OFFICIAL_OS_COMPLETED'             => ['default' => Configuration::get('PS_OS_PAYMENT')],
-            'MULTISAFEPAY_OFFICIAL_OS_UNCLEARED'             => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_UNCLEARED')],
-            'MULTISAFEPAY_OFFICIAL_OS_RESERVED'              => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED')],
-            'MULTISAFEPAY_OFFICIAL_OS_CHARGEBACK'            => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_CHARGEBACK')],
-            'MULTISAFEPAY_OFFICIAL_OS_REFUNDED'              => ['default' => Configuration::get('PS_OS_REFUND')],
-            'MULTISAFEPAY_OFFICIAL_OS_SHIPPED'               => ['default' => Configuration::get('PS_OS_SHIPPING')],
-            'MULTISAFEPAY_OFFICIAL_OS_PARTIAL_REFUNDED'      => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_REFUNDED')],
+            'MULTISAFEPAY_OFFICIAL_TEST_MODE'                   => ['default' => '0'],
+            'MULTISAFEPAY_OFFICIAL_API_KEY'                     => ['default' => ''],
+            'MULTISAFEPAY_OFFICIAL_TEST_API_KEY'                => ['default' => ''],
+            'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE'           => ['default' => '30'],
+            'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT'            => ['default' => self::DAYS],
+            'MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID'         => ['default' => ''],
+            'MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION'           => ['default' => 'Payment for order: {order_reference}'],
+            'MULTISAFEPAY_OFFICIAL_OS_TRIGGER_SHIPPED'          => ['default' => Configuration::get('PS_OS_SHIPPING')],
+            'MULTISAFEPAY_OFFICIAL_DEBUG_MODE'                  => ['default' => '0'],
+            'MULTISAFEPAY_OFFICIAL_SECOND_CHANCE'               => ['default' => '1'],
+            'MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL'    => ['default' => '1'],
+            'MULTISAFEPAY_OFFICIAL_OS_INITIALIZED'              => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED')],
+            'MULTISAFEPAY_OFFICIAL_OS_COMPLETED'                => ['default' => Configuration::get('PS_OS_PAYMENT')],
+            'MULTISAFEPAY_OFFICIAL_OS_UNCLEARED'                => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_UNCLEARED')],
+            'MULTISAFEPAY_OFFICIAL_OS_RESERVED'                 => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED')],
+            'MULTISAFEPAY_OFFICIAL_OS_CHARGEBACK'               => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_CHARGEBACK')],
+            'MULTISAFEPAY_OFFICIAL_OS_REFUNDED'                 => ['default' => Configuration::get('PS_OS_REFUND')],
+            'MULTISAFEPAY_OFFICIAL_OS_SHIPPED'                  => ['default' => Configuration::get('PS_OS_SHIPPING')],
+            'MULTISAFEPAY_OFFICIAL_OS_PARTIAL_REFUNDED'         => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_REFUNDED')],
+            'MULTISAFEPAY_OFFICIAL_CREATE_ORDER_BEFORE_PAYMENT' => ['default' => '1'],
+            'MULTISAFEPAY_OFFICIAL_DISABLE_SHOPPING_CART'       => ['default' => '0'],
         ];
     }
 
@@ -247,10 +248,31 @@ class SettingsBuilder
                     [
                         'type'    => 'switch',
                         'tab'     => 'general_settings',
+                        'label'   => $this->module->l('Create order before payment', self::CLASS_NAME),
+                        'name'    => 'MULTISAFEPAY_OFFICIAL_CREATE_ORDER_BEFORE_PAYMENT',
+                        'is_bool' => true,
+                        'desc'    => $this->module->l('If turned on an order in the PrestaShop backend will be created once the customer has initiated payment, but not yet actually paid. If this is off the order will be created after the payment has been made', self::CLASS_NAME),
+                        'values'  => [
+                            [
+                                'id'    => 'active_on',
+                                'value' => true,
+                                'label' => $this->module->l('Enabled', self::CLASS_NAME),
+                            ],
+                            [
+                                'id'    => 'active_off',
+                                'value' => false,
+                                'label' => $this->module->l('Disabled', self::CLASS_NAME),
+                            ],
+                        ],
+                        'section' => 'default'
+                    ],
+                    [
+                        'type'    => 'switch',
+                        'tab'     => 'general_settings',
                         'label'   => $this->module->l('Send confirmation order email', self::CLASS_NAME),
                         'name'    => 'MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL',
                         'is_bool' => true,
-                        'desc'    => $this->module->l('Send an email to the customer with the order details when a customer initiates an order, but has not yet completed the payment.', self::CLASS_NAME),
+                        'desc'    => $this->module->l('If turned off, it will disable the confirmation order email. It can be desirable when the order in PrestaShop is being created before the payment is completed.', self::CLASS_NAME),
                         'values'  => [
                             [
                                 'id'    => 'active_on',

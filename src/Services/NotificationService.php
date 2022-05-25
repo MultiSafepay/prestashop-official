@@ -22,7 +22,9 @@
 
 namespace MultiSafepay\PrestaShop\Services;
 
+use Cart;
 use Configuration;
+use Customer;
 use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\Api\Transactions\Transaction;
 use MultiSafepay\Exception\ApiException;
@@ -34,6 +36,7 @@ use Order;
 use OrderDetail;
 use OrderHistory;
 use OrderPayment;
+use PrestaShopCollection;
 use PrestaShopException;
 use Tools;
 use OrderInvoice;
@@ -44,22 +47,27 @@ use Cache;
  *
  * @package MultiSafepay\PrestaShop\Services
  */
-class NotificationService
+abstract class NotificationService
 {
     /**
      * @var MultisafepayOfficial
      */
-    private $module;
+    protected $module;
 
     /**
      * @var SdkService
      */
-    private $sdkService;
+    protected $sdkService;
 
     /**
      * @var PaymentOptionService
      */
-    private $paymentOptionService;
+    protected $paymentOptionService;
+
+    /**
+     * @var OrderService
+     */
+    protected $orderService;
 
     /**
      * NotificationService constructor.
@@ -70,19 +78,29 @@ class NotificationService
      *
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
-    public function __construct(MultisafepayOfficial $module, SdkService $sdkService, PaymentOptionService $paymentOptionService)
+    public function __construct(MultisafepayOfficial $module, SdkService $sdkService, PaymentOptionService $paymentOptionService, OrderService $orderService)
     {
         $this->module = $module;
         $this->sdkService = $sdkService;
         $this->paymentOptionService = $paymentOptionService;
+        $this->orderService = $orderService;
     }
 
     /**
-     * @param string $body
+     * @param TransactionResponse $transaction
+     * @param Cart $cart
      * @return void
      * @throws PrestaShopException
      */
-    public function processNotification(string $body): void
+    abstract public function processNotification(TransactionResponse $transaction, Cart $cart): void;
+
+    /**
+     * @param string $body
+     *
+     * @return TransactionResponse
+     * @throws PrestaShopException
+     */
+    public function getTransactionFromBody(string $body): TransactionResponse
     {
         if (!Tools::getValue('transactionid') || empty(Tools::file_get_contents('php://input'))) {
             $message = "It seems the notification URL has been triggered but does not contain the required information";
@@ -96,66 +114,94 @@ class NotificationService
             throw new PrestaShopException($message);
         }
 
-        $transaction = $this->getTransactionFromPostNotification($body);
-        $orderCollection = Order::getByReference(Tools::getValue('transactionid'));
+        try {
+            return new TransactionResponse(json_decode($body, true), $body);
+        } catch (ApiException $apiException) {
+            LoggerHelper::logError($apiException->getMessage());
+            throw new PrestaShopException($apiException->getMessage());
+        }
+    }
 
-        /** @var Order $order */
-        foreach ($orderCollection->getResults() as $order) {
-            if (!$order->id) {
-                $message = "It seems a notification is trying to process an order which does not exist. Transaction ID received is " . Tools::getValue('transactionid');
-                LoggerHelper::logWarning($message);
-                throw new PrestaShopException($message);
-            }
+    /**
+     * @param Order $order
+     * @param TransactionResponse $transaction
+     *
+     * @return bool
+     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     */
+    public function shouldStatusBeUpdated(Order $order, TransactionResponse $transaction): bool
+    {
+        if (!$order->id) {
+            $message = "It seems a notification is trying to process an order which does not exist. Transaction ID received is " . Tools::getValue('transactionid');
+            LoggerHelper::logWarning($message);
+            throw new PrestaShopException($message);
+        }
 
-            if ($order->module && $order->module !== 'multisafepayofficial') {
-                $message = "It seems a notification is trying to process an order processed by another payment method. Transaction ID received is " . Tools::getValue('transactionid');
-                LoggerHelper::logWarning($message);
-                throw new PrestaShopException($message);
-            }
+        if ($order->module && $order->module !== 'multisafepayofficial') {
+            $message = "It seems a notification is trying to process an order processed by another payment method. Transaction ID received is " . Tools::getValue('transactionid');
+            LoggerHelper::logWarning($message);
+            throw new PrestaShopException($message);
+        }
 
-            // If the PrestaShop order status is the same as the one received in the notification
-            if ((int)$order->current_state === (int)$this->getOrderStatusId($transaction->getStatus())) {
-                continue;
-            }
-
-            // If transaction status is initialized, but the current order status is PS_OS_OUTOFSTOCK_UNPAID
-            // because this one changes quickly after order creation when there aren't products in stock
-            if (Transaction::INITIALIZED === $transaction->getStatus() && (int)$order->current_state === (int)Configuration::get('PS_OS_OUTOFSTOCK_UNPAID')) {
-                if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-                    LoggerHelper::logInfo('A notification has been received but is being ignored since the transaction status is initialized, and the current order status is PS_OS_OUTOFSTOCK_UNPAID');
-                }
-                continue;
-            }
-
-            // If transaction status is completed, but the current order status is PS_OS_OUTOFSTOCK_PAID
-            // because this one changes quickly when payment is completed and there aren't products in stock
-            if (Transaction::COMPLETED === $transaction->getStatus() && (int)$order->current_state === (int)Configuration::get('PS_OS_OUTOFSTOCK_PAID')) {
-                if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-                    LoggerHelper::logInfo('A notification has been received but is being ignored since the transaction status is completed, and the current order status is PS_OS_OUTOFSTOCK_PAID');
-                }
-                continue;
-            }
-
-            // If the PrestaShop order status is considered a final status
-            if ($this->isFinalStatus((int)$order->current_state)) {
-                $message = "It seems a notification is trying to process an order which already have a final order status defined. For this reason notification is being ignored. Transaction ID received is " . Tools::getValue('transactionid') . " with status " . $transaction->getStatus();
-                LoggerHelper::logWarning($message);
-                OrderMessageHelper::addMessage($order, $message);
-                continue;
-            }
-
-            // If the payment method of the PrestaShop order is not the same than the one received in the notification
-            $paymentMethodName = $this->getPaymentMethodNameFromTransaction($transaction);
-            if ($order->payment !== $paymentMethodName) {
-                $this->updateOrderPaymentMethod($order, $paymentMethodName);
-            }
-
-            // Set new order status and set transaction id within the order information
-            $this->updateOrderData($order, $transaction);
-
+        // If transaction status is initialized, but the current order status is PS_OS_OUTOFSTOCK_UNPAID
+        // because this one changes quickly after order creation when there aren't products in stock
+        if (Transaction::INITIALIZED === $transaction->getStatus() && (int)$order->current_state === (int)Configuration::get('PS_OS_OUTOFSTOCK_UNPAID')) {
             if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-                LoggerHelper::logInfo('A notification has been processed for order ID: ' . $order->id . ' with status: ' . $transaction->getStatus() . ' and PSP ID: ' . $transaction->getTransactionId());
+                LoggerHelper::logInfo('A notification has been received but is being ignored since the transaction status is initialized, and the current order status is PS_OS_OUTOFSTOCK_UNPAID');
             }
+            return false;
+        }
+
+        // If transaction status is completed, but the current order status is PS_OS_OUTOFSTOCK_PAID
+        // because this one changes quickly when payment is completed and there aren't products in stock
+        if (Transaction::COMPLETED === $transaction->getStatus() && (int)$order->current_state === (int)Configuration::get('PS_OS_OUTOFSTOCK_PAID')) {
+            if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
+                LoggerHelper::logInfo('A notification has been received but is being ignored since the transaction status is completed, and the current order status is PS_OS_OUTOFSTOCK_PAID');
+            }
+            return false;
+        }
+
+        // If the PrestaShop order status is considered a final status
+        if ($this->isFinalStatus((int)$order->current_state)) {
+            $message = "It seems a notification is trying to process an order which already have a final order status defined. For this reason notification is being ignored. Transaction ID received is " . Tools::getValue('transactionid') . " with status " . $transaction->getStatus();
+            LoggerHelper::logWarning($message);
+            OrderMessageHelper::addMessage($order, $message);
+            return false;
+        }
+
+        // If the PrestaShop order status is the same as the one received in the notification
+        if ((int)$order->current_state === (int)$this->getOrderStatusId($transaction->getStatus())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param Order $order
+     * @param TransactionResponse $transaction
+     *
+     * @throws PrestaShopException
+     * @throws \PrestaShopDatabaseException
+     */
+    protected function processNotificationForOrder(Order $order, TransactionResponse $transaction): void
+    {
+        if (! $this->shouldStatusBeUpdated($order, $transaction)) {
+            return;
+        }
+
+        // If the payment method of the PrestaShop order is not the same than the one received in the notification
+        $paymentMethodName = $this->getPaymentMethodNameFromTransaction($transaction);
+        if ($order->payment !== $paymentMethodName) {
+            $this->updateOrderPaymentMethod($order, $paymentMethodName);
+        }
+
+        // Set new order status and set transaction id within the order information
+        $this->updateOrderData($order, $transaction);
+
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
+            LoggerHelper::logInfo('A notification has been processed for order ID: ' . $order->id . ' with status: ' . $transaction->getStatus() . ' and PSP ID: ' . $transaction->getTransactionId());
         }
     }
 
@@ -166,7 +212,7 @@ class NotificationService
      * @param TransactionResponse $transaction
      * @return void
      */
-    private function updateOrderData(Order $order, TransactionResponse $transaction): void
+    protected function updateOrderData(Order $order, TransactionResponse $transaction): void
     {
         $orderStatusId     = (int)$this->getOrderStatusId($transaction->getStatus());
         $history           = new OrderHistory();
@@ -267,7 +313,7 @@ class NotificationService
      * @param Order $order
      * @param string $paymentMethodName
      */
-    private function updateOrderPaymentMethod(Order $order, string $paymentMethodName): void
+    protected function updateOrderPaymentMethod(Order $order, string $paymentMethodName): void
     {
         // There is a special case for orders initialized with "Credit card" payment method.
         // Notification will return with the name of the gateway instead of credit card
@@ -361,5 +407,26 @@ class NotificationService
     {
         $finalStatuses = [(int)Configuration::get('PS_OS_REFUND')];
         return in_array($orderStatus, $finalStatuses, true);
+    }
+
+    /**
+     * @return bool
+     */
+    private function allowOrderCreation(string $status, string $transactionType)
+    {
+        $allowOrderCreation = false;
+
+        switch ($status) {
+            case Transaction::INITIALIZED:
+                if ($transactionType === 'BANKTRANS') {
+                    $allowOrderCreation = true;
+                }
+                break;
+            case Transaction::COMPLETED:
+            case Transaction::UNCLEARED:
+                $allowOrderCreation = true;
+                break;
+        }
+        return $allowOrderCreation;
     }
 }

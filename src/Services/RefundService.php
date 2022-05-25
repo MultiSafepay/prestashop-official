@@ -24,6 +24,7 @@ namespace MultiSafepay\PrestaShop\Services;
 
 use Configuration;
 use Currency;
+use Exception;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\Description;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
@@ -87,7 +88,11 @@ class RefundService
     public function processRefund(Order $order, array $productList): bool
     {
         $transactionManager = $this->sdkService->getSdk()->getTransactionManager();
-        $transaction        = $transactionManager->get($order->reference);
+        try {
+            $transaction = $transactionManager->get($order->reference);
+        } catch (Exception $exception) {
+            $transaction = $transactionManager->get((string)$order->id_cart);
+        }
 
         $paymentOption = $this->paymentOptionService->getMultiSafepayPaymentOption(
             $transaction->getPaymentDetails()->getType()

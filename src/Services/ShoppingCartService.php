@@ -135,9 +135,24 @@ class ShoppingCartService
             $merchantItemId,
             $this->calculatePriceForProduct($product, $orderRoundType),
             $currencyIsoCode,
-            (float)$product['rate'],
+            $this->calculateProductTaxRate($product),
             new Weight($weightUnit, (float)$product['weight'])
         );
+    }
+
+    /**
+     * @param array $product
+     * @return float
+     */
+    private function calculateProductTaxRate(array $product): float
+    {
+        // Case in which the product have a product rate set, but the product in the order do not contain taxes
+        $priceWithTaxes = $product['price_wt'] ? $product['price_wt'] : $product['price_with_reduction'];
+        if ($priceWithTaxes === $product['price']) {
+            return 0;
+        }
+
+        return (float)$product['rate'];
     }
 
     /**
@@ -157,6 +172,11 @@ class ShoppingCartService
 
         $taxRate = (float)$product['rate'];
         $price   = $product['price_wt'] ? $product['price_wt'] : $product['price_with_reduction'];
+
+        // Case in which the product have a product rate set, but the product in the order do not contain taxes
+        if ($price === $product['price']) {
+            return Tools::ps_round($price, self::PRESTASHOP_ROUNDING_PRECISION);
+        }
 
         /**
          * If rounding mode is set to round per item, we have to round the price of each item before

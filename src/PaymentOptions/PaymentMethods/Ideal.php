@@ -22,6 +22,7 @@
 
 namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
+use Cart;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\IssuerService;
@@ -64,13 +65,13 @@ class Ideal extends BasePaymentOption
     }
 
     /**
-     * @param Order $order
+     * @param Cart $cart
      * @param array $data
      * @return GatewayInfoInterface|null
      *
      * @phpcs:disable -- Disable to avoid trigger a warning in validator about unused parameter
      */
-    public function getGatewayInfo(Order $order, array $data = []): ?GatewayInfoInterface
+    public function getGatewayInfo(Cart $cart, array $data = []): ?GatewayInfoInterface
     {
         if (!isset($data['issuer_id'])) {
             return null;

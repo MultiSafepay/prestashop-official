@@ -50,12 +50,21 @@ services:
       - "@multisafepay.sdk_service"
       - "@multisafepay.payment_option_service"
 
-  multisafepay.notification_service:
-    class: MultiSafepay\PrestaShop\Services\NotificationService
+  multisafepay.not_existing_order_notification_service:
+    class: MultiSafepay\PrestaShop\Services\NotExistingOrderNotificationService
     arguments:
       - "@multisafepay"
       - "@multisafepay.sdk_service"
       - "@multisafepay.payment_option_service"
+      - "@multisafepay.order_service"
+
+  multisafepay.existing_order_notification_service:
+    class: MultiSafepay\PrestaShop\Services\ExistingOrderNotificationService
+    arguments:
+      - "@multisafepay"
+      - "@multisafepay.sdk_service"
+      - "@multisafepay.payment_option_service"
+      - "@multisafepay.order_service"
 
   multisafepay.system_status_service:
     class: MultiSafepay\PrestaShop\Services\SystemStatusService

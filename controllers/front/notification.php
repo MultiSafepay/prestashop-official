@@ -20,7 +20,8 @@
  *
  */
 
-use MultiSafepay\PrestaShop\Services\NotificationService;
+use MultiSafepay\PrestaShop\Services\NotExistingOrderNotificationService;
+use MultiSafepay\PrestaShop\Services\ExistingOrderNotificationService;
 
 class MultisafepayOfficialNotificationModuleFrontController extends ModuleFrontController
 {
@@ -38,11 +39,32 @@ class MultisafepayOfficialNotificationModuleFrontController extends ModuleFrontC
      */
     public function postProcess(): void
     {
-        /** @var NotificationService $notificationService */
-        $notificationService = $this->module->get('multisafepay.notification_service');
+        /** @var NotExistingOrderNotificationService $notificationService */
+        $notificationService = $this->module->get('multisafepay.not_existing_order_notification_service');
+
+        $transaction = $notificationService->getTransactionFromBody(Tools::file_get_contents('php://input'));
+
+        // Orders before version 5.2.0 will not have the cartId saved in var2, therefore if this is empty we get the
+        // cart using the transactionid, which in those versions always equals the order reference.
+        $cartId = $transaction->getVar2();
+        if (empty($cartId)) {
+            $orderReference = Tools::getValue('transactionid');
+            $orderCollection = Order::getByReference($orderReference);
+            /** @var Order $order */
+            $order = $orderCollection->getFirst();
+            $cart = new Cart($order->id_cart);
+        } else {
+            $cart = new Cart($cartId);
+        }
+
+        // If the order already exists we use a different service to handle the notification
+        if ($cart->orderExists()) {
+            /** @var ExistingOrderNotificationService $notificationService */
+            $notificationService = $this->module->get('multisafepay.existing_order_notification_service');
+        }
 
         try {
-            $notificationService->processNotification(Tools::file_get_contents('php://input'));
+            $notificationService->processNotification($transaction, $cart);
         } catch (PrestaShopException $prestaShopException) {
             header('Content-Type: text/plain');
             echo $prestaShopException->getMessage();

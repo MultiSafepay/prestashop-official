@@ -22,6 +22,8 @@
 
 namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
+use Cart;
+use Customer;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BaseGatewayInfo;
@@ -73,7 +75,7 @@ class Einvoicing extends BasePaymentOption
         ];
     }
 
-    public function getGatewayInfo(Order $order, array $data = []): ?GatewayInfoInterface
+    public function getGatewayInfo(Cart $cart, array $data = []): ?GatewayInfoInterface
     {
         if (empty($data['bankaccount']) && empty($data['birthday'])) {
             return null;
@@ -81,8 +83,8 @@ class Einvoicing extends BasePaymentOption
 
         $gatewayInfo = new Meta();
 
-        $gatewayInfo->addEmailAddressAsString($order->getCustomer()->email);
-        $gatewayInfo->addPhoneAsString((new Address($order->id_address_invoice))->phone);
+        $gatewayInfo->addEmailAddressAsString((new Customer($cart->id_customer))->email);
+        $gatewayInfo->addPhoneAsString((new Address($cart->id_address_invoice))->phone);
         if (!empty($data['bankaccount'])) {
             $gatewayInfo->addBankAccountAsString($data['bankaccount']);
         }
