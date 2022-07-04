@@ -81,7 +81,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
                     (int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED'),
                     0,
                     $selectedPaymentOption->getFrontEndName(),
-                    $this->context->customer->secure_key,
+                    $this->context->customer->secure_key
                 );
 
                 $orderCollection = new PrestaShopCollection('Order');
