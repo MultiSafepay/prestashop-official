@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.5.1
+Release date: July 7th, 2022
+
+### Added
++ PRES-342: Extend compatibility of Payment Component with One Page Checkout PrestaShop version 4.1.X
+
+### Fixed
++ PRES-339: Removing trailing comma which produces an error in PHP 7.2
+
+***
+
 ## 5.5.0
 Release date: May 25th, 2022
 
