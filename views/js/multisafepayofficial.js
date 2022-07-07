@@ -117,7 +117,21 @@ if (typeof prestashop !== 'undefined') {
     );
 }
 
-// One Page Checkout PS support
+// One Page Checkout PS support. Version 4.0.X
 $(document).on('opc-load-payment:completed', function () {
     createMultiSafepayPaymentComponents();
 });
+
+// One Page Checkout PS support. Version 4.1.X
+if (typeof prestashop !== 'undefined') {
+    prestashop.on(
+        'opc-payment-getPaymentList-complete',
+        function (event) {
+            createMultiSafepayPaymentComponents();
+        }
+    );
+}
+
+
+
+
