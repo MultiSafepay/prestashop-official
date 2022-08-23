@@ -61,7 +61,7 @@
                         {if isset($inputField.label)}
                             <label for="{$inputField.name|escape:'html':'UTF-8'}">{$inputField.label|escape:'html':'UTF-8'}</label>
                         {/if}
-                        <select class="form-control form-control-select" name="{$inputField.name|escape:'html':'UTF-8'}" required>
+                        <select class="{if $inputField.select2|default:false} multisafepay-select2 {else} form-control form-control-select {/if}" name="{$inputField.name|escape:'html':'UTF-8'}" required>
                             <option value="" disabled selected>{$inputField.placeholder|escape:'html':'UTF-8'}</option>
                             {foreach from=$inputField.options item=option}
                                 <option value="{$option.value|escape:'html':'UTF-8'}">{$option.name|escape:'html':'UTF-8'}</option>

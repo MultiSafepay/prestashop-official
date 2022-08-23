@@ -23,18 +23,18 @@
 namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use Cart;
+use Context;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Issuer;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\IssuerService;
 use Tools;
-use Order;
 
-class Ideal extends BasePaymentOption
+class MyBank extends BasePaymentOption
 {
-    public const CLASS_NAME = 'Ideal';
-    protected $gatewayCode = 'IDEAL';
-    protected $logo = 'ideal.png';
+    public const CLASS_NAME = 'MyBank';
+    protected $gatewayCode = 'MYBANK';
+    protected $logo = 'mybank.png';
     protected $hasConfigurableDirect = true;
 
     /**
@@ -42,7 +42,7 @@ class Ideal extends BasePaymentOption
      */
     public function getName(): string
     {
-        return $this->module->l('iDEAL', self::CLASS_NAME);
+        return $this->module->l('MyBank - Bonifico Immediato', self::CLASS_NAME);
     }
 
     public function getTransactionType(): string
@@ -59,8 +59,9 @@ class Ideal extends BasePaymentOption
             [
                 'type'        => 'select',
                 'name'        => 'issuer_id',
-                'placeholder' => $this->module->l('Select bank', self::CLASS_NAME),
+                'placeholder' => $this->module->l('Select issuer', self::CLASS_NAME),
                 'options'     => $issuerService->getIssuers($this->getGatewayCode()),
+                'select2'     => true
             ],
         ];
     }
@@ -81,5 +82,30 @@ class Ideal extends BasePaymentOption
         $gatewayInfo->addIssuerId($data['issuer_id']);
         return $gatewayInfo;
         // phpcs:enable
+    }
+
+    public function registerJavascript(Context $context): void
+    {
+        $context->controller->registerJavascript(
+            'module-multisafepay-select2',
+            'modules/multisafepayofficial/views/js/select2.min.js'
+        );
+
+        $context->controller->registerJavascript(
+            'module-multisafepay-mybank-javascript',
+            'modules/multisafepayofficial/views/js/multisafepay-mybank.js'
+        );
+
+        parent::registerJavascript($context);
+    }
+
+    public function registerCss(Context $context): void
+    {
+        $context->controller->registerStylesheet(
+            'module-multisafepay-select2-styles',
+            'modules/multisafepayofficial/views/css/select2.min.css'
+        );
+
+        parent::registerCss($context);
     }
 }
