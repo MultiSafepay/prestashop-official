@@ -20,8 +20,8 @@
  *
  */
 
-use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Exception\ApiException;
+use MultiSafepay\PrestaShop\Builder\OrderRequestBuilder;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
@@ -72,6 +72,9 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
         /** @var OrderService $orderService */
         $orderService = $this->get('multisafepay.order_service');
 
+        /** @var OrderRequestBuilder $orderRequestBuilder */
+        $orderRequestBuilder = $this->get('multisafepay.order_request_builder');
+
         $order = null;
 
         if (Configuration::get('MULTISAFEPAY_OFFICIAL_CREATE_ORDER_BEFORE_PAYMENT')) {
@@ -96,8 +99,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
             }
         }
 
-        /** @var OrderRequest $orderRequest */
-        $orderRequest = $orderService->createOrderRequest($cart, $customer, $selectedPaymentOption, $order);
+        $orderRequest = $orderRequestBuilder->build($cart, $customer, $selectedPaymentOption, $order);
 
         if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
             LoggerHelper::logInfo(

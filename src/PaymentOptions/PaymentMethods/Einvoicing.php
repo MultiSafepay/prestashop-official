@@ -53,7 +53,8 @@ class Einvoicing extends BasePaymentOption
     public function getTransactionType(): string
     {
         $checkoutVars = Tools::getAllValues();
-        return (empty($checkoutVars['bankaccount']) || empty($checkoutVars['birthday'])) ? 'redirect' : 'direct';
+        return (empty($checkoutVars['bankaccount']) || empty($checkoutVars['birthday']))
+            ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
     }
 
 

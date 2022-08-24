@@ -2,17 +2,23 @@ services:
   _defaults:
     public: true
 
+
+  ##########
+  # Module #
+  ##########
+
   multisafepay:
     class: MultisafepayOfficial
     factory: ['Module', 'getInstanceByName']
     arguments:
       - 'multisafepayofficial'
 
+  ############
+  # Services #
+  ############
+
   multisafepay.sdk_service:
     class: MultiSafepay\PrestaShop\Services\SdkService
-
-  multisafepay.customer_service:
-    class: MultiSafepay\PrestaShop\Services\CustomerService
 
   multisafepay.issuer_service:
     class: MultiSafepay\PrestaShop\Services\IssuerService
@@ -24,17 +30,10 @@ services:
     arguments:
       - "@multisafepay"
 
-  multisafepay.shopping_cart_service:
-    class: MultiSafepay\PrestaShop\Services\ShoppingCartService
-    arguments:
-      - "@multisafepay"
-
   multisafepay.order_service:
     class: MultiSafepay\PrestaShop\Services\OrderService
     arguments:
       - "@multisafepay"
-      - "@multisafepay.customer_service"
-      - "@multisafepay.shopping_cart_service"
       - "@multisafepay.sdk_service"
 
   multisafepay.tokenization_service:
@@ -70,3 +69,114 @@ services:
     class: MultiSafepay\PrestaShop\Services\SystemStatusService
     arguments:
       - "@multisafepay"
+
+  ############
+  # Builders #
+  ############
+
+  multisafepay.address_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\CustomerBuilder\AddressBuilder
+
+  multisafepay.cart_item_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder\CartItemBuilder
+
+  multisafepay.discount_item_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder\DiscountItemBuilder
+    arguments:
+      - "@multisafepay"
+
+  multisafepay.shipping_item_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder\ShippingItemBuilder
+    arguments:
+      - "@multisafepay"
+
+  multisafepay.wrapping_item_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder\WrappingItemBuilder
+    arguments:
+      - "@multisafepay"
+
+  multisafepay.customer_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\CustomerBuilder
+    arguments:
+      - "@multisafepay.address_builder"
+      - "@multisafepay.address_util"
+      - "@multisafepay.customer_util"
+      - "@multisafepay.language_util"
+
+  multisafepay.delivery_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\DeliveryBuilder
+    arguments:
+      - "@multisafepay.address_builder"
+      - "@multisafepay.address_util"
+      - "@multisafepay.customer_util"
+      - "@multisafepay.language_util"
+
+  multisafepay.description_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\DescriptionBuilder
+
+  multisafepay.gateway_info_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\GatewayInfoBuilder
+
+  multisafepay.google_analytics_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\GoogleAnalyticsBuilder
+
+  multisafepay.payment_component_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\PaymentComponentBuilder
+
+  multisafepay.payment_options_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\PaymentOptionsBuilder
+    arguments:
+      - "@multisafepay"
+
+  multisafepay.plugin_details_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\PluginDetailsBuilder
+    arguments:
+      - "@multisafepay"
+
+  multisafepay.second_chance_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\SecondChanceBuilder
+
+  multisafepay.shopping_cart_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder
+    arguments:
+      - ["@multisafepay.cart_item_builder", "@multisafepay.discount_item_builder", "@multisafepay.shipping_item_builder", "@multisafepay.wrapping_item_builder"]
+      - "@multisafepay.currency_util"
+
+  multisafepay.time_active_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\TimeActiveBuilder
+
+  multisafepay.tokenization_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequest\TokenizationBuilder
+
+  multisafepay.order_request_builder:
+    class: MultiSafepay\PrestaShop\Builder\OrderRequestBuilder
+    arguments:
+      - [ "@multisafepay.customer_builder",
+          "@multisafepay.delivery_builder",
+          "@multisafepay.description_builder",
+          "@multisafepay.gateway_info_builder",
+          "@multisafepay.google_analytics_builder",
+          "@multisafepay.payment_component_builder",
+          "@multisafepay.payment_options_builder",
+          "@multisafepay.plugin_details_builder",
+          "@multisafepay.second_chance_builder",
+          "@multisafepay.shopping_cart_builder",
+          "@multisafepay.time_active_builder",
+          "@multisafepay.tokenization_builder" ]
+      - "@multisafepay.currency_util"
+
+  #########
+  # Utils #
+  #########
+
+  multisafepay.address_util:
+    class: MultiSafepay\PrestaShop\Util\AddressUtil
+
+  multisafepay.currency_util:
+    class: MultiSafepay\PrestaShop\Util\CurrencyUtil
+
+  multisafepay.customer_util:
+    class: MultiSafepay\PrestaShop\Util\CustomerUtil
+
+  multisafepay.language_util:
+    class: MultiSafepay\PrestaShop\Util\LanguageUtil

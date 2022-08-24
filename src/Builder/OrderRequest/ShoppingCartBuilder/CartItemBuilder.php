@@ -20,14 +20,10 @@
  *
  */
 
-namespace MultiSafepay\PrestaShop\Services;
+namespace MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder;
 
 use Cart;
 use Configuration;
-use MultisafepayOfficial;
-use MultiSafepay\Api\Transactions\OrderRequest\Arguments\ShoppingCart;
-use MultiSafepay\Api\Transactions\OrderRequest\Arguments\ShoppingCart\ShippingItem;
-use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultiSafepay\ValueObject\CartItem;
 use MultiSafepay\ValueObject\Weight;
@@ -35,76 +31,43 @@ use Order;
 use Tools;
 
 /**
- * Class ShoppingCartService
- * @package MultiSafepay\PrestaShop\Services
+ * Class CartItemBuilder
+ * @package MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder
  */
-class ShoppingCartService
+class CartItemBuilder implements ShoppingCartBuilderInterface
 {
-    public const CLASS_NAME = 'ShoppingCartService';
     public const PRESTASHOP_ROUNDING_PRECISION = 2;
 
     /**
-     * @var MultisafepayOfficial
-     */
-    private $module;
-
-    /**
-     * ShoppingCartService constructor.
-     *
-     * @param MultisafepayOfficial $module
-     */
-    public function __construct(MultisafepayOfficial $module)
-    {
-        $this->module = $module;
-    }
-
-    /**
-     * @param Cart $shoppingCart
+     * @param Cart $cart
+     * @param array $cartSummary
      * @param string $currencyIsoCode
-     * @param int $orderRoundType
      *
-     * @return ShoppingCart
+     * @return array|CartItem[]
      */
-    public function createShoppingCart(
-        Cart $shoppingCart,
-        string $currencyIsoCode,
-        int $orderRoundType,
-        string $weightUnit
-    ): ShoppingCart {
+    public function build(Cart $cart, array $cartSummary, string $currencyIsoCode): array
+    {
         /** @var array $products */
-        $products    = $shoppingCart->getProductsWithSeparatedGifts();
-        $cartSummary = $shoppingCart->getSummaryDetails();
-
-        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-            LoggerHelper::logInfo(
-                'Cart Summary for Shopping Cart ID ' . $shoppingCart->id . ', contains: ' . json_encode($cartSummary)
-            );
-        }
+        $products = $cart->getProductsWithSeparatedGifts();
 
         $cartItems = [];
         foreach ($products as $product) {
-            $cartItems[] = $this->createCartItemFromProduct($product, $currencyIsoCode, $orderRoundType, $weightUnit);
+            $cartItems[] = $this->createCartItemFromProduct(
+                $product,
+                $currencyIsoCode,
+                (int)Configuration::get('PS_ROUND_TYPE'),
+                Configuration::get('PS_WEIGHT_UNIT')
+            );
         }
 
-        $totalDiscount = $cartSummary['total_discounts'] ?? 0;
-        if ($totalDiscount > 0) {
-            $cartItems[] = $this->createDiscountCartItem($totalDiscount, $currencyIsoCode);
-        }
-
-        $totalWrapping = $cartSummary['total_wrapping'] ?? 0;
-        if ($totalWrapping > 0) {
-            $cartItems[] = $this->createWrappingCartItem($totalWrapping, $currencyIsoCode);
-        }
-
-        $cartItems[] = $this->createShippingItem($cartSummary, $currencyIsoCode);
-
-        return new ShoppingCart($cartItems);
+        return $cartItems;
     }
 
     /**
      * @param array $product
      * @param string $currencyIsoCode
      * @param int $orderRoundType
+     * @param string $weightUnit
      *
      * @return CartItem
      */
@@ -117,7 +80,7 @@ class ShoppingCartService
         $merchantItemId = (string)$product['id_product'];
         $productName    = $product['name'];
         if (!empty($product['attributes_small'])) {
-            $productName    .= ' ( '.$product['attributes_small'].' )';
+            $productName .= ' ( '.$product['attributes_small'].' )';
             $merchantItemId .= '-'.$product['id_product_attribute'];
         }
 
@@ -171,7 +134,7 @@ class ShoppingCartService
         }
 
         $taxRate = (float)$product['rate'];
-        $price   = $product['price_wt'] ? $product['price_wt'] : $product['price_with_reduction'];
+        $price   = $product['price_wt'] ?: $product['price_with_reduction'];
 
         // Case in which the product have a product rate set, but the product in the order do not contain taxes
         if ($price === $product['price']) {
@@ -187,42 +150,6 @@ class ShoppingCartService
         }
 
         return $price * 100 / (100 + $taxRate);
-    }
-
-    /**
-     * @param float $totalDiscount
-     * @param string $currencyIsoCode
-     *
-     * @return CartItem
-     */
-    private function createDiscountCartItem(float $totalDiscount, string $currencyIsoCode): CartItem
-    {
-        return $this->createCartItem(
-            $this->module->l('Discount', self::CLASS_NAME),
-            1,
-            'Discount',
-            -$totalDiscount,
-            $currencyIsoCode,
-            0
-        );
-    }
-
-    /**
-     * @param float $totalWrapping
-     * @param string $currencyIsoCode
-     *
-     * @return CartItem
-     */
-    private function createWrappingCartItem(float $totalWrapping, string $currencyIsoCode): CartItem
-    {
-        return $this->createCartItem(
-            $this->module->l('Wrapping', self::CLASS_NAME),
-            1,
-            'Wrapping',
-            $totalWrapping,
-            $currencyIsoCode,
-            0
-        );
     }
 
     /**
@@ -260,29 +187,6 @@ class ShoppingCartService
         }
 
         return $cartItem;
-    }
-
-    /**
-     * @param array $cartSummary
-     * @param string $currencyIsoCode
-     *
-     * @return CartItem
-     * @phpcs:disable Generic.Files.LineLength.TooLong
-     */
-    private function createShippingItem(array $cartSummary, string $currencyIsoCode): CartItem
-    {
-        $shippingItem = new ShippingItem();
-
-        $totalShippingTax = $cartSummary['total_shipping'] - $cartSummary['total_shipping_tax_exc'];
-        $shippingTaxRate  = $cartSummary['total_shipping'] > 0 ? ($totalShippingTax * 100) / ($cartSummary['total_shipping'] - $totalShippingTax) : 0;
-
-        return $shippingItem
-            ->addName(($cartSummary['carrier']->name ?? $this->module->l('Shipping', self::CLASS_NAME)))
-            ->addQuantity(1)
-            ->addUnitPrice(
-                MoneyHelper::createMoney((float)$cartSummary['total_shipping_tax_exc'], $currencyIsoCode)
-            )
-            ->addTaxRate($shippingTaxRate);
     }
 
     /**

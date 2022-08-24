@@ -40,7 +40,7 @@ use PrestaShopException;
 
 /**
  * Class SettingsBuilder
- * @package MultiSafepay\Prestashop\Builder
+ * @package MultiSafepay\PrestaShop\Builder
  */
 class SettingsBuilder
 {

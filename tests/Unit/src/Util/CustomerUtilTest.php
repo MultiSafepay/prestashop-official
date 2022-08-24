@@ -3,33 +3,33 @@
 namespace MultiSafepay\Tests\Services;
 
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\CustomerDetails;
-use MultiSafepay\PrestaShop\Services\CustomerService;
+use MultiSafepay\PrestaShop\Util\CustomerUtil;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
 use MultiSafepay\ValueObject\Customer\Address;
 use MultiSafepay\ValueObject\Customer\Country;
 use MultiSafepay\ValueObject\Customer\EmailAddress;
 use MultiSafepay\ValueObject\Customer\PhoneNumber;
 
-class CustomerServiceTest extends BaseMultiSafepayTest
+class CustomerUtilTest extends BaseMultiSafepayTest
 {
     /**
-     * @var CustomerService
+     * @var CustomerUtil
      */
-    protected $customerService;
+    protected $customerUtil;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->customerService = $this->container->get('multisafepay.customer_service');
+        $this->customerUtil = $this->container->get('multisafepay.customer_util');
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\Services\CustomerService::createCustomer
+     * @covers \MultiSafepay\PrestaShop\Util\CustomerUtil::createCustomer
      */
     public function testCreateCustomer()
     {
-        $output = $this->customerService->createCustomer(
+        $output = $this->customerUtil->createCustomer(
             new Address(),
             'john.doe@multisafepay.com',
             '0612345678',
@@ -46,11 +46,11 @@ class CustomerServiceTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\Services\CustomerService::createCustomer
+     * @covers \MultiSafepay\PrestaShop\Util\CustomerUtil::createCustomer
      */
     public function testCreateCustomerAddress()
     {
-        $customer = $this->customerService->createCustomer(
+        $customer = $this->customerUtil->createCustomer(
             (new Address())
                 ->addCity('Amsterdam')
                 ->addCountry(new Country('NL'))
@@ -75,11 +75,11 @@ class CustomerServiceTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\Services\CustomerService::createCustomer
+     * @covers \MultiSafepay\PrestaShop\Util\CustomerUtil::createCustomer
      */
     public function testCreateCustomerOptionalVariables()
     {
-        $output = $this->customerService->createCustomer(
+        $output = $this->customerUtil->createCustomer(
             (new Address())
                 ->addCountry(new Country('NL')),
             'john.doe@multisafepay.com',
