@@ -7,17 +7,18 @@ services:
       MYSQL_DATABASE: prestashop
       MYSQL_USER: prestashop
       MYSQL_PASSWORD: prestashop
-  mailhog:
-    image: 'mailhog/mailhog'
+  mailcatcher:
+    image: sj26/mailcatcher
     ports:
-      - 8025:8025
+      - "1080:1080"
+      - "8025:8025"
   app:
     volumes:
       - ./:/var/www/html/modules/multisafepayofficial
     depends_on:
       - db
     ports:
-      - 80:80
+      - "80:80"
     build: .
     environment:
       PS_DEV_MODE: 1
@@ -31,8 +32,6 @@ services:
     extra_hosts:
       host.docker.internal: host-gateway
   expose:
-    depends_on:
-      - app
     build: https://github.com/beyondcode/expose.git
     entrypoint: [ "/bin/sh", "-c" , "/src/expose token ${EXPOSE_TOKEN} && sed -i -E \"s/'dns'\\s?=>\\s?'.*'/'dns' => true/g\" /root/.expose/config.php  && /src/expose share app --server-host=${EXPOSE_HOST} --subdomain=${APP_SUBDOMAIN}" ]
     ports:
