@@ -79,7 +79,7 @@ class RefundServiceTest extends BaseMultiSafepayTest
     public function testGetProductsRefundAmount()
     {
         $output = $this->mockRefundService->getProductsRefundAmount($this->getFixtureProductListForRefund());
-        self::assertEquals('14.399', $output);
+        self::assertEquals('14.4', $output);
     }
 
 

@@ -162,7 +162,7 @@ class RefundService
     {
         $refundAmount = 0;
         foreach ($productList as $productListItem) {
-            $refundAmount += $productListItem['amount'];
+            $refundAmount += $productListItem['total_refunded_tax_incl'];
         }
 
         return $refundAmount;
