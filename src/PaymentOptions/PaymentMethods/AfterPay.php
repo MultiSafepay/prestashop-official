@@ -23,6 +23,7 @@
 namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use Cart;
+use Country;
 use Customer;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
@@ -35,13 +36,23 @@ use Context;
 class AfterPay extends BasePaymentOption
 {
     public const CLASS_NAME = 'AfterPay';
-    public const DEFAULT_TERMS_AND_CONDITIONS = "https://www.afterpay.nl/en/about/pay-with-afterpay/payment-conditions";
-    public const NL_TERMS_AND_CONDITIONS = "https://www.afterpay.nl/nl/algemeen/betalen-met-afterpay/betalingsvoorwaarden";
-    public const BE_NL_TERMS_AND_CONDITIONS = "https://www.afterpay.be/be/footer/betalen-met-afterpay/betalingsvoorwaarden";
-    public const BE_FR_TERMS_AND_CONDITIONS = "https://www.afterpay.be/fr/footer/payer-avec-afterpay/conditions-de-paiement";
+
+    public const DEFAULT_TERMS_URL = "https://documents.riverty.com/terms_conditions/payment_methods/invoice/nl_en/default";
+    public const INVOICE_ADDRESS_DE_LOCALE_EN_TERMS_URL = "https://documents.riverty.com/terms_conditions/payment_methods/invoice/de_en/default";
+    public const INVOICE_ADDRESS_DE_LOCALE_DE_TERMS_URL = "https://documents.riverty.com/terms_conditions/payment_methods/invoice/de_de/default";
+    public const INVOICE_ADDRESS_AT_LOCALE_EN_TERMS_URL = "https://documents.riverty.com/terms_conditions/payment_methods/invoice/at_en/default";
+    public const INVOICE_ADDRESS_AT_LOCALE_DE_TERMS_URL = "https://documents.riverty.com/terms_conditions/payment_methods/invoice/at_de/default";
+    public const INVOICE_ADDRESS_CH_LOCALE_EN_TERMS_URL = "https://documents.riverty.com/terms_conditions/payment_methods/invoice/ch_en/default";
+    public const INVOICE_ADDRESS_CH_LOCALE_DE_TERMS_URL = "https://documents.riverty.com/terms_conditions/payment_methods/invoice/ch_de/default";
+    public const INVOICE_ADDRESS_CH_LOCALE_FR_TERMS_URL = "https://documents.riverty.com/terms_conditions/payment_methods/invoice/ch_fr/default";
+    public const INVOICE_ADDRESS_NL_LOCALE_EN_TERMS_URL = "https://documents.riverty.com/terms_conditions/payment_methods/invoice/nl_en/default";
+    public const INVOICE_ADDRESS_NL_LOCALE_NL_TERMS_URL = "https://documents.riverty.com/terms_conditions/payment_methods/invoice/nl_nl/default";
+    public const INVOICE_ADDRESS_BE_LOCALE_EN_TERMS_URL = "https://documents.riverty.com/terms_conditions/payment_methods/invoice/be_en/default";
+    public const INVOICE_ADDRESS_BE_LOCALE_NL_TERMS_URL = "https://documents.riverty.com/terms_conditions/payment_methods/invoice/be_nl/default";
+    public const INVOICE_ADDRESS_BE_LOCALE_FR_TERMS_URL = "https://documents.riverty.com/terms_conditions/payment_methods/invoice/be_fr/default";
 
     protected $gatewayCode = 'AFTERPAY';
-    protected $logo = 'afterpay.png';
+    protected $logo = 'riverty.png';
     protected $hasConfigurableDirect = true;
     protected $canProcessRefunds = false;
 
@@ -50,7 +61,7 @@ class AfterPay extends BasePaymentOption
      */
     public function getName(): string
     {
-        return $this->module->l('AfterPay', self::CLASS_NAME);
+        return $this->module->l('Riverty', self::CLASS_NAME);
     }
 
     /**
@@ -89,8 +100,11 @@ class AfterPay extends BasePaymentOption
             [
                 'type'          => 'checkbox',
                 'name'          => 'terms-conditions',
-                'label'         => $this->module->l('I have read and agreed to the AfterPay payment terms.', self::CLASS_NAME),
-                'url'           => $this->getTermsAndConditionsUrl(Context::getContext()->language->getLocale()),
+                'label'         => $this->module->l('I have read and agreed to the Riverty payment terms.', self::CLASS_NAME),
+                'url'           => $this->getTermsAndConditionsUrl(
+                    Context::getContext()->language->getLocale(),
+                    Context::getContext()->cart->id_address_invoice ?? null
+                ),
             ]
         ];
     }
@@ -116,23 +130,64 @@ class AfterPay extends BasePaymentOption
 
     /**
      * @param string $locale
+     * @param int|null $invoiceAddressId
      *
      * @return string
      */
-    private function getTermsAndConditionsUrl(string $locale): string
+    private function getTermsAndConditionsUrl(string $locale, ?int $invoiceAddressId = null): string
     {
-        if ($locale === 'nl-NL') {
-            return self::NL_TERMS_AND_CONDITIONS;
+        if (!$invoiceAddressId) {
+            return self::DEFAULT_TERMS_URL;
         }
 
-        if ($locale === 'be-NL') {
-            return self::BE_NL_TERMS_AND_CONDITIONS;
+        $address = new Address($invoiceAddressId);
+        $countryIsoCode = (new Country($address->id_country))->iso_code;
+
+        if ($countryIsoCode === 'AT') {
+            if ($locale === 'de-DE') {
+                return self::INVOICE_ADDRESS_AT_LOCALE_DE_TERMS_URL;
+            }
+
+            return self::INVOICE_ADDRESS_AT_LOCALE_EN_TERMS_URL;
         }
 
-        if ($locale === 'be-FR') {
-            return self::BE_FR_TERMS_AND_CONDITIONS;
+        if ($countryIsoCode === 'BE') {
+            if ($locale === 'nl-NL') {
+                return self::INVOICE_ADDRESS_BE_LOCALE_NL_TERMS_URL;
+            }
+            if ($locale === 'fr-FR') {
+                return self::INVOICE_ADDRESS_BE_LOCALE_FR_TERMS_URL;
+            }
+            return self::INVOICE_ADDRESS_BE_LOCALE_EN_TERMS_URL;
         }
 
-        return self::DEFAULT_TERMS_AND_CONDITIONS;
+        if ($countryIsoCode === 'CH') {
+            if ($locale === 'de-DE') {
+                return self::INVOICE_ADDRESS_CH_LOCALE_DE_TERMS_URL;
+            }
+
+            if ($locale === 'fr-FR') {
+                return self::INVOICE_ADDRESS_CH_LOCALE_FR_TERMS_URL;
+            }
+
+            return self::INVOICE_ADDRESS_CH_LOCALE_EN_TERMS_URL;
+        }
+
+        if ($countryIsoCode === 'DE') {
+            if ($locale === 'de-DE') {
+                return self::INVOICE_ADDRESS_DE_LOCALE_DE_TERMS_URL;
+            }
+
+            return self::INVOICE_ADDRESS_DE_LOCALE_EN_TERMS_URL;
+        }
+
+        if ($countryIsoCode === 'NL') {
+            if ($locale === 'nl-NL') {
+                return self::INVOICE_ADDRESS_NL_LOCALE_NL_TERMS_URL;
+            }
+            return self::INVOICE_ADDRESS_NL_LOCALE_EN_TERMS_URL;
+        }
+
+        return self::DEFAULT_TERMS_URL;
     }
 }
