@@ -282,6 +282,10 @@ class SystemStatusService
                     'label' => 'Shipped trigger',
                     'value' => $moduleSettingsValues['MULTISAFEPAY_OFFICIAL_OS_TRIGGER_SHIPPED'],
                 ],
+                'final_order_status' => [
+                    'label' => 'Final order status IDs',
+                    'value' => implode(', ', (array)$moduleSettingsValues['MULTISAFEPAY_OFFICIAL_FINAL_ORDER_STATUS[]']),
+                ],
                 'second_chance' => [
                     'label' => 'Second chance',
                     'value' => $moduleSettingsValues['MULTISAFEPAY_OFFICIAL_SECOND_CHANCE'] ? 'Enabled' : 'Disabled',
@@ -350,7 +354,7 @@ class SystemStatusService
             $output .= 'Paid: ' . ($orderState['paid'] ? 'Yes. ' : 'No. ');
             $output .= 'Invoiced: ' . ($orderState['pdf_invoice'] ? 'Yes. ' : 'No. ');
 
-            $orderStatusesDefinitions['settings'][$orderState['id_order_state']]['label'] = $orderState['name'];
+            $orderStatusesDefinitions['settings'][$orderState['id_order_state']]['label'] = $orderState['name'] . ' (' . $orderState['id_order_state'] . ')';
             $orderStatusesDefinitions['settings'][$orderState['id_order_state']]['value'] = $output;
         }
 

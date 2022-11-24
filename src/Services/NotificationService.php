@@ -405,8 +405,9 @@ abstract class NotificationService
      */
     private function isFinalStatus(int $orderStatus): bool
     {
-        $finalStatuses = [(int)Configuration::get('PS_OS_REFUND')];
-        return in_array($orderStatus, $finalStatuses, true);
+        $finalOrderStatuses = $this->settingToIntArray(Configuration::get('MULTISAFEPAY_OFFICIAL_FINAL_ORDER_STATUS'));
+
+        return (in_array($orderStatus, $finalOrderStatuses, true));
     }
 
     /**
@@ -428,5 +429,19 @@ abstract class NotificationService
                 break;
         }
         return $allowOrderCreation;
+    }
+
+    /**
+     * @param string $setting
+     *
+     * @return array
+     */
+    protected function settingToIntArray($setting): array
+    {
+        if (is_string($setting) && !empty($setting)) {
+            return array_map('intval', json_decode($setting));
+        }
+
+        return [];
     }
 }

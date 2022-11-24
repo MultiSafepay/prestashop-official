@@ -82,6 +82,7 @@ class SettingsBuilder
             'MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID'         => ['default' => ''],
             'MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION'           => ['default' => 'Payment for order: {order_reference}'],
             'MULTISAFEPAY_OFFICIAL_OS_TRIGGER_SHIPPED'          => ['default' => Configuration::get('PS_OS_SHIPPING')],
+            'MULTISAFEPAY_OFFICIAL_FINAL_ORDER_STATUS'          => ['default' => '["'.Configuration::get('PS_OS_REFUND').'"]', 'multiple' => true],
             'MULTISAFEPAY_OFFICIAL_DEBUG_MODE'                  => ['default' => '0'],
             'MULTISAFEPAY_OFFICIAL_SECOND_CHANCE'               => ['default' => '1'],
             'MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL'    => ['default' => '1'],
@@ -336,6 +337,17 @@ class SettingsBuilder
                         'section' => 'default'
                     ],
                     [
+                        'tab'   => 'general_settings',
+                        'type'  => 'select',
+                        'multiple' => true,
+                        'class' => 'chosen',
+                        'desc'  => $this->module->l('When the order reaches one of these statuses, the notification callback will not alter the status of this order. Can also be left empty', self::CLASS_NAME),
+                        'name'  => 'MULTISAFEPAY_OFFICIAL_FINAL_ORDER_STATUS',
+                        'label' => $this->module->l('Final order status', self::CLASS_NAME),
+                        'options' => $this->getPrestaShopOrderStatusesOptions(),
+                        'section' => 'default'
+                    ],
+                    [
                         'tab'         => 'general_settings',
                         'type'        => 'text',
                         'desc'        => $this->module->l('Lifetime of payment link value', self::CLASS_NAME),
@@ -483,8 +495,10 @@ class SettingsBuilder
         $result = ['success' => true];
 
         $formValues = $this->filterToProcessConfigForm($this->getConfigFormValues());
-
         foreach ($formValues as $key => $value) {
+            // Because the PrestaShops form helper adds these brackets to a select field, with multiple set as true.
+            // We have to manually remove them to get the correct value
+            $key = trim($key, '[]');
             if (is_array($value)) {
                 if (Tools::getValue($key) === false) {
                     Configuration::updateValue($key, '');
@@ -573,7 +587,8 @@ class SettingsBuilder
         foreach ($prestaShopOrderStatuses as $prestaShopOrderStatus) {
             $prestaShopOrderStatusesOptions['query'][] = [
                 'id'   => $prestaShopOrderStatus['id_order_state'],
-                'name' => $prestaShopOrderStatus['name']
+                'name' => $prestaShopOrderStatus['name'],
+                'label' => $prestaShopOrderStatus['name'],
             ];
         }
         $prestaShopOrderStatusesOptions['id'] = 'id';
@@ -632,8 +647,12 @@ class SettingsBuilder
     public function getConfigFormValues(bool $includePaymentOptionSettings = true): array
     {
         $configFormValues = [];
-        foreach (array_keys(self::getConfigFieldsAndDefaultValues()) as $configKey) {
-            $configFormValues[$configKey] = Configuration::get($configKey);
+        foreach (self::getConfigFieldsAndDefaultValues() as $configKey => $configSettings) {
+            if (!isset($configSettings['multiple']) || !$configSettings['multiple']) {
+                $configFormValues[$configKey] = Configuration::get($configKey);
+                continue;
+            }
+            $configFormValues[$configKey.'[]'] = $this->settingToArray(Configuration::get($configKey));
         }
 
         if ($includePaymentOptionSettings) {
@@ -672,5 +691,19 @@ class SettingsBuilder
             }
         }
         return false;
+    }
+
+    /**
+     * @param string $setting
+     *
+     * @return array
+     */
+    protected function settingToArray($setting): array
+    {
+        if (is_string($setting) && !empty($setting)) {
+            return json_decode($setting);
+        }
+
+        return [];
     }
 }
