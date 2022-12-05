@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.6.0
+Release date: Dec 5th, 2022 
+
+### Added
++ DAVAMS-485: Add MyBank
++ DAVAMS-522: Add Amazon Pay
++ PRES-345: Add a setting field to define final order statuses
+
+### Fixed
++ PRES-346: Fix refunds calculating the tax amount incorrectly when site is displaying prices without tax
+
+### Changed
++ DAVAMS-544: AfterPay -> Riverty rebrand
+
+***
+
 ## 5.5.1
 Release date: July 7th, 2022
 
