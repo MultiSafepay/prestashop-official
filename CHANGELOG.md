@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.6.1
+Release date: Dec 29th, 2022 
+
+### Fixed
++ PRES-350: Fix partial refunds, which was failing in PrestaShop versions lower than 1.7.7.0 
+
+***
+
 ## 5.6.0
 Release date: Dec 5th, 2022 
 
