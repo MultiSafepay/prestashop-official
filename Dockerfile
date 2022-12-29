@@ -5,7 +5,7 @@ RUN usermod -u ${DOCKER_ID} www-data && groupmod -g ${DOCKER_ID} www-data
 RUN chown -R www-data:www-data /tmp /var/www/html
 
 # XDebug extension
-RUN pecl install xdebug \
+RUN pecl install xdebug-3.1.0 \
     && docker-php-ext-enable xdebug
 
 RUN { \

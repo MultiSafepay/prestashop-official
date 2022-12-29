@@ -161,8 +161,15 @@ class RefundService
     public function getProductsRefundAmount($productList = []): float
     {
         $refundAmount = 0;
+        
+        $refundKey = 'total_refunded_tax_incl';
+        
+        if (version_compare(_PS_VERSION_, '1.7.7') <= 0) {
+            $refundKey = 'amount';
+        }
+
         foreach ($productList as $productListItem) {
-            $refundAmount += $productListItem['total_refunded_tax_incl'];
+            $refundAmount += $productListItem[$refundKey];
         }
 
         return $refundAmount;

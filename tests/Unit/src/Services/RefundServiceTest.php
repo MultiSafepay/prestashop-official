@@ -78,6 +78,10 @@ class RefundServiceTest extends BaseMultiSafepayTest
 
     public function testGetProductsRefundAmount()
     {
+        if (version_compare(_PS_VERSION_, '1.7.7') <= 0) {
+            $this->markTestSkipped();
+        }
+
         $output = $this->mockRefundService->getProductsRefundAmount($this->getFixtureProductListForRefund());
         self::assertEquals('14.4', $output);
     }
