@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.6.2
+Release date: Jan 11th, 2023
+
+### Fixed
++ PRES-352: Fix an issue where a partial refund is processed, where it should not be possible, because a voucher is being generated on PrestaShop versions lower than 1.7.7.0
+
+***
+
 ## 5.6.1
 Release date: Dec 29th, 2022 
 
