@@ -161,9 +161,9 @@ class RefundService
     public function getProductsRefundAmount($productList = []): float
     {
         $refundAmount = 0;
-        
+
         $refundKey = 'total_refunded_tax_incl';
-        
+
         if (version_compare(_PS_VERSION_, '1.7.7') <= 0) {
             $refundKey = 'amount';
         }
@@ -205,7 +205,11 @@ class RefundService
     public function isVoucherRefund(): bool
     {
         $cancelProduct = Tools::getValue('cancel_product');
-        if (isset($cancelProduct['voucher']) && '1' === $cancelProduct['voucher']) {
+        $generateDiscountRefund = Tools::getValue('generateDiscountRefund');
+
+        if (isset($cancelProduct['voucher']) && '1' === $cancelProduct['voucher'] ||
+            isset($generateDiscountRefund) && 'on' === $generateDiscountRefund
+        ) {
             return true;
         }
 
