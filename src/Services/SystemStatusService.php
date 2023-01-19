@@ -270,10 +270,6 @@ class SystemStatusService
                     'label' => 'Payment link lifetime',
                     'value' => $moduleSettingsValues['MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE'] . ' ' . $moduleSettingsValues['MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT'],
                 ],
-                'google_analytics' => [
-                    'label' => 'Google Analytics',
-                    'value' => $moduleSettingsValues['MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID'],
-                ],
                 'order_description' => [
                     'label' => 'Order description',
                     'value' => $moduleSettingsValues['MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION'],

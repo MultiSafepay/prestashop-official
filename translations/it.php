@@ -66,8 +66,6 @@ $_MODULE['<{multisafepayofficial}prestashop>settingsbuilder_19aa024e997563d73674
 $_MODULE['<{multisafepayofficial}prestashop>settingsbuilder_7e9c20d0e71a862bc781a520b022903d'] = 'Se disattivato, disabiliterà l\'e-mail di conferma dell\'ordine. Può essere desiderabile quando l\'ordine in PrestaShop viene creato prima che il pagamento sia completato.';
 $_MODULE['<{multisafepayofficial}prestashop>settingsbuilder_124cf1643fc5e3b6928553a36febeed0'] = 'Disabilita carrello';
 $_MODULE['<{multisafepayofficial}prestashop>settingsbuilder_65a67f9c2823ef849cd6b5c2370700c6'] = 'Abilita questa opzione per nascondere gli articoli del carrello nella pagina di pagamento MultiSafepay, lasciando solo l\'importo totale dell\'ordine. Nota: se abilitato, i metodi di pagamento che richiedono il carrello non funzioneranno: Afterpay, E-Invoicing, in3, Klarna e Pay After Delivery.';
-$_MODULE['<{multisafepayofficial}prestashop>settingsbuilder_47aadd8e44727b1d349ec14b7eb461d8'] = 'Inserisci un ID Google Analytics valido';
-$_MODULE['<{multisafepayofficial}prestashop>settingsbuilder_437418d1694e82fd5ff2260670467c02'] = 'Google Analytics ID';
 $_MODULE['<{multisafepayofficial}prestashop>settingsbuilder_c7b2b138bc6b780e6a6f9507e23db81f'] = 'Un testo che verrà mostrato con l\'ordine in MultiSafepay Control. Se la banca del cliente lo supporta, questa descrizione sarà riportata anche sull\'estratto conto del cliente. Puoi includere il numero dell\'ordine utilizzando {order_reference}';
 $_MODULE['<{multisafepayofficial}prestashop>settingsbuilder_f6f8b5e8db03e4b72aa6352372e1ef0d'] = 'Descrizione dell\'ordine';
 $_MODULE['<{multisafepayofficial}prestashop>settingsbuilder_48bd09e6714d98ccb3bea2e2b44bf4e7'] = 'Pagamento dell\'ordine: {order_reference}';

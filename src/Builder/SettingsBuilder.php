@@ -79,7 +79,6 @@ class SettingsBuilder
             'MULTISAFEPAY_OFFICIAL_TEST_API_KEY'                => ['default' => ''],
             'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE'           => ['default' => '30'],
             'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT'            => ['default' => self::DAYS],
-            'MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID'         => ['default' => ''],
             'MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION'           => ['default' => 'Payment for order: {order_reference}'],
             'MULTISAFEPAY_OFFICIAL_OS_TRIGGER_SHIPPED'          => ['default' => Configuration::get('PS_OS_SHIPPING')],
             'MULTISAFEPAY_OFFICIAL_FINAL_ORDER_STATUS'          => ['default' => '["'.Configuration::get('PS_OS_REFUND').'"]', 'multiple' => true],
@@ -308,15 +307,6 @@ class SettingsBuilder
                             ],
                         ],
                         'section' => 'default'
-                    ],
-                    [
-                        'tab'         => 'general_settings',
-                        'type'        => 'text',
-                        'desc'        => $this->module->l('Enter a valid Google Analytics ID', self::CLASS_NAME),
-                        'name'        => 'MULTISAFEPAY_OFFICIAL_GOOGLE_ANALYTICS_ID',
-                        'label'       => $this->module->l('Google Analytics ID', self::CLASS_NAME),
-                        'placeholder' => $this->module->l('Google Analytics ID', self::CLASS_NAME),
-                        'section'     => 'default'
                     ],
                     [
                         'tab'         => 'general_settings',

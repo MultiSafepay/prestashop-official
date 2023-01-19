@@ -117,9 +117,6 @@ services:
   multisafepay.gateway_info_builder:
     class: MultiSafepay\PrestaShop\Builder\OrderRequest\GatewayInfoBuilder
 
-  multisafepay.google_analytics_builder:
-    class: MultiSafepay\PrestaShop\Builder\OrderRequest\GoogleAnalyticsBuilder
-
   multisafepay.payment_component_builder:
     class: MultiSafepay\PrestaShop\Builder\OrderRequest\PaymentComponentBuilder
 
@@ -155,7 +152,6 @@ services:
           "@multisafepay.delivery_builder",
           "@multisafepay.description_builder",
           "@multisafepay.gateway_info_builder",
-          "@multisafepay.google_analytics_builder",
           "@multisafepay.payment_component_builder",
           "@multisafepay.payment_options_builder",
           "@multisafepay.plugin_details_builder",
