@@ -46,7 +46,7 @@ class PayAfterDelivery extends BasePaymentOption
      */
     public function getName(): string
     {
-        return $this->module->l('PayAfterDelivery', self::CLASS_NAME);
+        return $this->module->l('Pay After Delivery', self::CLASS_NAME);
     }
 
     /**
