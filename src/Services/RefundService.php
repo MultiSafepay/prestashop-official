@@ -183,6 +183,7 @@ class RefundService
     private function getShippingRefundAmount(Order $order): float
     {
         $cancelProduct = Tools::getValue('cancel_product');
+        $partialRefundShippingCost = Tools::getValue('partialRefundShippingCost');
 
         // If total shipping is being refunded (standard refund), then shipping_amount is equal to 0
         // and shipping value is 1.
@@ -194,6 +195,10 @@ class RefundService
         // and shipping_amount value reflects the total amount to be refunded.
         if (isset($cancelProduct['shipping_amount']) && '0' !== $cancelProduct['shipping_amount']) {
             return (float)$cancelProduct['shipping_amount'];
+        }
+
+        if ($partialRefundShippingCost && '0' !== $partialRefundShippingCost) {
+            return (float) $partialRefundShippingCost;
         }
 
         return 0;
