@@ -81,22 +81,4 @@ class NotExistingOrderNotificationService extends NotificationService
             }
         }
     }
-
-    /**
-     * @return bool
-     */
-    private function allowOrderCreation(string $status, string $transactionType)
-    {
-        switch ($status) {
-            case Transaction::INITIALIZED:
-                if ($transactionType === 'BANKTRANS') {
-                    return true;
-                }
-                break;
-            case Transaction::COMPLETED:
-            case Transaction::UNCLEARED:
-                return true;
-        }
-        return false;
-    }
 }

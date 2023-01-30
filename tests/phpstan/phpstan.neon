@@ -47,3 +47,8 @@ parameters:
     - '#Parameter \#1 \$id of class Customer constructor expects null, int given.#'
     - '#Negated boolean expression is always false.#'
     - '#Parameter \#9 \$secure_key of method [a-zA-Z0-9\\_]+::validateOrder\(\) expects bool, string given.#'
+    - '#Property [a-zA-Z0-9\\_]+::\$sortOrderPosition \(int\) in isset\(\) is not nullable.#'
+    - '#Expression on left side of \?\? is not nullable.#'
+    - '#Ternary operator condition is always true.#'
+    - '#Property [a-zA-Z0-9\\_]+::\$paymentComponentApiToken \(string\) in isset\(\) is not nullable.#'
+    - '#Property [a-zA-Z0-9\\_]+::\$sdk \(MultiSafepay\\Sdk\) in isset\(\) is not nullable.#'

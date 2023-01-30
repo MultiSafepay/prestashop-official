@@ -413,22 +413,19 @@ abstract class NotificationService
     /**
      * @return bool
      */
-    private function allowOrderCreation(string $status, string $transactionType)
+    protected function allowOrderCreation(string $status, string $transactionType)
     {
-        $allowOrderCreation = false;
-
         switch ($status) {
             case Transaction::INITIALIZED:
                 if ($transactionType === 'BANKTRANS') {
-                    $allowOrderCreation = true;
+                    return true;
                 }
                 break;
             case Transaction::COMPLETED:
             case Transaction::UNCLEARED:
-                $allowOrderCreation = true;
-                break;
+                return true;
         }
-        return $allowOrderCreation;
+        return false;
     }
 
     /**
