@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.8.0
+Release date: Feb 22nd, 2023
+
+### Added
++ DAVAMS-574: Add Pay After Delivery Installments payment option
+
+### Changed
++ PRES-348: Upgrade dev dependency prestashop/phpstan-prestashop to prevent conflicts related with PrestaShop 8
+
+***
+
 ## 5.7.0
 Release date: Jan 25th, 2023
 
