@@ -1,0 +1,43 @@
+name: PHPStan
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  php_stan:
+    name: PHPStan
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        presta-versions: ['8.0.1', '8.0.2', '8.0.3']
+    steps:
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+
+      - name: Checkout
+        uses: actions/checkout@v2.0.0
+
+      - name: Download PrestaShop
+        uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          repo: 'prestashop/prestashop'
+          version: 'tags/${{ matrix.presta-versions }}'
+          file: 'prestashop_${{ matrix.presta-versions }}.zip'
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sudo chown
+        run: sudo chown -R $USER:$USER /var/www/
+
+      - name: Unzip PrestaShop
+        run: unzip -o prestashop_${{ matrix.presta-versions }}.zip && unzip -o -d /var/www/html/application prestashop.zip
+
+      - name: Organize the directories
+        run: mkdir /var/www/html/application/modules/multisafepayofficial && mv $(ls --ignore=application) /var/www/html/application/modules/multisafepayofficial/ && mv /var/www/html/application/* /var/www/html
+
+      - name: Install composer dependencies
+        run: composer install --working-dir=/var/www/html/modules/multisafepayofficial
+
+      - name: Run PHPStan
+        run: cd /var/www/html/modules/multisafepayofficial && XDEBUG_MODE=off _PS_ROOT_DIR_=./../../ vendor/bin/phpstan analyse --configuration=tests/phpstan/phpstan.neon --memory-limit 1G --error-format github
