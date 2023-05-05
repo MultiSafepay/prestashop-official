@@ -28,9 +28,11 @@ require _PS_MODULE_DIR_ . 'multisafepayofficial/vendor/autoload.php';
 
 use MultiSafepay\Api\Transactions\UpdateRequest;
 use MultiSafepay\Exception\ApiException;
+use MultiSafepay\PrestaShop\Builder\OrderRequestBuilder;
 use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
 use MultiSafepay\PrestaShop\Helper\Installer;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+use MultiSafepay\PrestaShop\Helper\OrderMessageHelper;
 use MultiSafepay\PrestaShop\Helper\Uninstaller;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
@@ -90,7 +92,8 @@ class MultisafepayOfficial extends PaymentModule
             $this->registerHook('actionOrderStatusPostUpdate') &&
             $this->registerHook('actionOrderSlipAdd') &&
             $this->registerHook('displayCustomerAccount') &&
-            $this->registerHook('actionEmailSendBefore');
+            $this->registerHook('actionEmailSendBefore') &&
+            $this->registerHook('actionValidateOrder');
     }
 
     /**
@@ -230,6 +233,64 @@ class MultisafepayOfficial extends PaymentModule
         }
 
         return !(empty($params['templateVars']['send_email']));
+    }
+
+    /**
+     * @param array $params
+     * @return void
+     * @throws ClientExceptionInterface
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function hookActionValidateOrder(array $params): void
+    {
+        $cart = $params['cart'];
+
+        if ($cart && !empty($cart->id_shop_group) && !empty($cart->id_guest)) {
+            return;
+        }
+
+        $order = $params['order'];
+        if ($order && ((string)$order->module !== 'multisafepayofficial')) {
+            return;
+        }
+
+        $customer = $params['customer'];
+        $paymentUrl = false;
+
+        // Order is created from the back-end if id_shop_group and id_guest are 0
+        if ($cart &&
+            ((string)$cart->id_shop_group === '0') &&
+            ((string)$cart->id_guest === '0') &&
+            $customer) {
+
+            /** @var PaymentOptionService $paymentOptionService */
+            $paymentOptionService = $this->get('multisafepay.payment_option_service');
+            $paymentOption = $paymentOptionService->getMultiSafepayPaymentOption('');
+
+            /** @var OrderRequestBuilder $orderRequestBuilder */
+            $orderRequestBuilder = $this->get('multisafepay.order_request_builder');
+            $orderRequest = $orderRequestBuilder->build($cart, $customer, $paymentOption, $order);
+
+            try {
+                /** @var SdkService $sdkService */
+                $sdkService         = $this->get('multisafepay.sdk_service');
+                $transactionManager = $sdkService->getSdk()->getTransactionManager();
+                $transaction        = $transactionManager->create($orderRequest);
+                $paymentUrl         = $transaction->getPaymentUrl();
+            } catch (ApiException $apiException) {
+                LoggerHelper::logError('Error while trying to set payment url for Cart ID: ' . $cart->id . '.
+                                        Message: ' . $apiException->getMessage());
+            }
+
+            if ($paymentUrl) {
+                $message = $this->l('Payment link: ') .$paymentUrl;
+                OrderMessageHelper::addMessage($order, $message);
+                if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
+                    LoggerHelper::logInfo($message);
+                }
+            }
+        }
     }
 
     /**
