@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.9.0
+Release date: May 10th, 2023
+
+### Added
++ PRES-359: Create and add the payment link, into the order notes, for orders created at the back office.
+
+***
+
 ## 5.8.0
 Release date: Feb 22nd, 2023
 
