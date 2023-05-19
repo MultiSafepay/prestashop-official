@@ -28,6 +28,7 @@ use Configuration;
 use Context;
 use Country;
 use Currency;
+use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultisafepayOfficial;
@@ -116,9 +117,17 @@ class OrderService
     public function getPaymentComponentApiToken(): string
     {
         if (!isset($this->paymentComponentApiToken)) {
-            $this->paymentComponentApiToken = ($this->sdkService->getSdk()->getApiTokenManager()->get())->getApiToken();
+            try {
+                $this->paymentComponentApiToken = (
+                    $this->sdkService->getSdk()->getApiTokenManager()->get()
+                )->getApiToken();
+            } catch (ApiException $apiException) {
+                LoggerHelper::logAlert(
+                    'Error when try to get the Api Token: ' . $apiException->getMessage()
+                );
+                return '';
+            }
         }
-
         return $this->paymentComponentApiToken;
     }
 

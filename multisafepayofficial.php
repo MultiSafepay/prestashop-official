@@ -460,13 +460,22 @@ class MultisafepayOfficial extends PaymentModule
         return false;
     }
 
+    /**
+     * @return bool
+     */
     private function hasSetApiKey(): bool
     {
-        /** @var SdkService $sdkService */
-        $sdkService = $this->get('multisafepay.sdk_service');
-        $apiKey = $sdkService->getApiKey();
-
-        return !empty($apiKey);
+        try {
+            /** @var SdkService $sdkService */
+            $sdkService = $this->get('multisafepay.sdk_service');
+            $apiKey = $sdkService->getApiKey();
+            return !empty($apiKey);
+        } catch (ApiException $apiException) {
+            LoggerHelper::logAlert(
+                'Error when try to get the Api Key: ' . $apiException->getMessage()
+            );
+            return false;
+        }
     }
 
     public function isUsingNewTranslationSystem(): bool
