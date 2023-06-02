@@ -37,6 +37,6 @@ class CreditCard extends BasePaymentOption
      */
     public function getName(): string
     {
-        return $this->module->l('Credit card', self::CLASS_NAME);
+        return $this->module->l('Card payment', self::CLASS_NAME);
     }
 }

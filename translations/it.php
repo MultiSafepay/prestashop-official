@@ -118,7 +118,7 @@ $_MODULE['<{multisafepayofficial}prestashop>payafterdelivery_d98a13bb67f63faec3d
 $_MODULE['<{multisafepayofficial}prestashop>trustpay_e5532ed7b6c5ecb396dd70f0e4283f64'] = 'TrustPay';
 $_MODULE['<{multisafepayofficial}prestashop>klarna_2111d3f42d80d5de67a0414b29795a78'] = 'Klarna - Paga in 30 giorni';
 $_MODULE['<{multisafepayofficial}prestashop>visa_89fc0d6fe12b0e0c1af5c7a0373435a6'] = ' Visa';
-$_MODULE['<{multisafepayofficial}prestashop>creditcard_e7f9e382dc50889098cbe56f2554c77b'] = 'Carta di credito';
+$_MODULE['<{multisafepayofficial}prestashop>creditcard_e7f9e382dc50889098cbe56f2554c77b'] = 'Pagamento con carta';
 $_MODULE['<{multisafepayofficial}prestashop>alipayplus_a83138440c22289769585d258e6b3881'] = 'Alipay+ ™ Partner';
 $_MODULE['<{multisafepayofficial}prestashop>amex_b993f20c6e3b73949a96e934a76bbfef'] = 'American Express';
 $_MODULE['<{multisafepayofficial}prestashop>giropay_31911306551723245e7417ae4520fecb'] = 'Giropay';
