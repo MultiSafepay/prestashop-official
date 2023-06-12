@@ -123,6 +123,7 @@ class PaymentOptionService
     /**
      * Return  an array of MultiSafepay PaymentOptions
      *
+     * @param Cart $cart
      * @return array
      */
     public function getFilteredMultiSafepayPaymentOptions(Cart $cart): array
@@ -146,7 +147,6 @@ class PaymentOptionService
             if ($paymentMethod->getDescription()) {
                 $option->setAdditionalInformation($paymentMethod->getDescription());
             }
-
             $paymentOptions[] = $option;
         }
         return $paymentOptions;

@@ -321,7 +321,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'default' => '',
                 'order'   => 90,
                 'class'   => 'sort-order',
-            ],
+            ]
         ];
 
         if ($this->hasConfigurableDirect) {
@@ -348,7 +348,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                     self::CLASS_NAME
                 ),
                 'default'    => '0',
-                'order'      => 12,
+                'order'      => 14,
             ];
         }
 
@@ -362,8 +362,12 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                     self::CLASS_NAME
                 ),
                 'default'    => '0',
-                'order'      => 13,
+                'order'      => 15,
             ];
+        }
+
+        if (!empty($this->getPaymentOptionSettingsFields())) {
+            $settings = array_merge($this->getPaymentOptionSettingsFields(), $settings);
         }
 
         return $this->sortInputFields($settings);
@@ -508,5 +512,13 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 ]
             );
         }
+    }
+
+    /**
+     * @return array
+     */
+    public function getPaymentOptionSettingsFields(): array
+    {
+        return [];
     }
 }

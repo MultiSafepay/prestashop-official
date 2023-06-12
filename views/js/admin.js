@@ -53,8 +53,30 @@ $(document).ready(function () {
         $(this).closest('.form-group').remove();
     });
 
+    toggleGooglePayMerchantFields();
 
 });
+
+function toggleGooglePayMerchantFields() {
+    // Hide or Show Google Pay Direct related settings fields
+    const directOff =  '#MULTISAFEPAY_OFFICIAL_DIRECT_GOOGLEPAY_off';
+    const directOn = '#MULTISAFEPAY_OFFICIAL_DIRECT_GOOGLEPAY_on';
+    const merchantNameId = '.google-pay-direct-name, .google-pay-direct-id';
+
+    if ($(directOff).is(':checked')) {
+        $(merchantNameId).closest('.form-group').hide();
+    } else if ($(directOn).is(':checked')) {
+        $(merchantNameId).closest('.form-group').show();
+    }
+
+    $(directOn).on('click', function () {
+        $(merchantNameId).closest('.form-group').slideDown();
+    });
+
+    $(directOff).on('click', function () {
+        $(merchantNameId).closest('.form-group').slideUp();
+    });
+}
 
 function togglePaymentOptionIconStatus(paymentOptionIdPanel, active)
 {

@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -13,7 +13,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -29,16 +29,18 @@ use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\PrestaShop\Helper\CancelOrderHelper;
 use MultiSafepay\PrestaShop\Helper\DuplicateCartHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
+use Psr\Http\Client\ClientExceptionInterface;
 
 class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontController
 {
-
     /**
      * Process the payment
      *
      * @return mixed
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
+     * @throws ClientExceptionInterface
+     * @throws Exception
      *
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
@@ -49,7 +51,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
                 'Warning: It seems postProcess method of MultiSafepay is being called out of context.'
             );
             Tools::redirect('/index.php?controller=order&step=1');
-            return;
+            return null;
         }
 
         if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
@@ -61,12 +63,11 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
                 'The customer address changed just before the end of the checkout process method and now this method is not available any more.'
             );
             Tools::redirect('/index.php?controller=order&step=1');
-            return;
+            return null;
         }
 
         $selectedPaymentOption = $this->getSelectedPaymentOption();
-        /** @var Cart $cart */
-        $cart     = $this->context->cart;
+        $cart = $this->context->cart;
         $customer = new Customer($cart->id_customer);
 
         /** @var OrderService $orderService */
@@ -103,10 +104,8 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
 
         if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
             LoggerHelper::logInfo(
-                'An OrderRequest for the Cart ID: '.$this->context->cart->id.' has been created and contains the following information: '.json_encode(
-                    $orderRequest->getData(),
-                    JSON_THROW_ON_ERROR
-                )
+                'An OrderRequest for the Cart ID: ' . $this->context->cart->id . ' has been
+                created and contains the following information: ' . json_encode($orderRequest->getData())
             );
         }
 
@@ -117,10 +116,8 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
             $transaction        = $transactionManager->create($orderRequest);
         } catch (ApiException $apiException) {
             LoggerHelper::logError(
-                'Error when try to create a MultiSafepay transaction using the following OrderRequest data: '.json_encode(
-                    $orderRequest->getData(),
-                    JSON_THROW_ON_ERROR
-                )
+                'Error when try to create a MultiSafepay transaction using the following
+                OrderRequest data: ' . json_encode($orderRequest->getData())
             );
             LoggerHelper::logError($apiException->getMessage());
 
@@ -154,6 +151,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
         }
 
         Tools::redirect($transaction->getPaymentUrl());
+        return null;
     }
 
     /**
@@ -165,12 +163,11 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
     {
         $isValid = false;
         foreach (Module::getPaymentModules() as $module) {
-            if ($module['name'] == 'multisafepayofficial') {
+            if ((string)$module['name'] === 'multisafepayofficial') {
                 $isValid = true;
                 break;
             }
         }
-
         return $isValid;
     }
 
@@ -186,11 +183,11 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
             return false;
         }
 
-        // If the cart context is not properly setup
-        if ($this->context->cart->id_customer == 0 || $this->context->cart->id_address_delivery == 0 || $this->context->cart->id_address_invoice == 0) {
+        if (((string)$this->context->cart->id_customer === '0') ||
+            ((string)$this->context->cart->id_address_delivery === '0') ||
+            ((string)$this->context->cart->id_address_invoice === '0')) {
             return false;
         }
-
         return true;
     }
 
@@ -204,9 +201,6 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
     {
         /** @var PaymentOptionService $paymentOptionService */
         $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
-        /** @var BasePaymentOption $paymentOption */
-        $paymentOption = $paymentOptionService->getMultiSafepayPaymentOption(Tools::getValue('gateway'));
-
-        return $paymentOption;
+        return $paymentOptionService->getMultiSafepayPaymentOption(Tools::getValue('gateway'));
     }
 }

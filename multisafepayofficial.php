@@ -64,8 +64,6 @@ class MultisafepayOfficial extends PaymentModule
 
     /**
      * @return bool
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
      */
     public function install(): bool
     {
@@ -103,8 +101,11 @@ class MultisafepayOfficial extends PaymentModule
      */
     public function uninstall(): bool
     {
-        (new Uninstaller($this))->uninstall();
-
+        try {
+            (new Uninstaller($this))->uninstall();
+        } catch (PrestaShopException|PrestaShopDatabaseException $exception) {
+            LoggerHelper::logError($exception->getMessage());
+        }
         return parent::uninstall();
     }
 
@@ -127,6 +128,7 @@ class MultisafepayOfficial extends PaymentModule
     /**
      * Add the CSS & JavaScript files you want to be loaded in the BO.
      *
+     * @param array $params
      * @return void
      */
     public function hookActionAdminControllerSetMedia(array $params): void
@@ -142,6 +144,9 @@ class MultisafepayOfficial extends PaymentModule
     /**
      * Add the CSS & JavaScript files you want to be added on the FO.
      *
+     * @param array $params
+     * @return void
+     * @throws Exception
      */
     public function hookActionFrontControllerSetMedia(array $params): void
     {
@@ -179,8 +184,10 @@ class MultisafepayOfficial extends PaymentModule
     /**
      * Return payment options available
      *
-     * @param array $params
+     * @param   array  $params
      * @return array|null
+     * @throws SmartyException
+     * @throws Exception
      */
     public function hookPaymentOptions(array $params): ?array
     {
@@ -205,12 +212,13 @@ class MultisafepayOfficial extends PaymentModule
     /**
      * Return payment form
      *
-     * @param BasePaymentOption $paymentOption
-     * @return false|string
+     * @param BasePaymentOption  $paymentOption
+     * @return ?string
      * @throws SmartyException
      */
-    public function getMultiSafepayPaymentOptionForm(BasePaymentOption $paymentOption)
-    {
+    public function getMultiSafepayPaymentOptionForm(
+        BasePaymentOption $paymentOption
+    ): ?string {
         $this->context->smarty->assign(
             [
                 'action'        => $this->context->link->getModuleLink($this->name, 'payment', [], true),
@@ -245,7 +253,6 @@ class MultisafepayOfficial extends PaymentModule
     public function hookActionValidateOrder(array $params): void
     {
         $cart = $params['cart'];
-
         if ($cart && !empty($cart->id_shop_group) && !empty($cart->id_guest)) {
             return;
         }
@@ -284,7 +291,7 @@ class MultisafepayOfficial extends PaymentModule
             }
 
             if ($paymentUrl) {
-                $message = $this->l('Payment link: ') .$paymentUrl;
+                $message = $this->l('Payment link: ') . $paymentUrl;
                 OrderMessageHelper::addMessage($order, $message);
                 if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
                     LoggerHelper::logInfo($message);
@@ -314,13 +321,14 @@ class MultisafepayOfficial extends PaymentModule
     /**
      * Set MultiSafepay transaction as invoiced
      *
-     * @param array $params
+     * @param   array  $params
      *
      * @throws ClientExceptionInterface
+     * @throws Exception
      */
     public function hookActionSetInvoice(array $params): void
     {
-        if (!(bool)Configuration::get('PS_INVOICE')) {
+        if (!Configuration::get('PS_INVOICE')) {
             return;
         }
 
@@ -367,11 +375,12 @@ class MultisafepayOfficial extends PaymentModule
     /**
      * Set MultiSafepay transaction as shipped
      *
-     * @param array $params
+     * @param   array  $params
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      * @throws ClientExceptionInterface
+     * @throws Exception
      */
     public function hookActionOrderStatusPostUpdate(array $params): void
     {
@@ -413,12 +422,13 @@ class MultisafepayOfficial extends PaymentModule
     /**
      * Process the refund action
      *
-     * @param array $params
+     * @param   array  $params
      *
      * @return bool
      * @throws ClientExceptionInterface
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
+     * @throws Exception
      */
     public function hookActionOrderSlipAdd(array $params): bool
     {
@@ -442,7 +452,6 @@ class MultisafepayOfficial extends PaymentModule
      * @param array $params
      *
      * @return string
-     * @throws SmartyException
      */
     public function hookDisplayCustomerAccount(array $params): string
     {
@@ -455,13 +464,14 @@ class MultisafepayOfficial extends PaymentModule
      * @param array $params
      * @return bool
      */
-    public function hookPaymentReturn(array $params)
+    public function hookPaymentReturn(array $params): bool
     {
         return false;
     }
 
     /**
      * @return bool
+     * @throws Exception
      */
     private function hasSetApiKey(): bool
     {

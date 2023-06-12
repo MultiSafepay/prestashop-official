@@ -56,6 +56,6 @@ class MultisafepayOfficialProcessorderModuleFrontController extends ModuleFrontC
             )->customer->secure_key
         );
 
-        exit(json_encode(['redirectUrl' => $redirectUrl], JSON_THROW_ON_ERROR));
+        exit(json_encode(['redirectUrl' => $redirectUrl]));
     }
 }

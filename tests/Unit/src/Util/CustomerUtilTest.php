@@ -37,7 +37,7 @@ class CustomerUtilTest extends BaseMultiSafepayTest
             'Doe',
             null,
             null,
-            'en_GB',
+            'en_GB'
         );
 
         self::assertInstanceOf(CustomerDetails::class, $output);
@@ -62,7 +62,7 @@ class CustomerUtilTest extends BaseMultiSafepayTest
             'Doe',
             null,
             null,
-            'en_GB',
+            'en_GB'
         );
 
         $output = $customer->getAddress();

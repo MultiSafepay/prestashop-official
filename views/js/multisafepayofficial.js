@@ -131,7 +131,3 @@ if (typeof prestashop !== 'undefined') {
         }
     );
 }
-
-
-
-
