@@ -22,9 +22,9 @@
 
 namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
+use Cart;
 use Configuration;
 use Context;
-use Cart;
 use Exception;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Wallet;
@@ -34,6 +34,7 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use PrestaShop\PrestaShop\Adapter\Entity\Media;
 use Psr\Http\Client\ClientExceptionInterface;
+use Tools;
 
 class GooglePay extends BasePaymentOption
 {
@@ -56,7 +57,8 @@ class GooglePay extends BasePaymentOption
     public function getTransactionType(): string
     {
         if ($this->isDirect()) {
-            return self::DIRECT_TYPE;
+            $checkoutVars = Tools::getAllValues();
+            return empty($checkoutVars['payment_token']) ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
         }
         return self::REDIRECT_TYPE;
     }
