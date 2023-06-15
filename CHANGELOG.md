@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.10.1
+Release date: Jun 15th, 2023
+
+### Changed
++ PRES-385: Switch Google Pay to redirect, when google JS library fails to load
+
+***
+
 ## 5.10.0
 Release date: Jun 15th, 2023
 
