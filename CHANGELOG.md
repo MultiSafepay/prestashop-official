@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.10.0
+Release date: Jun 15th, 2023
+
+### Added
++ PRES-365: Add Google Pay Direct.
+
+### Changed
++ DAVAMS-616: Rename 'Credit Card' payment method as 'Card payment'.
+
+### Fixed
++ PRES-379: Handle error when API Key is not set properly.
+
+***
+
 ## 5.9.0
 Release date: May 10th, 2023
 
