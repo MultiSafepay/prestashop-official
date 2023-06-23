@@ -21,9 +21,11 @@
  */
 
 use MultiSafepay\Api\Transactions\Transaction;
+use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\CancelOrderHelper;
 use MultiSafepay\PrestaShop\Helper\DuplicateCartHelper;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+use MultiSafepay\PrestaShop\Services\SdkService;
 
 class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontController
 {
@@ -75,21 +77,35 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
             DuplicateCartHelper::duplicateCart($cart);
         }
 
-        /** @var \MultiSafepay\PrestaShop\Services\SdkService $sdkService */
-        $sdkService         = $this->get('multisafepay.sdk_service');
-        $transactionManager = $sdkService->getSdk()->getTransactionManager();
+        try {
+            /** @var SdkService $sdkService */
+            $sdkService         = $this->get('multisafepay.sdk_service');
+            $transactionManager = $sdkService->getSdk()->getTransactionManager();
 
-        $transaction = $transactionManager->get(Tools::getValue('id_reference'));
+            $transaction = $transactionManager->get(Tools::getValue('id_reference'));
 
-        if ($transaction->getStatus() !== Transaction::DECLINED) {
-            // Redirect to checkout page
-            Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+            if ($transaction->getStatus() !== Transaction::DECLINED) {
+                // Redirect to checkout page
+                Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+            }
+        } catch (ApiException $apiException) {
+            LoggerHelper::logError($apiException->getMessage());
+
+            $this->context->smarty->assign(
+                [
+                    'layout'         => 'full-width-template',
+                    'error_message'  => $this->module->l('There was a problem getting the status of
+                                                        the transaction, please try again', 'cancel')
+                ]
+            );
+
+            return $this->setTemplate('module:multisafepayofficial/views/templates/front/error.tpl');
         }
 
         $this->context->smarty->assign(
             [
                 'layout'         => 'full-width-template',
-                'error_message'  => $this->l('Your transaction was declined, please try again')
+                'error_message'  => $this->module->l('Your transaction was declined, please try again', 'cancel')
             ]
         );
 
