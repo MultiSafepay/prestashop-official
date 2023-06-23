@@ -53,28 +53,41 @@
             'conditions_to_approve[terms-and-conditions]'
         );
 
-
         const cardPaymentMethod = Object.assign(
             {tokenizationSpecification: tokenizationSpecification},
             baseCardPaymentMethod
         );
 
-        const paymentsClient = new google.payments.api.PaymentsClient({environment: configEnvironment});
-        const isReadyToPayRequest = Object.assign({}, baseRequest);
-        isReadyToPayRequest.allowedPaymentMethods = [baseCardPaymentMethod];
+        /**
+         * Checking if the Google Pay API file has been loaded
+         */
+        let paymentsClient = false, isReadyToPayRequest = false;
+
+        if (!window.google || !window.google.payments || !window.google.payments.api) {
+            console.error('Error initializing Google Pay: Script not loaded');
+        } else {
+            paymentsClient = new google.payments.api.PaymentsClient({environment: configEnvironment});
+            isReadyToPayRequest = Object.assign({}, baseRequest);
+            isReadyToPayRequest.allowedPaymentMethods = [baseCardPaymentMethod];
+        }
 
         function addGooglePayButton()
         {
             const buttonContainer = document.getElementById(
                 'payment-confirmation'
             );
-            const button = paymentsClient.createButton({
-                buttonType: 'plain',
-                buttonColor: 'black',
-                onClick: onGooglePaymentButtonClicked
-            });
-            if (buttonContainer) {
-                buttonContainer.parentElement.appendChild(button);
+
+            if (paymentsClient && paymentsClient.createButton) {
+                const button = paymentsClient.createButton({
+                    buttonType: 'plain',
+                    buttonColor: 'black',
+                    onClick: onGooglePaymentButtonClicked
+                });
+                if (buttonContainer) {
+                    buttonContainer.parentElement.appendChild(button);
+                }
+            } else {
+                console.error('Error initializing Google Pay: Script not loaded');
             }
         }
 
@@ -97,24 +110,20 @@
 
         function onGooglePaymentButtonClicked()
         {
-            if (checkboxTos) {
-                if (checkboxTos.checked) {
-                    const paymentDataRequest = getGooglePaymentDataRequest();
-                    paymentsClient.loadPaymentData(paymentDataRequest)
-                        .then(function (paymentData) {
-                            processGooglePayment(paymentData);
-                        })
-                        .catch(function (err) {
-                            console.log(err);
-                        });
-                } else {
-                    if (labelTos) {
-                        const conditionsToApprove = document.getElementById('conditions-to-approve');
-                        if (conditionsToApprove) {
-                            if (!conditionsToApprove.checkValidity()) {
-                                conditionsToApprove.reportValidity();
-                            }
-                        }
+            if (checkboxTos && checkboxTos.checked && paymentsClient && paymentsClient.loadPaymentData) {
+                const paymentDataRequest = getGooglePaymentDataRequest();
+                paymentsClient.loadPaymentData(paymentDataRequest)
+                    .then(function (paymentData) {
+                        processGooglePayment(paymentData);
+                    })
+                    .catch(function (err) {
+                        console.log(err);
+                    });
+            } else if (labelTos) {
+                const conditionsToApprove = document.getElementById('conditions-to-approve');
+                if (conditionsToApprove) {
+                    if (!conditionsToApprove.checkValidity()) {
+                        conditionsToApprove.reportValidity();
                     }
                 }
             }
@@ -199,6 +208,9 @@
                                 // Show error in developer console for debugging
                                 console.error(err);
                             });
+                    } else {
+                        togglePlaceOrderButton('block');
+                        console.warn('Google Pay API is not available, redirect payment will be used.');
                     }
                 });
             };
