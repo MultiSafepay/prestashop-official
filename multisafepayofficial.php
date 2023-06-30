@@ -160,8 +160,12 @@ class MultisafepayOfficial extends PaymentModule
 
         $this->context->controller->registerStylesheet(
             'module-multisafepay-styles',
-            'modules/multisafepayofficial/views/css/front.css'
+            'modules/multisafepayofficial/views/css/front.css',
+            [
+                'priority' => 2,
+            ]
         );
+
         $this->context->controller->registerJavascript(
             'module-multisafepay-javascript',
             'modules/multisafepayofficial/views/js/front.js',

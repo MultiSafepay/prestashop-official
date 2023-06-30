@@ -2,9 +2,11 @@
     padding: 10px;
     background-color: #FBFBFB;
 }
+
 #multisafepay_payment_button a:hover {
-    background-color: #f6f6f6;
+    background-color: #F6F6F6;
 }
+
 #multisafepay_payment_button a:after {
     display: block;
     content: "\f054";
@@ -12,15 +14,96 @@
     right: 15px;
     margin-top: -11px;
     top: 50%;
-    font-family: "FontAwesome";
+    font-family: "FontAwesome", sans-serif;
     font-size: 25px;
     height: 22px;
     width: 14px;
     color: #777777;
 }
+
 #checkout-payment-step .payment-options div div.payment-option label img {
     height: 30px;
 }
+
 .msp-ui-form-group label[for="extvar4"] {
     display: inline-block !important;
+}
+
+div.select2-ideal .select2-dropdown,
+div.select2-mybank .select2-dropdown {
+    border-radius: 0 !important;
+}
+
+div.select2-ideal .select2-container--default .select2-selection--single,
+div.select2-mybank .select2-container--default .select2-selection--single {
+    border-radius: 0 !important;
+}
+
+div.select2-ideal .select2-container--default .select2-selection--multiple,
+div.select2-mybank .select2-container--default .select2-selection--multiple {
+    border-radius: 0 !important;
+}
+
+div.select2-ideal .select2-container--default .select2-selection--multiple .select2-selection__choice,
+div.select2-mybank .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    border-radius: 0 !important;
+}
+
+div.select2-ideal .select2-container--classic .select2-selection--single,
+div.select2-mybank .select2-container--classic .select2-selection--single {
+    font-family: "Manrope", sans-serif !important;
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+    background-color: #F6F6F6 !important;
+    border: 1px solid rgba(0, 0, 0, 0.25) !important;
+    border-radius: 0 !important;
+    height: 40px !important;
+    background-image: none !important;
+    filter: none !important;
+}
+
+div.select2-ideal .select2-container--classic .select2-selection--single:focus,
+div.select2-mybank .select2-container--classic .select2-selection--single:focus {
+    border: 0 !important;
+    outline: 0.1875rem solid #24B9D7;
+}
+
+div.select2-ideal .select2-container--classic .select2-selection--single .select2-selection__rendered,
+div.select2-mybank .select2-container--classic .select2-selection--single .select2-selection__rendered {
+    color: #7A7A7A !important;
+    font-size: 1rem !important;
+    line-height: 38px !important;
+}
+
+div.select2-ideal .select2-container--classic .select2-selection--single .select2-selection__arrow,
+div.select2-mybank .select2-container--classic .select2-selection--single .select2-selection__arrow {
+    background-color: transparent !important;
+    border-left: none !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    background-image: none !important;
+    background-repeat: no-repeat !important;
+    filter: none !important;
+    top: 7px !important;
+    right: 9px !important;
+}
+
+div.select2-ideal .select2-container--classic .select2-selection--single .select2-selection__arrow b,
+div.select2-mybank .select2-container--classic .select2-selection--single .select2-selection__arrow b {
+    border-color: black transparent transparent transparent !important;
+}
+
+div.select2-ideal .select2-container--classic.select2-container--open .select2-selection--single .select2-selection__arrow b,
+div.select2-mybank .select2-container--classic.select2-container--open .select2-selection--single .select2-selection__arrow b {
+    border-color: transparent transparent black transparent !important;
+}
+
+div.select2-ideal .select2-container--classic .select2-selection--multiple,
+div.select2-mybank .select2-container--classic .select2-selection--multiple {
+    border-radius: 0 !important;
+}
+
+div.select2-ideal .select2-container--classic .select2-selection--multiple .select2-selection__choice,
+div.select2-mybank .select2-container--classic .select2-selection--multiple .select2-selection__choice {
+    border-radius: 0 !important;
 }

@@ -20,7 +20,7 @@
  */
 
 $(document).ready(function () {
-    $('div.select2-mybank select').select2({
+    $('div.select2-ideal select').select2({
         width: '100%',
         theme: 'classic'
     });
