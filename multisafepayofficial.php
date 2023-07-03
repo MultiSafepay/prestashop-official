@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -13,7 +13,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -42,6 +42,11 @@ use Psr\Http\Client\ClientExceptionInterface;
 
 class MultisafepayOfficial extends PaymentModule
 {
+
+    /**
+     * @var string
+     */
+    private $paymentUrlEmailHook = '';
 
     /**
      * Multisafepay plugin constructor.
@@ -91,7 +96,8 @@ class MultisafepayOfficial extends PaymentModule
             $this->registerHook('actionOrderSlipAdd') &&
             $this->registerHook('displayCustomerAccount') &&
             $this->registerHook('actionEmailSendBefore') &&
-            $this->registerHook('actionValidateOrder');
+            $this->registerHook('actionValidateOrder') &&
+            $this->registerHook('actionEmailAddAfterContent');
     }
 
     /**
@@ -233,6 +239,30 @@ class MultisafepayOfficial extends PaymentModule
     }
 
     /**
+     * @param array $params
+     * @return void
+     */
+    public function hookActionEmailAddAfterContent(array &$params): void
+    {
+        if ($params['template'] !== 'order_conf' || empty($this->paymentUrlEmailHook)) {
+            return;
+        }
+
+        $paymentLinkText = $this->l('Payment link: ');
+        $paymentUrl = $this->paymentUrlEmailHook;
+
+        // Replace HTML payment link
+        $span = '<span class="label" style="font-weight: 700;">' . $paymentLinkText . '</span> ';
+        $link = '<a style="word-break:break-all;" href="' . $paymentUrl . '">' . $paymentUrl . '</a>';
+        $replacement = '{payment}<br />' . $span . $link . '</div>';
+        $params['template_html'] = str_replace('{payment}</div>', $replacement, $params['template_html']);
+
+        // Replace text payment link
+        $replacementTxt = 'Payment: {payment}' . "\n" . $paymentLinkText . $paymentUrl;
+        $params['template_txt'] = str_replace('Payment: {payment}', $replacementTxt, $params['template_txt']);
+    }
+
+    /**
      * Disable send emails on order confirmation
      *
      * @param  array $params
@@ -253,6 +283,7 @@ class MultisafepayOfficial extends PaymentModule
      * @throws ClientExceptionInterface
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
+     * @throws Exception
      */
     public function hookActionValidateOrder(array $params): void
     {
@@ -296,6 +327,7 @@ class MultisafepayOfficial extends PaymentModule
 
             if ($paymentUrl) {
                 $message = $this->l('Payment link: ') . $paymentUrl;
+                $this->paymentUrlEmailHook = $paymentUrl;
                 OrderMessageHelper::addMessage($order, $message);
                 if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
                     LoggerHelper::logInfo($message);
