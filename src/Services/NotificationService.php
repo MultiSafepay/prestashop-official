@@ -340,13 +340,19 @@ abstract class NotificationService
     public function getPaymentMethodNameFromTransaction(TransactionResponse $transaction)
     {
         $gatewayCode = $transaction->getPaymentDetails()->getType();
+
+        // When an order is being fully paid using a gift card
         if (strpos($gatewayCode, 'Coupon::') !== false) {
             $data = $transaction->getPaymentDetails()->getData();
-            $paymentOption = $this->paymentOptionService->getMultiSafepayPaymentOption($data['coupon_brand']);
-        } else {
-            $paymentOption = $this->paymentOptionService->getMultiSafepayPaymentOption($gatewayCode);
+            return $this->paymentOptionService->getMultiSafepayPaymentOption($data['coupon_brand'])->getFrontEndName();
+        // When an order is being paid using multiple gift cards
+        } elseif (strpos($gatewayCode, 'Coupon') !== false) {
+            $data = $transaction->getPaymentDetails()->getData();
+            $gatewayCodes = explode(';', $data['coupon_brand']);
+            return $this->paymentOptionService->getMultiSafepayPaymentOption($gatewayCodes[0])->getFrontEndName();
         }
-        return $paymentOption->getFrontEndName();
+
+        return $this->paymentOptionService->getMultiSafepayPaymentOption($gatewayCode)->getFrontEndName();
     }
 
     /**
