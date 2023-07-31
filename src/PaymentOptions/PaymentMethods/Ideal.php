@@ -121,7 +121,7 @@ class Ideal extends BasePaymentOption
             'module-multisafepay-select2-styles',
             'modules/multisafepayofficial/views/css/select2.min.css',
             [
-                'priority' => 1,
+                'priority' => 1
             ]
         );
 

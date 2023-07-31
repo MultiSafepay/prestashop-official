@@ -31,6 +31,10 @@ use MultiSafepay\PrestaShop\Helper\DuplicateCartHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use Psr\Http\Client\ClientExceptionInterface;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontController
 {
     /**

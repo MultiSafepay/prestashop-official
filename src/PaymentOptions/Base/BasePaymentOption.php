@@ -13,7 +13,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -22,6 +22,7 @@
 
 namespace MultiSafepay\PrestaShop\PaymentOptions\Base;
 
+use Address;
 use Carrier;
 use Cart;
 use Configuration;
@@ -34,7 +35,8 @@ use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\PrestaShop\Services\TokenizationService;
 use MultisafepayOfficial;
-use Order;
+use PrestaShopDatabaseException;
+use PrestaShopException;
 
 abstract class BasePaymentOption implements BasePaymentOptionInterface
 {
@@ -462,9 +464,12 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         return false;
     }
 
-
     /**
+     * @param Context $context
+     *
      * @return void
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     public function registerJavascript(Context $context): void
@@ -499,6 +504,8 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     }
 
     /**
+     * @param Context $context
+     *
      * @return void
      */
     public function registerCss(Context $context): void
@@ -512,6 +519,22 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 ]
             );
         }
+    }
+
+    /**
+     * Return the country code from the context object
+     *
+     * @param Context $context
+     * @return string
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    protected function getCountryCode(Context $context): string
+    {
+        $idCountry = (new Address((int)$context->cart->id_address_invoice))->id_country;
+        $country = (new Country($idCountry));
+
+        return $country->iso_code;
     }
 
     /**

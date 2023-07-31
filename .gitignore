@@ -3,11 +3,9 @@
 /.dist
 /coverage.xml
 /composer.lock
-/coverage.xml
 /coverage-report/*
 /.distignore
 /.phpcs.xml
-/composer.lock
 .DS_Store
 /.env
 /vendor

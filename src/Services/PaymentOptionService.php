@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -13,7 +13,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -22,6 +22,7 @@
 
 namespace MultiSafepay\PrestaShop\Services;
 
+use Exception;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay;
 use MultisafepayOfficial;
@@ -31,6 +32,7 @@ use Customer;
 use Media;
 use Context;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use SmartyException;
 use Symfony\Component\Finder\Finder;
 use Tools;
 
@@ -121,10 +123,12 @@ class PaymentOptionService
     }
 
     /**
-     * Return  an array of MultiSafepay PaymentOptions
+     * Return an array of MultiSafepay PaymentOptions
      *
      * @param Cart $cart
      * @return array
+     * @throws SmartyException
+     * @throws Exception
      */
     public function getFilteredMultiSafepayPaymentOptions(Cart $cart): array
     {
@@ -180,15 +184,17 @@ class PaymentOptionService
     }
 
     /**
-     * Filter the payment option according with their settings and the cart properties
+     * Filter the payment option according to their settings and the cart properties
      *
      * @param BasePaymentOption $paymentMethod
      * @param Cart $cart
+     *
      * @return bool
      *
      * @phpcs:disable Generic.Files.LineLength.TooLong
+     * @throws Exception
      */
-    private function excludePaymentOptionByPaymentOptionSettings(BasePaymentOption $paymentMethod, Cart $cart)
+    private function excludePaymentOptionByPaymentOptionSettings(BasePaymentOption $paymentMethod, Cart $cart): bool
     {
         $orderTotal             = $cart->getOrderTotal();
         $orderCountryId         = (new Address($cart->id_address_invoice))->id_country;
@@ -196,7 +202,7 @@ class PaymentOptionService
         $orderCustomerGroups    = (new Customer($cart->id_customer))->id_default_group;
         $orderCarrierId         = $cart->id_carrier;
         $isVirtual              = $cart->isVirtualCart();
-        $isCartSplitted         = $cart->getNbOfPackages() > 1;
+        $isCartSplit            = $cart->getNbOfPackages() > 1;
 
         $paymentMethodSettings = $paymentMethod->getGatewaySettings();
 
@@ -232,7 +238,7 @@ class PaymentOptionService
             return true;
         }
 
-        if (!$isCartSplitted && !$isVirtual && !empty($paymentMethodCarriers) && !in_array($orderCarrierId, $paymentMethodCarriers, true)) {
+        if (!$isCartSplit && !$isVirtual && !empty($paymentMethodCarriers) && !in_array($orderCarrierId, $paymentMethodCarriers, true)) {
             return true;
         }
 

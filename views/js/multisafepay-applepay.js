@@ -12,16 +12,18 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-$(document).ready(function () {
-    checkIfDeviceSupportApplePay();
-});
+(function ($) {
+    $(function () {
+        checkIfDeviceSupportApplePay();
+    });
+})(jQuery);
 
 if (typeof prestashop !== 'undefined') {
     prestashop.on(
@@ -32,7 +34,7 @@ if (typeof prestashop !== 'undefined') {
     );
 }
 
-// One Page Checkout PS support
+// OnePage Checkout PS support
 $(document).on('opc-load-payment:completed', function () {
     checkIfDeviceSupportApplePay();
 });
@@ -57,11 +59,11 @@ function checkIfDeviceSupportApplePay()
         }
     } catch (error) {
         removeApplePay();
+        console.error(error);
     }
 }
 
 function removeApplePay()
 {
-    $("#multisafepay-form-applepay").parent().closest("div").prev("div").remove();
-    $("#multisafepay-form-applepay").parent().closest("div").remove();
+    $('*[data-module-name="APPLEPAY"]').parent().closest('div').remove();
 }

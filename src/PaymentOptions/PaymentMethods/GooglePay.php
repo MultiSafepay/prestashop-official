@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -13,7 +13,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -25,14 +25,17 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 use Cart;
 use Configuration;
 use Context;
+use Currency;
 use Exception;
+use Media;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Wallet;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\SdkService;
-use PrestaShop\PrestaShop\Adapter\Entity\Media;
+use PrestaShopDatabaseException;
+use PrestaShopException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Tools;
 
@@ -60,69 +63,61 @@ class GooglePay extends BasePaymentOption
             $checkoutVars = Tools::getAllValues();
             return empty($checkoutVars['payment_token']) ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
         }
+
         return self::REDIRECT_TYPE;
     }
 
+    /**
+     * @throws PrestaShopException
+     * @throws PrestaShopDatabaseException
+     * @throws Exception
+     */
     public function registerJavascript(Context $context): void
     {
         // To avoid problems with the Google Pay button, we need to load them in the footer area
         if ($this->isDirect()) {
-            $gatewayMerchantId = '';
-
             $context->controller->registerJavascript(
                 'module-multisafepay-googlepay-direct-call-javascript',
                 'https://pay.google.com/gp/p/js/pay.js',
                 [
                     'priority' => 1,
-                    'inline' => true,
-                    'attributes' => 'async',
                     'server' => 'remote'
                 ]
             );
 
             $context->controller->registerJavascript(
-                'module-multisafepay-googlepay-direct-javascript',
-                'modules/multisafepayofficial/views/js/multisafepay-googlepay-direct.js',
+                'module-multisafepay-initialize-common-wallets-javascript',
+                'modules/multisafepayofficial/views/js/multisafepay-common-wallets.js',
+                [
+                    'priority' => 300
+                ]
+            );
+
+            $context->controller->registerJavascript(
+                'module-multisafepay-googlepay-wallet-javascript',
+                'modules/multisafepayofficial/views/js/multisafepay-googlepay-wallet.js',
                 [
                     'priority' => 200
                 ]
             );
 
-            try {
-                /** @var SdkService $sdkService */
-                // get the multisafepay.sdk_service service from the container
-                $sdkService = $this->module->get('multisafepay.sdk_service');
-                $environment = $sdkService->getTestMode() ? 'TEST' : 'LIVE';
-                if (!is_null($sdkService->getSdk())) {
-                    $accountManager = $sdkService->getSdk()->getAccountManager();
-                    $gatewayMerchantId = $accountManager->get()->getAccountId();
-                }
-            } catch (ApiException|ClientExceptionInterface|Exception $exception) {
-                LoggerHelper::logAlert(
-                    'Error when try to set the merchant credentials: ' . $exception->getMessage()
-                );
-                return;
-            }
-
-            $totalPrice = $context->cart->getOrderTotal() ?: 0.00;
-            $currencyCode = $context->currency->iso_code ?: 'EUR';
-            $countryCode = $context->country->iso_code ?: 'NL';
             $merchantName = self::TEST_MERCHANT_NAME;
             $merchantId = self::TEST_MERCHANT_ID;
 
-            if ($environment === 'LIVE') {
+            if ($this->getMultiSafepayEnvironment() === 'LIVE') {
                 $merchantName = Configuration::get('MULTISAFEPAY_OFFICIAL_MERCHANT_NAME_GOOGLEPAY') ?: '';
                 $merchantId = Configuration::get('MULTISAFEPAY_OFFICIAL_MERCHANT_ID_GOOGLEPAY') ?: '';
             }
 
             Media::addJsDef([
-                'configEnvironment'           => $environment,
-                'configGatewayMerchantId'     => $gatewayMerchantId,
-                'configTotalPrice'            => $totalPrice,
-                'configCurrencyCode'          => $currencyCode,
-                'configCountryCode'           => $countryCode,
-                'configMerchantName'          => $merchantName,
-                'configMerchantId'            => $merchantId
+                'configEnvironment'           => $this->getMultiSafepayEnvironment(),
+                'configGatewayMerchantId'     => $this->getMultiSafepayAccountId(),
+                'configGooglePayTotalPrice'   => $context->cart->getOrderTotal(),
+                'configGooglePayCurrencyCode' => (new Currency($context->cart->id_currency))->iso_code,
+                'configGooglePayCountryCode'  => $this->getCountryCode($context),
+                'configGooglePayMerchantName' => $merchantName,
+                'configGooglePayMerchantId'   => $merchantId,
+                'configGooglePayDebugMode'    => (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')
             ]);
 
             parent::registerJavascript($context);
@@ -130,11 +125,40 @@ class GooglePay extends BasePaymentOption
     }
 
     /**
+     * Return the MultiSafepay Merchant Account ID
+     *
+     * @return int
+     */
+    private function getMultiSafepayAccountId(): int
+    {
+        try {
+            /** @var SdkService $sdkService */
+            $sdkService = $this->module->get('multisafepay.sdk_service');
+            $accountManager = $sdkService->getSdk()->getAccountManager();
+            $gatewayMerchantId = $accountManager->get()->getAccountId();
+        } catch (ApiException|ClientExceptionInterface|Exception $exception) {
+            LoggerHelper::logAlert(
+                'Error when try to get the merchant account ID: ' . $exception->getMessage()
+            );
+        }
+
+        return $gatewayMerchantId ?? 0;
+    }
+
+    /**
+     * @return string
+     */
+    private function getMultiSafepayEnvironment(): string
+    {
+        return Configuration::get('MULTISAFEPAY_OFFICIAL_TEST_MODE') ? 'TEST' : 'LIVE';
+    }
+
+    /**
      * @param Cart $cart
      * @param array $data
      * @return GatewayInfoInterface|null
      *
-     * @phpcs:disable -- Disable to avoid trigger a warning in validator about unused parameter
+     * @phpcs:disable -- Disable to avoid triggering a warning in validator about unused parameter
      */
     public function getGatewayInfo(Cart $cart, array $data = []): ?GatewayInfoInterface
     {
@@ -143,6 +167,7 @@ class GooglePay extends BasePaymentOption
         }
         $gatewayInfo = new Wallet();
         $gatewayInfo->addPaymentToken($data['payment_token']);
+
         return $gatewayInfo;
         // phpcs:enable
     }

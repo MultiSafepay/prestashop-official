@@ -13,7 +13,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -22,6 +22,10 @@
 
 use MultiSafepay\PrestaShop\Services\NotExistingOrderNotificationService;
 use MultiSafepay\PrestaShop\Services\ExistingOrderNotificationService;
+
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
 class MultisafepayOfficialNotificationModuleFrontController extends ModuleFrontController
 {
@@ -54,7 +58,7 @@ class MultisafepayOfficialNotificationModuleFrontController extends ModuleFrontC
             $order = $orderCollection->getFirst();
             $cart = new Cart($order->id_cart);
         } else {
-            $cart = new Cart($cartId);
+            $cart = new Cart((int)$cartId);
         }
 
         // If the order already exists we use a different service to handle the notification

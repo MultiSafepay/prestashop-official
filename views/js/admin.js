@@ -12,71 +12,76 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
  * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
- * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ * PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-$(document).ready(function () {
+(function ($) {
+    $(function () {
+        initDragula();
 
-    initDragula();
+        $("[id^='multisafepay-panel-payment-option-']").each(function () {
+            var paymentOptionIdPanel = $(this).attr("id");
 
-    $("[id^='multisafepay-panel-payment-option-']").each(function () {
-        var paymentOptionIdPanel = $(this).attr("id");
+            $('#' + paymentOptionIdPanel + ' .panel-body .form-group:first .multisafepay-payment-methods-list-switch input:radio').change(function () {
+                togglePaymentOptionIconStatus(paymentOptionIdPanel, $(this).val());
+            });
 
-        $('#' + paymentOptionIdPanel + ' .panel-body .form-group:first .multisafepay-payment-methods-list-switch input:radio').change(function () {
-            togglePaymentOptionIconStatus(paymentOptionIdPanel, $(this).val());
+            $('#' + paymentOptionIdPanel + '  .panel-heading .panel-title a span.status').click(function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                togglePaymentOptionFieldStatus(paymentOptionIdPanel, $(this).hasClass('active'));
+            });
+
+            $('#' + paymentOptionIdPanel + '  .panel-heading .panel-title a span.drag-and-drop-control').click(function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            });
+
         });
 
-        $('#' + paymentOptionIdPanel + '  .panel-heading .panel-title a span.status').click(function (event) {
+        // Unset the image from uploader field
+        $('.multisafepay-panel-payment-option .panel-body .form-group .col-lg-9 .form-group .col-lg-12 div a').click(function (event) {
             event.preventDefault();
             event.stopPropagation();
-            togglePaymentOptionFieldStatus(paymentOptionIdPanel, $(this).hasClass('active'));
+            $(this).closest('.form-group').next().find('input[type=file]').attr('value', '');
+            $(this).closest('.form-group').next().find('input[type=text]').css('text-indent', '999px');
+            $(this).closest('.form-group').next().find('input[type=text]').attr('value', 'remove');
+            $(this).closest('.form-group').remove();
         });
 
-        $('#' + paymentOptionIdPanel + '  .panel-heading .panel-title a span.drag-and-drop-control').click(function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-        });
+        function togglePaymentMerchantFields(directOff, directOn, merchantInfo) {
+            if ($(directOff).is(':checked')) {
+                $(merchantInfo).closest('.form-group').hide();
+            } else if ($(directOn).is(':checked')) {
+                $(merchantInfo).closest('.form-group').show();
+            }
 
+            $(directOn).on('click', function () {
+                $(merchantInfo).closest('.form-group').slideDown();
+            });
+
+            $(directOff).on('click', function () {
+                $(merchantInfo).closest('.form-group').slideUp();
+            });
+        }
+
+        togglePaymentMerchantFields(
+            '#MULTISAFEPAY_OFFICIAL_DIRECT_GOOGLEPAY_off',
+            '#MULTISAFEPAY_OFFICIAL_DIRECT_GOOGLEPAY_on',
+            '.google-pay-direct-name, .google-pay-direct-id'
+        );
+
+        togglePaymentMerchantFields(
+            '#MULTISAFEPAY_OFFICIAL_DIRECT_APPLEPAY_off',
+            '#MULTISAFEPAY_OFFICIAL_DIRECT_APPLEPAY_on',
+            '.apple-pay-direct-name'
+        );
     });
-
-    // Unset the image from uploader field
-    $('.multisafepay-panel-payment-option .panel-body .form-group .col-lg-9 .form-group .col-lg-12 div a').click(function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        $(this).closest('.form-group').next().find('input[type=file]').attr('value', '');
-        $(this).closest('.form-group').next().find('input[type=text]').css('text-indent', '999px');
-        $(this).closest('.form-group').next().find('input[type=text]').attr('value', 'remove');
-        $(this).closest('.form-group').remove();
-    });
-
-    toggleGooglePayMerchantFields();
-
-});
-
-function toggleGooglePayMerchantFields() {
-    // Hide or Show Google Pay Direct related settings fields
-    const directOff =  '#MULTISAFEPAY_OFFICIAL_DIRECT_GOOGLEPAY_off';
-    const directOn = '#MULTISAFEPAY_OFFICIAL_DIRECT_GOOGLEPAY_on';
-    const merchantNameId = '.google-pay-direct-name, .google-pay-direct-id';
-
-    if ($(directOff).is(':checked')) {
-        $(merchantNameId).closest('.form-group').hide();
-    } else if ($(directOn).is(':checked')) {
-        $(merchantNameId).closest('.form-group').show();
-    }
-
-    $(directOn).on('click', function () {
-        $(merchantNameId).closest('.form-group').slideDown();
-    });
-
-    $(directOff).on('click', function () {
-        $(merchantNameId).closest('.form-group').slideUp();
-    });
-}
+})(jQuery);
 
 function togglePaymentOptionIconStatus(paymentOptionIdPanel, active)
 {

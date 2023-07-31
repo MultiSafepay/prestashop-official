@@ -168,7 +168,7 @@ class MultisafepayOfficial extends PaymentModule
             'module-multisafepay-styles',
             'modules/multisafepayofficial/views/css/front.css',
             [
-                'priority' => 2,
+                'priority' => 2
             ]
         );
 
@@ -176,7 +176,7 @@ class MultisafepayOfficial extends PaymentModule
             'module-multisafepay-javascript',
             'modules/multisafepayofficial/views/js/front.js',
             [
-                'priority' => 200,
+                'priority' => 200
             ]
         );
 
@@ -194,7 +194,7 @@ class MultisafepayOfficial extends PaymentModule
     /**
      * Return payment options available
      *
-     * @param   array  $params
+     * @param array $params
      * @return array|null
      * @throws SmartyException
      * @throws Exception
@@ -265,7 +265,7 @@ class MultisafepayOfficial extends PaymentModule
     /**
      * Disable send emails on order confirmation
      *
-     * @param  array $params
+     * @param array $params
      * @return bool
      */
     public function hookActionEmailSendBefore(array $params): bool
@@ -357,7 +357,7 @@ class MultisafepayOfficial extends PaymentModule
     /**
      * Set MultiSafepay transaction as invoiced
      *
-     * @param   array  $params
+     * @param array $params
      *
      * @throws ClientExceptionInterface
      * @throws Exception
@@ -371,7 +371,7 @@ class MultisafepayOfficial extends PaymentModule
         /** @var Order $order */
         $order = $params['Order'];
 
-        if (!$order->module || $order->module !== 'multisafepayofficial') {
+        if (!$order->module || ($order->module !== 'multisafepayofficial')) {
             return;
         }
 
@@ -411,7 +411,7 @@ class MultisafepayOfficial extends PaymentModule
     /**
      * Set MultiSafepay transaction as shipped
      *
-     * @param   array  $params
+     * @param array $params
      *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
@@ -425,7 +425,7 @@ class MultisafepayOfficial extends PaymentModule
         }
 
         $order = new Order((int)$params['id_order']);
-        if (!$order->module || $order->module !== 'multisafepayofficial') {
+        if (!$order->module || ($order->module !== 'multisafepayofficial')) {
             return;
         }
         // Update order with invoice shipping information
@@ -458,7 +458,7 @@ class MultisafepayOfficial extends PaymentModule
     /**
      * Process the refund action
      *
-     * @param   array  $params
+     * @param array $params
      *
      * @return bool
      * @throws ClientExceptionInterface

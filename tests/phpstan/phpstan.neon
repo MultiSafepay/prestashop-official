@@ -52,3 +52,4 @@ parameters:
     - '#Ternary operator condition is always true.#'
     - '#Property [a-zA-Z0-9\\_]+::\$paymentComponentApiToken \(string\) in isset\(\) is not nullable.#'
     - '#Property [a-zA-Z0-9\\_]+::\$sdk \(MultiSafepay\\Sdk\) in isset\(\) is not nullable.#'
+    - '#Parameter \#1 \$name of class Uploader constructor expects null, \(int\|string\) given.#'
