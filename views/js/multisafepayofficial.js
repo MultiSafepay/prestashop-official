@@ -41,13 +41,18 @@ var MultiSafepayPaymentComponent = function (config, gateway) {
             {
                 env: config.env,
                 apiToken: config.apiToken,
-                order: config.orderData
+                order: config.orderData,
+                recurring: config.recurring
             }
         );
     };
 
     var insertPayload = function (payload) {
         $("#multisafepay-form-" + gateway.toLowerCase() + " input[name='payload']").val(payload);
+    };
+
+    var insertTokenize = function (payload) {
+        $("#multisafepay-form-" + gateway.toLowerCase() + " input[name='tokenize']").val(payload);
     };
 
     var removePayload = function () {
@@ -78,7 +83,9 @@ var MultiSafepayPaymentComponent = function (config, gateway) {
                 return;
             }
             var payload = getPaymentComponent().getPaymentData().payload;
+            var tokenize = getPaymentComponent().getPaymentData().tokenize ?? '';
             insertPayload(payload);
+            insertTokenize(tokenize);
             $('#multisafepay-form-' + gateway.toLowerCase()).unbind('submit').submit();
         });
     };

@@ -33,6 +33,7 @@ use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultisafepayOfficial;
 use PrestaShopCollection;
+use Psr\Http\Client\ClientExceptionInterface;
 use Tools;
 
 /**
@@ -73,6 +74,9 @@ class OrderService
     }
 
     /**
+     * Return the arguments required to initialize the payment component.
+     *
+     * @param string $gatewayCode
      * @param string|null $customerString
      * @param string|null $recurringModel
      *
@@ -80,35 +84,62 @@ class OrderService
      * @throws \PrestaShopDatabaseException
      * @throws \PrestaShopException
      */
-    public function createPaymentComponentOrder(?string $customerString, ?string $recurringModel): array
-    {
-        return
-            [
-                'debug'     => (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE') ?? false,
-                'env'       => $this->sdkService->getTestMode() ? 'test' : 'live',
-                'apiToken'  => $this->getPaymentComponentApiToken(),
-                'orderData' => [
-                    'currency'  => (new Currency(Context::getContext()->cart->id_currency))->iso_code,
-                    'amount'    => MoneyHelper::priceToCents(
-                        Context::getContext()->cart->getOrderTotal(true, Cart::BOTH)
-                    ),
-                    'customer'  => [
-                        'locale'    => Tools::substr(Context::getContext()->language->getLocale(), 0, 2),
-                        'country'   => (new Country(
-                            (new Address((int)Context::getContext()->cart->id_address_invoice))->id_country
-                        ))->iso_code,
-                        'reference' => $customerString,
-                    ],
-                    'recurring' => [
-                        'model' => $recurringModel,
-                    ],
-                    'template'  => [
-                        'settings' => [
-                            'embed_mode' => true,
-                        ],
+    public function createPaymentComponentOrder(
+        string $gatewayCode,
+        ?string $customerString,
+        ?string $recurringModel
+    ): array {
+        $paymentComponentArguments = [
+            'debug'     => (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE') ?? false,
+            'env'       => $this->sdkService->getTestMode() ? 'test' : 'live',
+            'apiToken'  => $this->getPaymentComponentApiToken(),
+            'orderData' => [
+                'currency'  => (new Currency(Context::getContext()->cart->id_currency))->iso_code,
+                'amount'    => MoneyHelper::priceToCents(
+                    Context::getContext()->cart->getOrderTotal(true, Cart::BOTH)
+                ),
+                'customer'  => [
+                    'locale'    => Tools::substr(Context::getContext()->language->getLocale(), 0, 2),
+                    'country'   => (new Country(
+                        (new Address((int)Context::getContext()->cart->id_address_invoice))->id_country
+                    ))->iso_code,
+                ],
+                'template'  => [
+                    'settings' => [
+                        'embed_mode' => true,
                     ],
                 ],
-            ];
+            ],
+            'recurring' => null,
+        ];
+
+        if ($recurringModel) {
+            $paymentComponentArguments['recurring']['model'] = $recurringModel;
+            $paymentComponentArguments['recurring']['tokens'] = $this->getPaymentTokens($customerString, $gatewayCode);
+        }
+
+        return $paymentComponentArguments;
+    }
+
+    /**
+     * Return an array of payment tokens.
+     *
+     * @param string $customerString
+     * @param string $gatewayCode
+     * @return array
+     */
+    private function getPaymentTokens(string $customerString, string $gatewayCode): array
+    {
+        try {
+            $tokens = $this->sdkService->getSdk()->getTokenManager()->getListByGatewayCodeAsArray(
+                $customerString,
+                $gatewayCode
+            );
+        } catch (ClientExceptionInterface | ApiException $exception) {
+            $tokens = [];
+        }
+
+        return $tokens;
     }
 
     /**

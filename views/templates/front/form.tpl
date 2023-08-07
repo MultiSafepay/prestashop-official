@@ -30,6 +30,7 @@
             <div id="multisafepay-payment-component-{$gateway|escape:'html':'UTF-8'}" data-gateway="{$gateway|upper}" data-payment_component_config_name="{$gateway|upper}"></div>
         </div>
         <input type="hidden" name="payload" value=""/>
+        <input type="hidden" name="tokenize" value=""/>
     {else}
         {foreach from=$inputs item=inputField}
             {if $inputField.type == 'hidden'}

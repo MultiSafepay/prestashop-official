@@ -490,6 +490,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 [
                     'multisafepayPaymentComponentConfig'.$this->getGatewayCode(
                     ) => $orderService->createPaymentComponentOrder(
+                        $this->getGatewayCode(),
                         $this->allowTokenization() ? (string) Context::getContext()->customer->id : null,
                         $this->allowTokenization() ? 'cardOnFile' : null
                     )

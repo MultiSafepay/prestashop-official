@@ -31,6 +31,7 @@ use MultiSafepay\PrestaShop\Util\AddressUtil;
 use MultiSafepay\PrestaShop\Util\CustomerUtil;
 use MultiSafepay\PrestaShop\Util\LanguageUtil;
 use Order;
+use Tools;
 
 /**
  * Class CustomerBuilder
@@ -109,8 +110,30 @@ class CustomerBuilder implements OrderRequestBuilderInterface
                 $_SERVER['HTTP_USER_AGENT'] ?? null,
                 $this->languageUtil->getLanguageCode((int)$cart->id_lang),
                 $invoiceAddress->company,
-                (string)$customer->id
+                $this->shouldSendCustomerReference() ? (string)$customer->id : null
             )
         );
+    }
+
+    /**
+     * Return if the customer reference should be included according tokenization related settings
+     *
+     * @return bool
+     */
+    private function shouldSendCustomerReference(): bool
+    {
+        if (Tools::getValue('tokenize', false)) {
+            return true;
+        }
+
+        if ((bool)Tools::getValue('saveToken', false) === true) {
+            return true;
+        }
+
+        if ((bool)Tools::getValue('selectedToken', false) === true) {
+            return true;
+        }
+        
+        return false;
     }
 }
