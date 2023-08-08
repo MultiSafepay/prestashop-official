@@ -6,6 +6,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.11.0
+Release date: Aug 8th, 2023
+
+### Added
++ DAVAMS-657: Add Zinia payment
++ PRES-366: Add Apple Pay direct
++ PRES-375: The payment link is included in the order confirmation email when the order is initiated from the back-office
++ PRES-381: Use Select2 JS to display iDEAL issuers dropdown
++ PRES-388: Check if the Google object exists before triggering the payment method load
+
+### Changed
++ DAVAMS-646: Improvements over the Payment Component
++ PRES-355: Make translatable a string in the settings page
+
+### Fixed
++ PRES-390: Corrected the assignment of the order's payment method to the selected gift card, when multiple gift cards are used for payment.
++ PRES-372: Handle a possible exception in the cancel controller
+
+***
+
 ## 5.10.1
 Release date: Jun 15th, 2023
 
