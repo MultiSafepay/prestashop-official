@@ -51,8 +51,8 @@ var MultiSafepayPaymentComponent = function (config, gateway) {
         $("#multisafepay-form-" + gateway.toLowerCase() + " input[name='payload']").val(payload);
     };
 
-    var insertTokenize = function (payload) {
-        $("#multisafepay-form-" + gateway.toLowerCase() + " input[name='tokenize']").val(payload);
+    var insertTokenize = function (tokenize) {
+        $("#multisafepay-form-" + gateway.toLowerCase() + " input[name='tokenize']").val(tokenize);
     };
 
     var removePayload = function () {
@@ -83,7 +83,7 @@ var MultiSafepayPaymentComponent = function (config, gateway) {
                 return;
             }
             var payload = getPaymentComponent().getPaymentData().payload;
-            var tokenize = getPaymentComponent().getPaymentData().tokenize ?? '';
+            var tokenize = getPaymentComponent().getPaymentData().tokenize ?? '0';
             insertPayload(payload);
             insertTokenize(tokenize);
             $('#multisafepay-form-' + gateway.toLowerCase()).unbind('submit').submit();

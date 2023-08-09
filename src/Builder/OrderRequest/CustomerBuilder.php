@@ -122,7 +122,7 @@ class CustomerBuilder implements OrderRequestBuilderInterface
      */
     private function shouldSendCustomerReference(): bool
     {
-        if (Tools::getValue('tokenize', false)) {
+        if ((bool)Tools::getValue('tokenize', false)) {
             return true;
         }
 
@@ -133,7 +133,7 @@ class CustomerBuilder implements OrderRequestBuilderInterface
         if ((bool)Tools::getValue('selectedToken', false) === true) {
             return true;
         }
-        
+
         return false;
     }
 }
