@@ -535,7 +535,11 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         $idCountry = (new Address((int)$context->cart->id_address_invoice))->id_country;
         $country = (new Country($idCountry));
 
-        return $country->iso_code;
+        if (!empty($country->iso_code)) {
+            return $country->iso_code;
+        }
+
+        return '';
     }
 
     /**
