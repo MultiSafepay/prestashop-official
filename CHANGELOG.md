@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.11.1
+Release date: Sep 6th, 2023
+
+### Fixed
++ PRES-395: Fix the method to retrieve the country code to handle cases where the user is not logged in.
+
+***
+
 ## 5.11.0
 Release date: Aug 8th, 2023
 
