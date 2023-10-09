@@ -83,21 +83,33 @@ class MultisafepayOfficial extends PaymentModule
         }
 
         $install = parent::install();
+        if (!$install) {
+            LoggerHelper::logAlert('Parent install failed.');
+            return false;
+        }
 
         (new Installer($this))->install();
 
-        return $install &&
-            $this->registerHook('actionFrontControllerSetMedia') &&
-            $this->registerHook('actionAdminControllerSetMedia') &&
-            $this->registerHook('paymentReturn') &&
-            $this->registerHook('paymentOptions') &&
-            $this->registerHook('actionSetInvoice') &&
-            $this->registerHook('actionOrderStatusPostUpdate') &&
-            $this->registerHook('actionOrderSlipAdd') &&
-            $this->registerHook('displayCustomerAccount') &&
-            $this->registerHook('actionEmailSendBefore') &&
-            $this->registerHook('actionValidateOrder') &&
-            $this->registerHook('actionEmailAddAfterContent');
+        $hooks = [
+            'actionFrontControllerSetMedia',
+            'actionAdminControllerSetMedia',
+            'paymentOptions',
+            'actionSetInvoice',
+            'actionOrderStatusPostUpdate',
+            'actionOrderSlipAdd',
+            'displayCustomerAccount',
+            'actionEmailSendBefore',
+            'actionValidateOrder',
+            'actionEmailAddAfterContent'
+        ];
+
+        foreach ($hooks as $hook) {
+            if (!$this->registerHook($hook)) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     /**
@@ -492,17 +504,6 @@ class MultisafepayOfficial extends PaymentModule
     public function hookDisplayCustomerAccount(array $params): string
     {
         return $this->display(__FILE__, 'tokens.tpl');
-    }
-
-    /**
-     * Used to display extra information by third party modules.
-     *
-     * @param array $params
-     * @return bool
-     */
-    public function hookPaymentReturn(array $params): bool
-    {
-        return false;
     }
 
     /**
