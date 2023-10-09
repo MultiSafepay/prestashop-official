@@ -68,11 +68,11 @@ class Zinia extends BasePaymentOption
                 'options'       => [
                     [
                         'value' => 'mr',
-                        'name'  => 'Mr.',
+                        'name'  => $this->module->l('Mr.', self::CLASS_NAME),
                     ],
                     [
                         'value' => 'mrs',
-                        'name'  => 'Mrs.',
+                        'name'  => $this->module->l('Mrs.', self::CLASS_NAME),
                     ],
                 ],
             ],

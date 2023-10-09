@@ -83,11 +83,11 @@ class AfterPay extends BasePaymentOption
                 'options'       => [
                     [
                         'value' => 'male',
-                        'name'  => 'Mr.',
+                        'name'  => $this->module->l('Mr.', self::CLASS_NAME),
                     ],
                     [
                         'value' => 'female',
-                        'name'  => 'Mrs.',
+                        'name'  => $this->module->l('Mrs.', self::CLASS_NAME),
                     ],
                 ],
             ],

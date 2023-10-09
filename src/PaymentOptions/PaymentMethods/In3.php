@@ -77,15 +77,15 @@ class In3 extends BasePaymentOption
                 'options'       => [
                     [
                         'value' => 'mr',
-                        'name'  => 'Mr.',
+                        'name'  => $this->module->l('Mr.', self::CLASS_NAME),
                     ],
                     [
                         'value' => 'mrs',
-                        'name'  => 'Mrs.',
+                        'name'  => $this->module->l('Mrs.', self::CLASS_NAME),
                     ],
                     [
                         'value' => 'miss',
-                        'name'  => 'Miss',
+                        'name'  => $this->module->l('Miss', self::CLASS_NAME),
                     ]
                 ],
             ],
