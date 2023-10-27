@@ -226,19 +226,19 @@ class PaymentOptionService
             return true;
         }
 
-        if (!empty($paymentMethodCountries) && !in_array($orderCountryId, $paymentMethodCountries, true)) {
+        if (!empty($paymentMethodCountries) && !in_array((string)$orderCountryId, $paymentMethodCountries, true)) {
             return true;
         }
 
-        if (!empty($paymentMethodCurrencies) && !in_array($orderCurrencyId, $paymentMethodCurrencies, true)) {
+        if (!empty($paymentMethodCurrencies) && !in_array((string)$orderCurrencyId, $paymentMethodCurrencies, true)) {
             return true;
         }
 
-        if (!empty($paymentMethodCustomerGroups) && !in_array($orderCustomerGroups, $paymentMethodCustomerGroups, true)) {
+        if (!empty($paymentMethodCustomerGroups) && !in_array((string)$orderCustomerGroups, $paymentMethodCustomerGroups, true)) {
             return true;
         }
 
-        if (!$isCartSplit && !$isVirtual && !empty($paymentMethodCarriers) && !in_array($orderCarrierId, $paymentMethodCarriers, true)) {
+        if (!$isCartSplit && !$isVirtual && !empty($paymentMethodCarriers) && !in_array((string)$orderCarrierId, $paymentMethodCarriers, true)) {
             return true;
         }
 
