@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.11.2
+Release date: Oct 30th, 2023
+
+### Fixed
++ PRES-398: Translations not working for salutation options in some payment methods.
++ PRES-403: Fixed payment method filters (currency, carrier, country and customer groups) where after setting any criteria, payment methods were not displayed, affecting only PrestaShop 8.1.X.
+
+### Changed
++ PRES-397: Remove the deprecated hook paymentReturn.
+
+***
+
 ## 5.11.1
 Release date: Sep 6th, 2023
 
