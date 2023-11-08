@@ -51,9 +51,6 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
             die();
         }
 
-        /** @var PrestaShopCollection $orderCollection */
-        $orderCollection = Order::getByReference(Tools::getValue('id_reference'));
-
         $cartId = Tools::getValue('id_cart');
         $cart = new Cart($cartId);
 
