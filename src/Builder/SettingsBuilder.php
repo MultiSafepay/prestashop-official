@@ -79,6 +79,7 @@ class SettingsBuilder
             'MULTISAFEPAY_OFFICIAL_TEST_API_KEY'                => ['default' => ''],
             'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE'           => ['default' => '30'],
             'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT'            => ['default' => self::DAYS],
+            'MULTISAFEPAY_OFFICIAL_TEMPLATE_ID_VALUE'           => ['default' => ''],
             'MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION'           => ['default' => 'Payment for order: {order_reference}'],
             'MULTISAFEPAY_OFFICIAL_OS_TRIGGER_SHIPPED'          => ['default' => Configuration::get('PS_OS_SHIPPING')],
             'MULTISAFEPAY_OFFICIAL_FINAL_ORDER_STATUS'          => ['default' => '["'.Configuration::get('PS_OS_REFUND').'"]', 'multiple' => true],
@@ -371,6 +372,15 @@ class SettingsBuilder
                             'name' => 'name',
                         ],
                         'section' => 'default'
+                    ],
+                    [
+                        'tab'         => 'general_settings',
+                        'type'        => 'text',
+                        'desc'        => $this->module->l('If empty, the default one will be used', self::CLASS_NAME),
+                        'name'        => 'MULTISAFEPAY_OFFICIAL_TEMPLATE_ID_VALUE',
+                        'label'       => $this->module->l('Payment Component Template ID', self::CLASS_NAME),
+                        'placeholder' => $this->module->l('Payment Component Template ID', self::CLASS_NAME),
+                        'section'     => 'default'
                     ],
                     [
                         'col'              => '12',

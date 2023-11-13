@@ -113,6 +113,12 @@ class OrderService
             'recurring' => null,
         ];
 
+        // Payment Component Template ID.
+        $templateId = Configuration::get('MULTISAFEPAY_OFFICIAL_TEMPLATE_ID_VALUE') ?? '';
+        if (!empty($templateId)) {
+            $paymentComponentArguments['orderData']['payment_options']['template_id'] = $templateId;
+        }
+
         if ($recurringModel) {
             $paymentComponentArguments['recurring']['model'] = $recurringModel;
             $paymentComponentArguments['recurring']['tokens'] = $this->getPaymentTokens($customerString, $gatewayCode);

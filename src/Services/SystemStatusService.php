@@ -270,6 +270,10 @@ class SystemStatusService
                     'label' => 'Payment link lifetime',
                     'value' => $moduleSettingsValues['MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE'] . ' ' . $moduleSettingsValues['MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT'],
                 ],
+                'template_id' => [
+                    'label' => 'Payment Component Template ID',
+                    'value' => empty($moduleSettingsValues['MULTISAFEPAY_OFFICIAL_TEMPLATE_ID_VALUE']) ? 'Default' : $moduleSettingsValues['MULTISAFEPAY_OFFICIAL_TEMPLATE_ID_VALUE'],
+                ],
                 'order_description' => [
                     'label' => 'Order description',
                     'value' => $moduleSettingsValues['MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION'],
