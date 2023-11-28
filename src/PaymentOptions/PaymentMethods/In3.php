@@ -45,7 +45,7 @@ class In3 extends BasePaymentOption
      */
     public function getName(): string
     {
-        return $this->module->l('in3', self::CLASS_NAME);
+        return $this->module->l('in3: Betaal in 3 delen (0% rente)', self::CLASS_NAME);
     }
 
     /**
@@ -54,7 +54,7 @@ class In3 extends BasePaymentOption
     public function getTransactionType(): string
     {
         $checkoutVars = Tools::getAllValues();
-        return (empty($checkoutVars['gender']) || empty($checkoutVars['birthday'])) ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
+        return empty($checkoutVars['gender']) ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
     }
 
     public function getGatewaySettings(): array
@@ -88,30 +88,19 @@ class In3 extends BasePaymentOption
                         'name'  => $this->module->l('Miss', self::CLASS_NAME),
                     ]
                 ],
-            ],
-            [
-                'type'          => 'date',
-                'name'          => 'birthday',
-                'placeholder'   => $this->module->l('Birthday', self::CLASS_NAME),
-                'value'         => Context::getContext()->customer->birthday ?? '',
             ]
         ];
     }
 
     public function getGatewayInfo(Cart $cart, array $data = []): ?GatewayInfoInterface
     {
-        if (empty($data['gender']) && empty($data['birthday'])) {
+        if (empty($data['gender'])) {
             return null;
         }
 
         $gatewayInfo = new Meta();
         $gatewayInfo->addPhoneAsString((new Address($cart->id_address_invoice))->phone);
-        if (!empty($data['gender'])) {
-            $gatewayInfo->addGenderAsString($data['gender']);
-        }
-        if (!empty($data['birthday'])) {
-            $gatewayInfo->addBirthdayAsString($data['birthday']);
-        }
+        $gatewayInfo->addGenderAsString($data['gender']);
 
         return $gatewayInfo;
     }
