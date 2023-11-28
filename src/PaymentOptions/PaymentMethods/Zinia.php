@@ -25,6 +25,7 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 use Address;
 use Cart;
 use Context;
+use Country;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Meta;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
@@ -53,6 +54,17 @@ class Zinia extends BasePaymentOption
     {
         $checkoutVars = Tools::getAllValues();
         return (empty($checkoutVars['gender']) || empty($checkoutVars['birthday'])) ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
+    }
+
+    public function getGatewaySettings(): array
+    {
+        $options = parent::getGatewaySettings();
+
+        $options['MULTISAFEPAY_OFFICIAL_MIN_AMOUNT_'.$this->getUniqueName()]['default'] = '50';
+        $options['MULTISAFEPAY_OFFICIAL_MAX_AMOUNT_'.$this->getUniqueName()]['default'] = '750';
+        $options['MULTISAFEPAY_OFFICIAL_COUNTRIES_'.$this->getUniqueName()]['default'] = json_encode([(string)Country::getByIso('NL')]) ?: [];
+
+        return $options;
     }
 
     /**
