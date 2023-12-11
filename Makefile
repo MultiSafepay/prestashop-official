@@ -2,6 +2,9 @@
 install:
 	docker-compose exec -T --workdir /var/www/html/modules/multisafepayofficial app composer install
 	docker-compose exec -T app php bin/console prestashop:module install multisafepayofficial
+
+.PHONY: post-install
+post-install:
 	docker-compose exec -T app rm -rf /var/www/html/var/cache/dev
 	docker-compose exec -T app rm -rf /var/www/html/var/cache/prod
 	docker-compose exec -T app chown -R www-data:www-data /var/www/html
