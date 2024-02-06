@@ -103,14 +103,15 @@ class GooglePay extends BasePaymentOption
 
             $merchantName = self::TEST_MERCHANT_NAME;
             $merchantId = self::TEST_MERCHANT_ID;
+            $environment = $this->getMultiSafepayEnvironment();
 
-            if ($this->getMultiSafepayEnvironment() === 'LIVE') {
+            if ($environment === 'LIVE') {
                 $merchantName = Configuration::get('MULTISAFEPAY_OFFICIAL_MERCHANT_NAME_GOOGLEPAY') ?: '';
                 $merchantId = Configuration::get('MULTISAFEPAY_OFFICIAL_MERCHANT_ID_GOOGLEPAY') ?: '';
             }
 
             Media::addJsDef([
-                'configEnvironment'           => $this->getMultiSafepayEnvironment(),
+                'configEnvironment'           => $environment,
                 'configGatewayMerchantId'     => $this->getMultiSafepayAccountId(),
                 'configGooglePayTotalPrice'   => $context->cart->getOrderTotal(),
                 'configGooglePayCurrencyCode' => (new Currency($context->cart->id_currency))->iso_code,

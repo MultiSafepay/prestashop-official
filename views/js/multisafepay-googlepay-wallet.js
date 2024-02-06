@@ -69,7 +69,8 @@ const debugModeGooglePay = configGooglePayDebugMode === true;
         if (!window.google || !window.google.payments || !window.google.payments.api) {
             console.error('Error initializing Google Pay: Script not loaded');
         } else {
-            paymentsClient = new google.payments.api.PaymentsClient({environment: configEnvironment});
+            const googlePayConfigEnvironment = configEnvironment === 'LIVE' ? 'PRODUCTION' : 'TEST';
+            paymentsClient = new google.payments.api.PaymentsClient({environment: googlePayConfigEnvironment});
             isReadyToPayRequest = Object.assign({}, baseRequest);
             isReadyToPayRequest.allowedPaymentMethods = [baseCardPaymentMethod];
         }
