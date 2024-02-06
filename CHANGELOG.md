@@ -6,6 +6,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.12.0
+Release date: Feb 6th, 2024
+
+### Added
++ DAVAMS-675: Pre-set allowed_minimum, allowed_maximum and allowed_countries for Zinia
++ DAVAMS-530: Add support for Template ID in the Payment Component
+
+### Fixed
++ PRES-408: Fix an issue where after setting up Google Pay as live, the environment was defined as 'LIVE' instead of 'PRODUCTION' for Google Pay.
+
+### Changed
++ DAVAMS-703: Rebrand in3 payment method name and remove birthday checkout field
+
+### Removed
++ DAVAMS-707: Remove 'Santander Betaal per Maand' payment option
++ PRES-401: Remove unused variable in the cancel module controller
+
+***
+
 ## 5.11.2
 Release date: Oct 30th, 2023
 
