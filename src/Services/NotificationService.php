@@ -423,7 +423,9 @@ abstract class NotificationService
     {
         switch ($status) {
             case Transaction::INITIALIZED:
-                if ($transactionType === 'BANKTRANS') {
+                if ($transactionType === 'BANKTRANS' ||
+                    $transactionType === 'MULTIBANCO'
+                ) {
                     return true;
                 }
                 break;
