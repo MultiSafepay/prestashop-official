@@ -57,7 +57,8 @@ class CustomerUtil
         ?string $userAgent,
         string $languageCode,
         string $companyName = null,
-        string $reference = null
+        string $reference = null,
+        ?array $browser = null
     ): CustomerDetails {
         $customerDetails = new CustomerDetails();
         $customerDetails
@@ -83,6 +84,10 @@ class CustomerUtil
 
         if (! empty($reference)) {
             $customerDetails->addReference($reference);
+        }
+
+        if (! empty($browser)) {
+            $customerDetails->addData($browser);
         }
 
         return $customerDetails;

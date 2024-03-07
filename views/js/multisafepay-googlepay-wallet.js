@@ -187,7 +187,7 @@ class GooglePayDirect {
                 }
             } catch (message) {
                 // Google Pay API can throw an error if the user cancels the payment.
-                // It is shown as a warning, since this can not be considered as an error
+                // It is shown as a warning, since this cannot be considered as an error
                 console.warn('Message from the Google Pay API:', message);
             }
         } else {
@@ -203,7 +203,7 @@ class GooglePayDirect {
      */
     submitGooglePayForm(tokenValue)
     {
-        if ((typeof(tokenValue) !== 'string') || (tokenValue.trim() === '')) {
+        if ((typeof (tokenValue) !== 'string') || (tokenValue.trim() === '')) {
             debugDirect('Invalid payload provided', this.debug);
             return false;
         }
@@ -221,8 +221,16 @@ class GooglePayDirect {
         inputField.name = 'payment_token';
         inputField.value = tokenValue;
 
+        // Settings the features of the browser field
+        const browserField = document.createElement('input');
+        browserField.type = 'hidden';
+        browserField.name = 'browser';
+        browserField.value = getCustomerBrowserInfo();
+
         // Add the hidden field to the form including the token value
         googlepayForm.appendChild(inputField);
+        // Add the hidden field to the form including the browser info
+        googlepayForm.appendChild(browserField);
         // Submit the form automatically
         googlepayForm.submit();
         return true;

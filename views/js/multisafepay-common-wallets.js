@@ -99,6 +99,65 @@ function debugDirect(debugMessage, debugStatus, loggingType = 'error')
 }
 
 /**
+ * Global function
+ *
+ * Get the customer's browser information
+ *
+ * @returns {string}
+ */
+function getCustomerBrowserInfo()
+{
+    const nav = window.navigator;
+    let javaEnabled = false;
+    let platform = '';
+    let cookiesEnabled = false;
+    let language = '';
+    let userAgent = '';
+
+    try {
+        javaEnabled = nav.javaEnabled() || false;
+    } catch (error) {
+        console.error('javaEnabled is not supported by this browser', error);
+    }
+    try {
+        platform = nav.platform || '';
+    } catch (error) {
+        console.error('platform is not supported by this browser', error);
+    }
+    try {
+        cookiesEnabled = !!nav.cookieEnabled || false;
+    } catch (error) {
+        console.error('cookiesEnabled is not supported by this browser', error);
+    }
+    try {
+        language = nav.language || '';
+    } catch (error) {
+        console.error('language is not supported by this browser', error);
+    }
+    try {
+        userAgent = nav.userAgent || '';
+    } catch (error) {
+        console.error('userAgent is not supported by this browser', error);
+    }
+
+    let info = {
+        browser: {
+            javascript_enabled: true,
+            java_enabled: javaEnabled,
+            cookies_enabled: cookiesEnabled,
+            language: language,
+            screen_color_depth: window.screen.colorDepth,
+            screen_height: window.screen.height,
+            screen_width: window.screen.width,
+            time_zone: new Date().getTimezoneOffset(),
+            user_agent: userAgent,
+            platform: platform
+        }
+    };
+    return JSON.stringify(info);
+}
+
+/**
  * Class used to manage both Google Pay and Apple Pay
  */
 class GoogleApplePayDirectHandler {

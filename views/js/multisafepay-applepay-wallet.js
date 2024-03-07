@@ -233,8 +233,16 @@ class ApplePayDirect {
         inputField.name = 'payment_token';
         inputField.value = paymentToken;
 
+        // Settings the features of the browser field
+        const browserField = document.createElement('input');
+        browserField.type = 'hidden';
+        browserField.name = 'browser';
+        browserField.value = getCustomerBrowserInfo();
+
         // Add the hidden field to the form including the token value
         applepayForm.appendChild(inputField);
+        // Add the hidden field to the form including the browser info
+        applepayForm.appendChild(browserField);
         // Submit the form automatically
         applepayForm.submit();
         return true;

@@ -110,7 +110,8 @@ class CustomerBuilder implements OrderRequestBuilderInterface
                 $_SERVER['HTTP_USER_AGENT'] ?? null,
                 $this->languageUtil->getLanguageCode((int)$cart->id_lang),
                 $invoiceAddress->company,
-                $this->shouldSendCustomerReference() ? (string)$customer->id : null
+                $this->shouldSendCustomerReference() ? (string)$customer->id : null,
+                $this->getCustomerBrowserInfo()
             )
         );
     }
@@ -135,5 +136,21 @@ class CustomerBuilder implements OrderRequestBuilderInterface
         }
 
         return false;
+    }
+
+    /**
+     * Return browser information
+     *
+     * @return array|null
+     */
+    private function getCustomerBrowserInfo(): ?array
+    {
+        $browser = Tools::getValue('browser', '');
+
+        if (! empty($browser)) {
+            return json_decode($browser, true);
+        }
+
+        return null;
     }
 }
