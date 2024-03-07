@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.13.0
+Release date: Mar 7th, 2024
+
+### Added
++ PRES-412: Add customer.browser object within the order request for Google Pay and Apple Pay transactions
++ DAVAMS-655: Add BNPL_MF payment option
++ DAVAMS-723: Add MB WAY payment option
++ DAVAMS-683: Add Multibanco payment option
+
+***
+
 ## 5.12.0
 Release date: Feb 6th, 2024
 
