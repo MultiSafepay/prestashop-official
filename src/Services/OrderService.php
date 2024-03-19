@@ -108,6 +108,7 @@ class OrderService
                     'settings' => [
                         'embed_mode' => true,
                     ],
+                    'merge' => true,
                 ],
             ],
             'recurring' => null,
