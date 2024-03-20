@@ -104,11 +104,13 @@ class OrderService
                         (new Address((int)Context::getContext()->cart->id_address_invoice))->id_country
                     ))->iso_code,
                 ],
-                'template'  => [
-                    'settings' => [
-                        'embed_mode' => true,
+                'payment_options' => [
+                    'template'  => [
+                        'settings' => [
+                            'embed_mode' => true,
+                        ],
+                        'merge' => true,
                     ],
-                    'merge' => true,
                 ],
             ],
             'recurring' => null,
