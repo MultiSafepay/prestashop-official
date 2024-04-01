@@ -43,6 +43,14 @@ class MultisafepayOfficialNotificationModuleFrontController extends ModuleFrontC
      */
     public function postProcess(): void
     {
+        $payloadType = Tools::getValue('payload_type');
+
+        if ($payloadType === 'pretransaction') {
+            header('Content-Type: text/plain');
+            echo 'OK';
+            die();
+        }
+
         /** @var NotExistingOrderNotificationService $notificationService */
         $notificationService = $this->module->get('multisafepay.not_existing_order_notification_service');
 
