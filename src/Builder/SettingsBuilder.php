@@ -294,7 +294,7 @@ class SettingsBuilder
                         'label'   => $this->module->l('Disable Shopping Cart', self::CLASS_NAME),
                         'name'    => 'MULTISAFEPAY_OFFICIAL_DISABLE_SHOPPING_CART',
                         'is_bool' => true,
-                        'desc'    => $this->module->l('Enable this option to hide the cart items on the MultiSafepay payment page, leaving only the total order amount. Note: If is enabled, the payment methods which require shopping cart won\'t work: Afterpay, E-Invoicing, in3, Klarna and Pay After Delivery.', self::CLASS_NAME),
+                        'desc'    => $this->module->l('Enable this option to hide the cart items on the MultiSafepay payment page, leaving only the total order amount. Note: If is enabled, the payment methods which require shopping cart won\'t work: Afterpay, E-Invoicing, iDEAL+in3, Klarna and Pay After Delivery.', self::CLASS_NAME),
                         'values'  => [
                             [
                                 'id'    => 'active_on',

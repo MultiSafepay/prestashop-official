@@ -45,7 +45,7 @@ class In3 extends BasePaymentOption
      */
     public function getName(): string
     {
-        return $this->module->l('in3: Betaal in 3 delen (0% rente)', self::CLASS_NAME);
+        return $this->module->l('iDEAL+in3: Betaal in 3 delen (0% rente)', self::CLASS_NAME);
     }
 
     /**
