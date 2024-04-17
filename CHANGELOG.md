@@ -6,6 +6,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.14.0
+Release date: Apr 17th, 2024
+
+### Added
++ DAVAMS-763: Add in3 B2B
++ PRES-414: Ignore pretransaction webhook notifications
+
+### Changed
++ DAVAMS-744: Rebranding in3 B2C
+
+### Fixed
++ DAVAMS-752: Fix the 'template_id' setting field within the Payment Component
+
+***
+
 ## 5.13.0
 Release date: Mar 7th, 2024
 
