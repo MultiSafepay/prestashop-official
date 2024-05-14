@@ -25,22 +25,29 @@
     });
 })(jQuery);
 
+// One Page Checkout PS support. Version 4.0.X
+$(document).on('opc-load-payment:completed', function () {
+    checkIfDeviceSupportApplePay(true);
+});
+
 if (typeof prestashop !== 'undefined') {
+    // One Page Checkout PS support. Version 4.1.X
+    prestashop.on(
+        'opc-payment-getPaymentList-complete',
+        function (event) {
+            checkIfDeviceSupportApplePay(true);
+        }
+    );
+
+    // Each checkout step submission will fire this event.
     prestashop.on(
         'changedCheckoutStep',
         function () {
             checkIfDeviceSupportApplePay();
         }
     );
-}
 
-// OnePage Checkout PS support
-$(document).on('opc-load-payment:completed', function () {
-    checkIfDeviceSupportApplePay();
-});
-
-// The Checkout module support
-if (typeof prestashop !== 'undefined') {
+    // The Checkout module support
     prestashop.on(
         'thecheckout_updatePaymentBlock',
         function (event) {
@@ -51,19 +58,24 @@ if (typeof prestashop !== 'undefined') {
     );
 }
 
-function checkIfDeviceSupportApplePay()
+function checkIfDeviceSupportApplePay(isOpc = false)
 {
     try {
         if (!window.ApplePaySession || !ApplePaySession.canMakePayments()) {
-            removeApplePay();
+            removeApplePay(isOpc);
         }
     } catch (error) {
-        removeApplePay();
         console.error(error);
     }
 }
 
-function removeApplePay()
+function removeApplePay(isOpc)
 {
-    $('*[data-module-name="APPLEPAY"]').parent().closest('div').remove();
+    if (isOpc) {
+        $('*[data-module-name="APPLEPAY"]').closest('.module_payment_container').remove();
+        // Required when the payment method form field is missing but the logo is still displayed
+        $('img[src*="applepay.png"], img[title="Apple Pay"]').closest('.module_payment_container').remove();
+    } else {
+        $('*[data-module-name="APPLEPAY"]').parent().closest('div').remove();
+    }
 }
