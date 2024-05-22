@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.14.1
+Release date: May 22nd, 2024
+
+### Fixed
++ PRES-417: Fix Apple Pay visibility issue using 'One Page Checkout PS'
++ PRES-420: Fix Google Pay button since sometimes is shown multiple times
+
+***
+
 ## 5.14.0
 Release date: Apr 18th, 2024
 
