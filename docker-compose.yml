@@ -1,7 +1,7 @@
-version: '3.3'
 services:
   db:
     image: mysql:5.7
+    platform: linux/x86_64
     environment:
       MYSQL_ROOT_PASSWORD: prestashop
       MYSQL_DATABASE: prestashop
@@ -9,10 +9,12 @@ services:
       MYSQL_PASSWORD: prestashop
   mailcatcher:
     image: sj26/mailcatcher
+    platform: linux/x86_64
     ports:
       - "1080:1080"
       - "8025:8025"
   app:
+    platform: linux/x86_64
     volumes:
       - ./:/var/www/html/modules/multisafepayofficial
     depends_on:
@@ -30,14 +32,15 @@ services:
       PS_DOMAIN: ${APP_SUBDOMAIN}.${EXPOSE_HOST}
       PS_ENABLE_SSL: 1
     extra_hosts:
-      host.docker.internal: host-gateway
+      - "host.docker.internal:host-gateway"
   expose:
     build: https://github.com/beyondcode/expose.git
     entrypoint: [ "/bin/sh", "-c" , "/src/expose token ${EXPOSE_TOKEN} && sed -i -E \"s/'dns'\\s?=>\\s?'.*'/'dns' => true/g\" /root/.expose/config.php  && /src/expose share app --server-host=${EXPOSE_HOST} --subdomain=${APP_SUBDOMAIN}" ]
     ports:
-      - 4040:4040
+      - "4040:4040"
   adminer:
     image: adminer
+    platform: linux/x86_64
     ports:
       - "8080:8080"
     links:
