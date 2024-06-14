@@ -23,8 +23,11 @@
  * Class for Apple Pay Direct
  */
 class ApplePayDirect {
-    constructor()
+    constructor(containerId, isLegacyOPC, isLatestOPC)
     {
+        this.containerId = containerId;
+        this.isLegacyOPC= isLegacyOPC;
+        this.isLatestOPC = isLatestOPC;
         this.debug = configApplePayDebugMode === true;
         this.config = {
             applePayVersion: 10,
@@ -86,21 +89,47 @@ class ApplePayDirect {
         // Check if previous buttons already exist and remove them
         cleanUpDirectButtons();
 
-        const buttonContainer = document.getElementById('payment-confirmation');
-        if (!buttonContainer) {
-            debugDirect('Button container not found', this.debug);
-            return;
-        }
+        let buttonContainer = document.getElementById(this.containerId);
 
         // Features of the button
         const button = document.createElement('button');
         button.className = 'apple-pay-button apple-pay-button-black';
         button.style.cursor = 'pointer';
+        button.style.height = '40px';
         button.addEventListener('click', this.onApplePaymentButtonClicked);
 
-        // Append the button to the "parent" container,
-        // to avoid the automated disabling from PrestaShop
-        buttonContainer.parentElement.appendChild(button);
+        if (this.isLegacyOPC || this.isLatestOPC) {
+            // Create a wrapper div to avoid the PrestaShop automated disabling
+            const wrapperDiv = document.createElement('div');
+
+            // Add the click event to the wrapper to avoid the propagation,
+            // so the button can be clicked without activate the redirect mode
+            wrapperDiv.addEventListener('click', (event) => {
+                event.stopPropagation();
+            });
+
+            // Add the OPC classes to the button
+            button.className += ' btn btn-primary btn-lg pull-right';
+            if (this.isLegacyOPC) {
+                buttonContainer = document.querySelector('#' + this.containerId + ' > div');
+            } else {
+                buttonContainer.style.textAlign = 'right';
+            }
+            // Append the button to the wrapper
+            wrapperDiv.appendChild(button);
+            // Append the wrapper to the container
+            buttonContainer.appendChild(wrapperDiv);
+        } else {
+            button.style.width = '160px';
+            // Append the button to the "parent" container,
+            // so we can avoid the automated disabling from PrestaShop
+            buttonContainer = buttonContainer.parentElement;
+            buttonContainer.appendChild(button);
+        }
+
+        if (!buttonContainer) {
+            debugDirect('Button container not found', this.debug);
+        }
     }
 
     /**

@@ -161,8 +161,10 @@ function getCustomerBrowserInfo()
  * Class used to manage both Google Pay and Apple Pay
  */
 class GoogleApplePayDirectHandler {
-    constructor()
+    constructor(isLegacyOPC = false, isLatestOPC = false)
     {
+        this.isLegacyOPC = isLegacyOPC;
+        this.isLatestOPC = isLatestOPC;
         this.debug = ((typeof configGooglePayDebugMode !== 'undefined') && (configGooglePayDebugMode === true)) ||
                      ((typeof configApplePayDebugMode !== 'undefined') && (configApplePayDebugMode === true));
         this.init()
@@ -203,9 +205,10 @@ class GoogleApplePayDirectHandler {
      * and launch its process
      *
      * @param {Element|null} placeOrderId
+     * @param {string} containerId
      * @returns {Promise<void>}
      */
-    async handleGooglePayClick(placeOrderId)
+    async handleGooglePayClick(placeOrderId, containerId)
     {
         // Hide the place order button
         this.togglePlaceOrderDisplay('none', placeOrderId);
@@ -219,7 +222,7 @@ class GoogleApplePayDirectHandler {
             try {
                 const response = await paymentsClient.isReadyToPay(isReadyToPayRequest);
                 if (response.result) {
-                    new GooglePayDirect();
+                    new GooglePayDirect(containerId, this.isLegacyOPC, this.isLatestOPC);
                 }
             } catch (error) {
                 console.error(error);
@@ -235,13 +238,14 @@ class GoogleApplePayDirectHandler {
      * and launch its process
      *
      * @param {Element|null} placeOrderId
+     * @param {string} containerId
      * @returns {void}
      */
-    handleApplePayClick(placeOrderId)
+    handleApplePayClick(placeOrderId, containerId)
     {
         // Hide the place order button
         this.togglePlaceOrderDisplay('none', placeOrderId);
-        new ApplePayDirect();
+        new ApplePayDirect(containerId, this.isLegacyOPC, this.isLatestOPC);
     }
 
     /**
@@ -288,23 +292,65 @@ class GoogleApplePayDirectHandler {
     }
 
     /**
+     * Wait for an element to be loaded
+     *
+     * @param selector
+     * @param maxAttempts
+     * @returns {Promise<unknown>}
+     */
+    waitForElement(selector, maxAttempts = 30)
+    {
+        let attempts = 0;
+
+        return new Promise(resolve => {
+            if (document.querySelector(selector)) {
+                return resolve(document.querySelector(selector));
+            }
+            const observer = new MutationObserver(() => {
+                attempts++;
+                if (document.querySelector(selector)) {
+                    resolve(document.querySelector(selector));
+                    observer.disconnect();
+                } else if (attempts >= maxAttempts) {
+                    observer.disconnect();
+                }
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    }
+
+    /**
      * Toggle the Google Pay, and Apple Pay buttons and once clicked,
      * redirect to the right classes via specific methods
      *
      * @returns {void}
      */
-    toggleGoogleAndAppleDirect()
+    async toggleGoogleAndAppleDirect()
     {
         const inputGooglePay = 'GOOGLEPAY', inputApplePay = 'APPLEPAY';
+
         /** @var {Element|null} placeOrderId */
-        const placeOrderId = document.querySelector(
-            '#payment-confirmation div.ps-shown-by-js'
-        );
+        let placeOrderId = null;
+        let checkoutButtonId = '#payment-confirmation div.ps-shown-by-js';
+        let containerId = 'payment-confirmation';
+        if (this.isLegacyOPC) {
+            /** @var {string} checkoutButtonId */
+            checkoutButtonId = '#btn_place_order';
+            /** @var {string} containerId */
+            containerId = 'buttons_footer_review';
+            placeOrderId = await this.waitForElement(checkoutButtonId);
+        } else {
+            placeOrderId = document.querySelector(
+                checkoutButtonId
+            );
+        }
 
         // Object destructuring assignment was introduced in ECMAScript 6 (ES2015) in June 2015.
-        // Google Chrome: March 2016 - Mozilla Firefox: March 2017 - Microsoft Edge: July 2015.
-        // Apple Safari: September 2016 - Opera: March 2016.
-        const { googlePayScriptExists, applePayScriptExists } = this.checkLoadedDirectScripts();
+        const {googlePayScriptExists, applePayScriptExists} = this.checkLoadedDirectScripts();
 
         document.querySelectorAll('[id^="payment-option-"]')
             .forEach((element) => {
@@ -318,14 +364,17 @@ class GoogleApplePayDirectHandler {
                     inputApplePayMatch = moduleName && moduleName.includes(inputApplePay);
                     /** @var {string|null} paymentId */
                     const paymentId = element.getAttribute('id');
+                    /** @var {Element|null} parentElement */
+                    const parentElement = element.closest('div[id^="payment-option-"]');
 
                     if (!paymentId.includes('container')) {
+                        const targetElement = parentElement ? parentElement : element;
                         if (inputGooglePayMatch && googlePayScriptExists) {
-                            element.addEventListener('click', () => this.handleGooglePayClick(placeOrderId));
+                            targetElement.addEventListener('click', () => this.handleGooglePayClick(placeOrderId, containerId));
                         } else if (inputApplePayMatch && applePayScriptExists) {
-                            element.addEventListener('click', () => this.handleApplePayClick(placeOrderId));
+                            targetElement.addEventListener('click', () => this.handleApplePayClick(placeOrderId, containerId));
                         } else {
-                            element.addEventListener('click', () => this.handleOtherPaymentClick(placeOrderId));
+                            targetElement.addEventListener('click', () => this.handleOtherPaymentClick(placeOrderId));
                         }
                     }
                 }
@@ -339,5 +388,20 @@ class GoogleApplePayDirectHandler {
          * Initialize the class to launch Google Pay and Apple Pay
          */
         new GoogleApplePayDirectHandler();
+
+        // One Page Checkout PS support. Version 4.0.X
+        $(document).on('opc-load-payment:completed', function () {
+            new GoogleApplePayDirectHandler(true, false);
+        });
+
+        // One Page Checkout PS support. Version 4.1.X & 5.0.X
+        if (typeof prestashop !== 'undefined') {
+            prestashop.on(
+                'opc-payment-getPaymentList-complete',
+                function (event) {
+                    new GoogleApplePayDirectHandler(false, true);
+                }
+            );
+        }
     });
 })(jQuery);

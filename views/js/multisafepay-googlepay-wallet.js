@@ -81,8 +81,11 @@ const debugModeGooglePay = configGooglePayDebugMode === true;
  * Class for Google Pay Direct
  */
 class GooglePayDirect {
-    constructor()
+    constructor(containerId, isLegacyOPC, isLatestOPC)
     {
+        this.containerId = containerId;
+        this.isLegacyOPC = isLegacyOPC;
+        this.isLatestOPC = isLatestOPC;
         this.debug = debugModeGooglePay;
         this.init()
             .then(() => {
@@ -122,11 +125,7 @@ class GooglePayDirect {
             return;
         }
 
-        const buttonContainer = document.getElementById('payment-confirmation');
-        if (!buttonContainer) {
-            debugDirect('Button container not found', this.debug);
-            return;
-        }
+        let buttonContainer = document.getElementById(this.containerId);
 
         // Features of the button
         const button = paymentsClient.createButton({
@@ -135,9 +134,38 @@ class GooglePayDirect {
             onClick: this.onGooglePaymentButtonClicked.bind(this)
         });
 
-        // Append the button to the "parent" container,
-        // to avoid the automated disabling from PrestaShop
-        buttonContainer.parentElement.appendChild(button);
+        if (this.isLegacyOPC || this.isLatestOPC) {
+            // Create a wrapper div to avoid the PrestaShop automated disabling
+            const wrapperDiv = document.createElement('div');
+
+            // Add the click event to the wrapper to avoid the propagation,
+            // so the button can be clicked without activate the redirect mode
+            wrapperDiv.addEventListener('click', (event) => {
+                event.stopPropagation();
+            });
+
+            // Add the OPC classes to the button
+            if (this.isLegacyOPC) {
+                // Add the specific container for the button
+                buttonContainer = document.querySelector('#' + this.containerId + ' > div');
+                button.firstChild.classList.add('btn', 'btn-primary', 'btn-lg', 'pull-right');
+            } else if (this.isLatestOPC) {
+                buttonContainer.style.textAlign = 'right';
+            }
+            // Append the button to the wrapper
+            wrapperDiv.appendChild(button);
+            // Append the wrapper to the container
+            buttonContainer.appendChild(wrapperDiv);
+        } else {
+            buttonContainer = buttonContainer.parentElement;
+            // Append the button to the "parent" container,
+            // so we can avoid the automated disabling from PrestaShop
+            buttonContainer.appendChild(button);
+        }
+
+        if (!buttonContainer) {
+            debugDirect('Button container not found', this.debug);
+        }
     }
 
     /**
