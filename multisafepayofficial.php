@@ -39,6 +39,7 @@ use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\RefundService;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use Psr\Http\Client\ClientExceptionInterface;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 
 class MultisafepayOfficial extends PaymentModule
 {
@@ -108,7 +109,7 @@ class MultisafepayOfficial extends PaymentModule
                 return false;
             }
         }
-        
+
         return true;
     }
 
@@ -401,8 +402,14 @@ class MultisafepayOfficial extends PaymentModule
         $orderInvoiceNumber = $orderInvoice->getInvoiceNumberFormatted($order->id_lang, $order->id_shop);
 
         // Update order with invoice shipping information
-        /** @var SdkService $sdkService */
-        $sdkService         = $this->get('multisafepay.sdk_service');
+        try {
+            /** @var SdkService $sdkService */
+            $sdkService = $this->get('multisafepay.sdk_service');
+        } catch (ServiceNotFoundException $serviceNotFoundException) {
+            LoggerHelper::logError('Error when try to get the Sdk Service: ' . $serviceNotFoundException->getMessage());
+            $sdkService = new SdkService();
+        }
+
         $transactionManager = $sdkService->getSdk()->getTransactionManager();
         $updateOrder        = new UpdateRequest();
         $updateOrder->addData(['invoice_id'  => $orderInvoiceNumber]);
@@ -440,9 +447,15 @@ class MultisafepayOfficial extends PaymentModule
         if (!$order->module || ($order->module !== 'multisafepayofficial')) {
             return;
         }
-        // Update order with invoice shipping information
-        /** @var SdkService $sdkService */
-        $sdkService         = $this->get('multisafepay.sdk_service');
+
+        try {
+            /** @var SdkService $sdkService */
+            $sdkService = $this->get('multisafepay.sdk_service');
+        } catch (ServiceNotFoundException $serviceNotFoundException) {
+            LoggerHelper::logError('Error when try to get the Sdk Service: ' . $serviceNotFoundException->getMessage());
+            $sdkService = new SdkService();
+        }
+
         $transactionManager = $sdkService->getSdk()->getTransactionManager();
         $updateOrder        = new UpdateRequest();
         $updateOrder->addData(
