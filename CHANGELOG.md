@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.14.2
+Release date: July 3rd, 2024
+
+### Fixed
++ PRES-422: Fix non-existent service when using PrestaShop WebService API
++ PRES-418: Fix issue with direct button not displaying when using 'One Page Checkout PS' plugin
+
+***
+
 ## 5.14.1
 Release date: May 22nd, 2024
 
