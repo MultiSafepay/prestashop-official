@@ -1,6 +1,6 @@
 grumphp:
   git_hook_variables:
-    EXEC_GRUMPHP_COMMAND: 'docker-compose exec -T --workdir /var/www/html/modules/multisafepayofficial app'
+    EXEC_GRUMPHP_COMMAND: 'docker compose exec -T --workdir /var/www/html/modules/multisafepayofficial app'
   hooks_dir: ~
   hooks_preset: local
   process_timeout: 500

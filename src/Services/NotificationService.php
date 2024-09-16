@@ -253,7 +253,7 @@ abstract class NotificationService
     /**
      * @param Order $order
      */
-    private function processOrderStatusChangesForBackorders(Order $order): void
+    protected function processOrderStatusChangesForBackorders(Order $order): void
     {
         // Remove the cache is needed since OrderInvoice::getTotalPaid will return a wrong value, and for this reason
         // a new OrderPayment object will be generated within the method OrderHistory::changeIdOrderState()

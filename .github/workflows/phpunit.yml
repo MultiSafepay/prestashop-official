@@ -19,7 +19,7 @@ jobs:
           fetch-depth: '0'
 
       - name: Run docker compose
-        run: docker-compose up -d app db
+        run: docker compose up -d app db
 
       - name: Sleep for 60 seconds to let PrestaShop installation script finish the process
         run: sleep 60s
@@ -31,7 +31,7 @@ jobs:
           COMPOSE_INTERACTIVE_NO_CLI: 1
 
       - name: Run PHPUnit PrestaShop 1.7
-        run:  docker-compose exec -e XDEBUG_MODE=coverage -T --workdir /var/www/html/modules/multisafepayofficial app vendor/bin/phpunit --testsuite prestashop-unit-tests --coverage-clover=coverage.xml
+        run:  docker compose exec -e XDEBUG_MODE=coverage -T --workdir /var/www/html/modules/multisafepayofficial app vendor/bin/phpunit --testsuite prestashop-unit-tests --coverage-clover=coverage.xml
 
       - name: Send coverage.xml to codecov
         run:  bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }}
