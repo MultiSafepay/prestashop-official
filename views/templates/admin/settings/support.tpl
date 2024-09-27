@@ -24,7 +24,7 @@
     <p>{l s='Read our documentation for more information about MultiSafepay and how to get started' mod='multisafepayofficial'}</p>
     <ul class="multisafepay-ul multisafepay-lh">
         <li>
-            <a href="https://docs.multisafepay.com/prestashop/" target="_blank">
+            <a href="https://docs.multisafepay.com/docs/prestashop/" target="_blank">
                 {l s='Manual' mod='multisafepayofficial'}
             </a>
         </li>
@@ -33,16 +33,11 @@
                 {l s='Changelog' mod='multisafepayofficial'}
             </a>
         </li>
-        <li>
-            <a href="https://docs.multisafepay.com/payments/integrations/ecommerce-platforms/prestashop-1-7/faq/" target="_blank">
-                {l s='FAQ' mod='multisafepayofficial'}
-            </a>
-        </li>
     </ul>
     <p>{l s='For developers' mod='multisafepayofficial'}:</p>
     <ul class="multisafepay-ul multisafepay-lh">
         <li>
-            <a href="https://docs.multisafepay.com/api/" target="_blank">
+            <a href="https://docs.multisafepay.com/reference/introduction" target="_blank">
                 {l s='API Documentation' mod='multisafepayofficial'}
             </a>
         </li>
