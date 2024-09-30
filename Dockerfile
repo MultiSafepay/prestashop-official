@@ -1,4 +1,4 @@
-FROM prestashop/prestashop:1.7
+FROM prestashop/prestashop:1.7.8.11-7.3-apache
 
 ENV DOCKER_ID=1000
 RUN usermod -u ${DOCKER_ID} www-data && groupmod -g ${DOCKER_ID} www-data

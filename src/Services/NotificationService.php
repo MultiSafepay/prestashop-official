@@ -24,7 +24,6 @@ namespace MultiSafepay\PrestaShop\Services;
 
 use Cart;
 use Configuration;
-use Customer;
 use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\Api\Transactions\Transaction;
 use MultiSafepay\Exception\ApiException;
@@ -36,7 +35,6 @@ use Order;
 use OrderDetail;
 use OrderHistory;
 use OrderPayment;
-use PrestaShopCollection;
 use PrestaShopException;
 use Tools;
 use OrderInvoice;
@@ -200,8 +198,45 @@ abstract class NotificationService
         // Set new order status and set transaction id within the order information
         $this->updateOrderData($order, $transaction);
 
+        // Update the order when invoices are disabled
+        $this->updateOrderWithoutInvoice($order, $transaction);
+
         if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
             LoggerHelper::logInfo('A notification has been processed for order ID: ' . $order->id . ' with status: ' . $transaction->getStatus() . ' and PSP ID: ' . $transaction->getTransactionId());
+        }
+    }
+
+    /**
+     * Update the order when invoices are not created
+     *
+     * The payment details will be shown then in the orders page of the back-end,
+     * because OrderHistory() method is not adding data at 'order_payment' table
+     * if invoice creation is disabled
+     *
+     * @param Order $order
+     * @param TransactionResponse $transaction
+     *
+     * @return void
+     */
+    private function updateOrderWithoutInvoice(Order $order, TransactionResponse $transaction): void
+    {
+        if (Configuration::get('PS_INVOICE')) {
+            return;
+        }
+
+        $payment = new OrderPayment();
+        $payment->order_reference = Tools::substr($order->reference, 0, 9);
+        $payment->id_currency = $order->id_currency;
+        $payment->amount = $transaction->getAmount() / 100;
+        $payment->payment_method = $order->payment;
+        $payment->conversion_rate = $order->conversion_rate;
+        $payment->transaction_id = $transaction->getTransactionId();
+
+        try {
+            $payment->save();
+        } catch (PrestaShopException | \PrestaShopDatabaseException $exception) {
+            LoggerHelper::logError('Error updating the order data when "Enable invoices"
+            option is not activated in backoffice: ' . $exception->getMessage());
         }
     }
 
