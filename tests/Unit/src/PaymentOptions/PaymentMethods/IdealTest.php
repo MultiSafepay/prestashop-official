@@ -87,7 +87,7 @@ class IdealTest extends BaseMultiSafepayTest
     public function testGetTransactionType()
     {
         $output = $this->idealPaymentOption->getTransactionType();
-        self::assertEquals('redirect', $output);
+        self::assertEquals('direct', $output);
         self::assertIsString($output);
     }
 
@@ -108,8 +108,6 @@ class IdealTest extends BaseMultiSafepayTest
     {
         $output = $this->idealPaymentOption->getDirectTransactionInputFields();
         self::assertIsArray($output);
-        self::assertCount(1, $output);
-        self::assertArrayHasKey('type', $output[0]);
-        self::assertEquals('select', $output[0]['type']);
+        self::assertCount(0, $output);
     }
 }
