@@ -2,7 +2,7 @@
     "name": "multisafepay/prestashop",
     "description": "MultiSafepay module for PrestaShop 1.7",
     "type": "prestashop-module",
-    "version": "5.14.2",
+    "version": "5.15.0",
     "keywords" : [ "prestashop" ],
     "license": "MIT",
     "require": {

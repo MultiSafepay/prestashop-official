@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.15.0
+Release date: Nov 28th, 2024
+
+### Added
++ PRES-427: Add OrderPayment object, within the PrestaShop order, when invoices are disabled
+
+### Changed
++ PRES-429: Change visibility of processOrderStatusChangesForBackorders()
+
+### Removed
++ PRES-428: Remove iDEAL issuers
+
+***
+
 ## 5.14.2
 Release date: July 3rd, 2024
 
