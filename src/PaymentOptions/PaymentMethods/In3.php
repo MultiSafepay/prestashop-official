@@ -25,19 +25,14 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 use Cart;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
-use MultiSafepay\PrestaShop\PaymentOptions\Base\BaseGatewayInfo;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Meta;
-use Tools;
-use Order;
 use Address;
-use Context;
 
 class In3 extends BasePaymentOption
 {
     public const CLASS_NAME = 'In3';
     protected $gatewayCode = 'IN3';
     protected $logo = 'in3.png';
-    protected $hasConfigurableDirect = true;
     protected $canProcessRefunds = false;
 
     /**
@@ -46,15 +41,6 @@ class In3 extends BasePaymentOption
     public function getName(): string
     {
         return $this->module->l('iDEAL+in3: Betaal in 3 delen (0% rente)', self::CLASS_NAME);
-    }
-
-    /**
-     * @phpcs:disable Generic.Files.LineLength.TooLong
-     */
-    public function getTransactionType(): string
-    {
-        $checkoutVars = Tools::getAllValues();
-        return empty($checkoutVars['gender']) ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
     }
 
     public function getGatewaySettings(): array
@@ -67,41 +53,16 @@ class In3 extends BasePaymentOption
         return $options;
     }
 
-    public function getDirectTransactionInputFields(): array
-    {
-        return [
-            [
-                'type'          => 'select',
-                'name'          => 'gender',
-                'placeholder'   => $this->module->l('Salutation', self::CLASS_NAME),
-                'options'       => [
-                    [
-                        'value' => 'mr',
-                        'name'  => $this->module->l('Mr.', self::CLASS_NAME),
-                    ],
-                    [
-                        'value' => 'mrs',
-                        'name'  => $this->module->l('Mrs.', self::CLASS_NAME),
-                    ],
-                    [
-                        'value' => 'miss',
-                        'name'  => $this->module->l('Miss', self::CLASS_NAME),
-                    ]
-                ],
-            ]
-        ];
-    }
-
     public function getGatewayInfo(Cart $cart, array $data = []): ?GatewayInfoInterface
     {
-        if (empty($data['gender'])) {
-            return null;
-        }
-
         $gatewayInfo = new Meta();
         $gatewayInfo->addPhoneAsString((new Address($cart->id_address_invoice))->phone);
-        $gatewayInfo->addGenderAsString($data['gender']);
 
         return $gatewayInfo;
+    }
+
+    public function getTransactionType(): string
+    {
+        return self::DIRECT_TYPE;
     }
 }
