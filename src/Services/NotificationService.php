@@ -198,9 +198,6 @@ abstract class NotificationService
         // Set new order status and set transaction id within the order information
         $this->updateOrderData($order, $transaction);
 
-        // Update the order when invoices are disabled
-        $this->updateOrderWithoutInvoice($order, $transaction);
-
         if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
             LoggerHelper::logInfo('A notification has been processed for order ID: ' . $order->id . ' with status: ' . $transaction->getStatus() . ' and PSP ID: ' . $transaction->getTransactionId());
         }
@@ -263,6 +260,9 @@ abstract class NotificationService
 
             // Update OrderPayment with payment method name, amount, and PSP ID
             $this->updateOrderPaymentWithPaymentMethodName($order, $transaction);
+
+            // Update the order when invoices are disabled
+            $this->updateOrderWithoutInvoice($order, $transaction);
         }
     }
 
