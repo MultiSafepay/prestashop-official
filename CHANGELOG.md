@@ -6,6 +6,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.16.0
+Release date: Dec 27th, 2024
+
+### Added
++ DAVAMS-805: Add BIZUM
+
+### Changed
++ PRES-400: Replace AfterPay-Riverty with Riverty payment method icon
+
+### Fixed
++ PRES-439: Fix payment registered twice when the notification of a refund is processed and invoices are disabled
+
+### Removed
++ DAVAMS-816: Remove gender checkout field from iDEAL+in3
+
+***
+
 ## 5.15.0
 Release date: Nov 28th, 2024
 
