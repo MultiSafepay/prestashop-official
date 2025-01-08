@@ -25,6 +25,7 @@ namespace MultiSafepay\PrestaShop\Builder\OrderRequest;
 use Cart;
 use Customer;
 use MultiSafepay\Api\Transactions\OrderRequest;
+use MultiSafepay\Exception\InvalidArgumentException;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use Order;
 use Tools;
@@ -41,6 +42,8 @@ class PaymentComponentBuilder implements OrderRequestBuilderInterface
      * @param BasePaymentOption $paymentOption
      * @param OrderRequest $orderRequest
      * @param Order|null $order
+     *
+     * @throws InvalidArgumentException
      */
     public function build(
         Cart $cart,
