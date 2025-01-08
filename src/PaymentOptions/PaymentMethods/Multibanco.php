@@ -29,6 +29,7 @@ class Multibanco extends BasePaymentOption
     public const CLASS_NAME = 'Multibanco';
     protected $gatewayCode = 'MULTIBANCO';
     protected $logo = 'multibanco.png';
+    protected $canProcessRefunds = false;
 
     /**
      * @return string
