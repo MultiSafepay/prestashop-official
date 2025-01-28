@@ -48,9 +48,12 @@ class DuplicateCartHelper
         Context::getContext()->currency = new Currency((int) $cart->id_currency);
         Context::getContext()->language = new Language((int) $cart->id_lang);
         Context::getContext()->cookie->__set('id_cart', $duplicatedCart['cart']->id);
-
-        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-            LoggerHelper::logInfo('Cart ID: ' . $cart->id . ' has been duplicated');
-        }
+        LoggerHelper::log(
+            'info',
+            'Cart has been duplicated',
+            true,
+            null,
+            $cart->id ?? null
+        );
     }
 }

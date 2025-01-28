@@ -162,8 +162,12 @@ class OrderService
                     $this->sdkService->getSdk()->getApiTokenManager()->get()
                 )->getApiToken();
             } catch (ApiException $apiException) {
-                LoggerHelper::logAlert(
-                    'Error when try to get the Api Token: ' . $apiException->getMessage()
+                LoggerHelper::logException(
+                    'alert',
+                    $apiException,
+                    'Error when try to get the Api Token',
+                    null,
+                    Context::getContext()->cart->id ?? null
                 );
                 return '';
             }
@@ -214,11 +218,17 @@ class OrderService
             $orderCollection->where('id_cart', '=', $cart->id);
 
             $ordersIds = $this->getOrdersIdsFromCollection($orderCollection);
-            LoggerHelper::logInfo(
-                'Order with Cart ID:'.$cart->id.' has been validated and as result the following orders IDS: '.implode(
-                    ',',
-                    $ordersIds
-                ).' has been registered.'
+            $tempOrderId = implode(',', array_filter($ordersIds, static function ($value) {
+                return !empty($value);
+            }));
+            $orderId = !empty($tempOrderId) ? $tempOrderId : null;
+
+            LoggerHelper::log(
+                'info',
+                'Order has been validated.',
+                false,
+                $orderId,
+                $cart->id ?? null
             );
         }
     }

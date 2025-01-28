@@ -75,8 +75,13 @@ class NotExistingOrderNotificationService extends NotificationService
                     ['transaction_id' => $transaction->getTransactionId()]
                 );
             } catch (PrestaShopException $exception) {
-                $message = "Something went wrong while validating the order";
-                LoggerHelper::logError($message);
+                LoggerHelper::logException(
+                    'error',
+                    $exception,
+                    'Something went wrong while validating the order',
+                    null,
+                    $cart->id ?? null
+                );
                 throw $exception;
             }
         }

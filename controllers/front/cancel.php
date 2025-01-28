@@ -41,20 +41,24 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
      */
     public function postProcess()
     {
-        if ($this->module->active == false || !Tools::getValue('id_cart')) {
-            if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-                LoggerHelper::logWarning(
-                    'It seems postProcess method of cancel controller is being called without the required parameters.'
-                );
-            }
+        $cartId = Tools::getValue('id_cart');
+
+        if (empty($this->module->active) || !$cartId) {
+            LoggerHelper::log(
+                'warning',
+                'It seems postProcess method of cancel controller is being called without the required parameters.',
+                true,
+                null,
+                $cartId ?: null
+            );
             header('HTTP/1.0 400 Bad request');
             die();
         }
 
-        $cartId = Tools::getValue('id_cart');
         $cart = new Cart($cartId);
+        $ordersIds = [];
 
-        // If order was created before payment, then we need to cancel the order and duplicate the cart
+        // If an order was created before payment, then we need to cancel the order and duplicate the cart
         if ($cart->orderExists()) {
             $orderCollection = new PrestaShopCollection('Order');
             $orderCollection->where('id_cart', '=', $cartId);
@@ -69,6 +73,7 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
                 if (!$this->canOrderBeCancelled($order)) {
                     Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
                 }
+                $ordersIds[] = $order->id ?? null;
             }
 
             // Cancel orders
@@ -90,7 +95,18 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
                 Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
             }
         } catch (ApiException $apiException) {
-            LoggerHelper::logError($apiException->getMessage());
+            $tempOrderId = implode(',', array_filter($ordersIds, static function ($value) {
+                return !empty($value);
+            }));
+            $orderId = !empty($tempOrderId) ? $tempOrderId : null;
+
+            LoggerHelper::logException(
+                'error',
+                $apiException,
+                '',
+                $orderId,
+                $cart->id ?? null
+            );
 
             $this->context->smarty->assign(
                 [

@@ -73,19 +73,27 @@ class MultisafepayOfficial extends PaymentModule
      */
     public function install(): bool
     {
-        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-            LoggerHelper::logInfo('Begin install process');
-        }
+        LoggerHelper::log(
+            'info',
+            'Begin install process',
+            true
+        );
 
         if (false === extension_loaded('curl')) {
-            LoggerHelper::logAlert('cURL extension is not enabled.');
+            LoggerHelper::log(
+                'alert',
+                'cURL extension is not enabled.'
+            );
             $this->_errors[] = $this->l('You have to enable the cURL extension on your server to install this module');
             return false;
         }
 
         $install = parent::install();
         if (!$install) {
-            LoggerHelper::logAlert('Parent install failed.');
+            LoggerHelper::log(
+                'alert',
+                'Parent install failed.'
+            );
             return false;
         }
 
@@ -123,7 +131,10 @@ class MultisafepayOfficial extends PaymentModule
         try {
             (new Uninstaller($this))->uninstall();
         } catch (PrestaShopException|PrestaShopDatabaseException $exception) {
-            LoggerHelper::logError($exception->getMessage());
+            LoggerHelper::logException(
+                'error',
+                $exception
+            );
         }
         return parent::uninstall();
     }
@@ -223,7 +234,13 @@ class MultisafepayOfficial extends PaymentModule
         }
 
         if (!$this->hasSetApiKey()) {
-            LoggerHelper::logAlert('API Key has not been set up properly');
+            LoggerHelper::log(
+                'alert',
+                'API Key has not been set up properly',
+                false,
+                null,
+                $params['cart']->id ?? null
+            );
             return null;
         }
 
@@ -334,17 +351,26 @@ class MultisafepayOfficial extends PaymentModule
                 $transaction        = $transactionManager->create($orderRequest);
                 $paymentUrl         = $transaction->getPaymentUrl();
             } catch (ApiException $apiException) {
-                LoggerHelper::logError('Error while trying to set payment url for Cart ID: ' . $cart->id . '.
-                                        Message: ' . $apiException->getMessage());
+                LoggerHelper::logException(
+                    'error',
+                    $apiException,
+                    'Error while trying to set payment url',
+                    $order ? (string)$order->id : null,
+                    $cart->id ?? null
+                );
             }
 
             if ($paymentUrl) {
                 $message = $this->l('Payment link: ') . $paymentUrl;
                 $this->paymentUrlEmailHook = $paymentUrl;
                 OrderMessageHelper::addMessage($order, $message);
-                if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-                    LoggerHelper::logInfo($message);
-                }
+                LoggerHelper::log(
+                    'info',
+                    $message,
+                    true,
+                    $order ? (string)$order->id : null,
+                    $cart->id ?? null
+                );
             }
         }
     }
@@ -406,7 +432,11 @@ class MultisafepayOfficial extends PaymentModule
             /** @var SdkService $sdkService */
             $sdkService = $this->get('multisafepay.sdk_service');
         } catch (ServiceNotFoundException $serviceNotFoundException) {
-            LoggerHelper::logError('Error when try to get the Sdk Service: ' . $serviceNotFoundException->getMessage());
+            LoggerHelper::logException(
+                'alert',
+                $serviceNotFoundException,
+                'Error when try to get the Sdk Service'
+            );
             $sdkService = new SdkService();
         }
 
@@ -422,7 +452,13 @@ class MultisafepayOfficial extends PaymentModule
         try {
             $transactionManager->update((string) $orderId, $updateOrder);
         } catch (ApiException $apiException) {
-            LoggerHelper::logAlert('Error when try to set the transaction as invoiced: ' . $apiException->getMessage());
+            LoggerHelper::logException(
+                'alert',
+                $apiException,
+                'Error when try to set the transaction as invoiced',
+                (string)$order->id ?: null,
+                $order->id_cart ?: null
+            );
             return;
         }
     }
@@ -452,7 +488,11 @@ class MultisafepayOfficial extends PaymentModule
             /** @var SdkService $sdkService */
             $sdkService = $this->get('multisafepay.sdk_service');
         } catch (ServiceNotFoundException $serviceNotFoundException) {
-            LoggerHelper::logError('Error when try to get the Sdk Service: ' . $serviceNotFoundException->getMessage());
+            LoggerHelper::logException(
+                'alert',
+                $serviceNotFoundException,
+                'Error when try to get the Sdk Service'
+            );
             $sdkService = new SdkService();
         }
 
@@ -475,7 +515,13 @@ class MultisafepayOfficial extends PaymentModule
         try {
             $transactionManager->update((string) $orderId, $updateOrder);
         } catch (ApiException $apiException) {
-            LoggerHelper::logAlert('Error when try to set the transaction as shipped: ' . $apiException->getMessage());
+            LoggerHelper::logException(
+                'alert',
+                $apiException,
+                'Error when try to set the transaction as shipped',
+                (string)$order->id ?: null,
+                $order->id_cart ?: null
+            );
             return;
         }
     }
@@ -531,8 +577,12 @@ class MultisafepayOfficial extends PaymentModule
             $apiKey = $sdkService->getApiKey();
             return !empty($apiKey);
         } catch (ApiException $apiException) {
-            LoggerHelper::logAlert(
-                'Error when try to get the Api Key: ' . $apiException->getMessage()
+            LoggerHelper::logException(
+                'alert',
+                $apiException,
+                'Error when try to get the Api Key',
+                null,
+                $this->context->cart->id ?? null
             );
             return false;
         }

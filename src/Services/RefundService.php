@@ -116,8 +116,13 @@ class RefundService
         try {
             $transactionManager->refund($transaction, $refundRequest);
         } catch (ApiException $exception) {
-            $message = $exception->getMessage();
-            LoggerHelper::logError("Error processing the refund for Order ID: $order->id. $message");
+            LoggerHelper::logException(
+                'error',
+                $exception,
+                'Error processing the refund.',
+                (string)$order->id ?: null,
+                $order->id_cart ?: null
+            );
             $this->handleMessage($order, "Refund for Order ID: $order->id has failed.");
 
             return false;
@@ -125,12 +130,16 @@ class RefundService
 
         $amount = $refundData['amount'];
         $currency = $refundData['currency'];
-        $message = "A refund of $amount $currency has been processed for Order ID: $order->id";
+        $message = 'A refund of ' . $amount . ' ' . $currency . ' has been processed';
 
-        OrderMessageHelper::addMessage($order, $message);
-        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-            LoggerHelper::logInfo($message);
-        }
+        OrderMessageHelper::addMessage($order, $message . ' for Order ID: ' . $order->id);
+        LoggerHelper::log(
+            'info',
+            $message,
+            true,
+            (string)$order->id ?: null,
+            $order->id_cart ?: null
+        );
 
         return true;
     }
@@ -286,7 +295,10 @@ class RefundService
     public function handleMessage(Order $order, string $message): void
     {
         OrderMessageHelper::addMessage($order, $message);
-        LoggerHelper::logWarning($message);
+        LoggerHelper::log(
+            'warning',
+            $message
+        );
         Tools::displayError($message);
     }
 }

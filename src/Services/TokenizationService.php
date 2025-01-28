@@ -108,7 +108,13 @@ class TokenizationService
         try {
             return $tokenManager->delete($tokenId, $customerId);
         } catch (ApiException $exception) {
-            LoggerHelper::logError('There was an error when deleting a token: ' . $exception->getMessage());
+            LoggerHelper::logException(
+                'error',
+                $exception,
+                'There was an error when deleting a token',
+                null,
+                Context::getContext()->cart->id ?? null
+            );
             return false;
         }
     }

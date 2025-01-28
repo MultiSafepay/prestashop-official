@@ -51,20 +51,32 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
     public function postProcess()
     {
         if (!$this->isContextSetUp()) {
-            LoggerHelper::logWarning(
-                'Warning: It seems postProcess method of MultiSafepay is being called out of context.'
+            LoggerHelper::log(
+                'warning',
+                'It seems postProcess method of MultiSafepay is being called out of context.',
+                false,
+                null,
+                $this->context->cart->id ?? null
             );
             Tools::redirect('/index.php?controller=order&step=1');
             return null;
         }
 
-        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-            LoggerHelper::logInfo('Starting the payment process for Cart ID: '.$this->context->cart->id);
-        }
+        LoggerHelper::log(
+            'info',
+            'Starting the payment process for Shopping Cart',
+            true,
+            null,
+            $this->context->cart->id ?? null
+        );
 
         if (!$this->isValidPaymentMethod()) {
-            LoggerHelper::logWarning(
-                'The customer address changed just before the end of the checkout process method and now this method is not available any more.'
+            LoggerHelper::log(
+                'warning',
+                'The customer address changed just before the end of the checkout process method and now this method is not available any more.',
+                false,
+                null,
+                $this->context->cart->id ?? null
             );
             Tools::redirect('/index.php?controller=order&step=1');
             return null;
@@ -93,25 +105,42 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
                 );
 
                 $orderCollection = new PrestaShopCollection('Order');
-                $orderCollection->where('id_cart', '=', $this->context->cart->id);
+                $orderCollection->where('id_cart', '=', $cart->id);
 
                 /** @var Order $order */
                 $order = $orderCollection->getFirst();
             } catch (PrestaShopException $prestaShopException) {
-                LoggerHelper::logError('Error when try to create an order using Cart ID '.$this->context->cart->id);
-                LoggerHelper::logError($prestaShopException->getMessage());
+                LoggerHelper::logException(
+                    'error',
+                    $prestaShopException,
+                    'Error when try to create an order',
+                    null,
+                    $cart->id ?? null
+                );
                 Tools::redirectLink($this->context->link->getPageLink('order', true, null, ['step' => '3']));
             }
         }
 
         $orderRequest = $orderRequestBuilder->build($cart, $customer, $selectedPaymentOption, $order);
 
-        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-            LoggerHelper::logInfo(
-                'An OrderRequest for the Cart ID: ' . $this->context->cart->id . ' has been
-                created and contains the following information: ' . json_encode($orderRequest->getData())
-            );
+        // Removing Payload from OrderRequest
+        $data = $orderRequest->getData();
+        if (isset($data['payment_data']['payload'])) {
+            unset($data['payment_data']['payload']);
         }
+        if (empty($data['payment_data'])) {
+            unset($data['payment_data']);
+        }
+        $jsonOutput = json_encode($data);
+
+        $message = 'An OrderRequest has been created and contains the following information: ' . $jsonOutput;
+        LoggerHelper::log(
+            'info',
+            $message,
+            true,
+            $order ? (string)$order->id : null,
+            $cart->id ?? null
+        );
 
         try {
             /** @var SdkService $sdkService */
@@ -119,11 +148,14 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
             $transactionManager = $sdkService->getSdk()->getTransactionManager();
             $transaction        = $transactionManager->create($orderRequest);
         } catch (ApiException $apiException) {
-            LoggerHelper::logError(
-                'Error when try to create a MultiSafepay transaction using the following
-                OrderRequest data: ' . json_encode($orderRequest->getData())
+            $errorMessage = 'Error when try to create a MultiSafepay transaction using the following OrderRequest data: ' . json_encode($orderRequest->getData());
+            LoggerHelper::logException(
+                'error',
+                $apiException,
+                $errorMessage,
+                $order ? (string)$order->id : null,
+                $cart->id ?? null
             );
-            LoggerHelper::logError($apiException->getMessage());
 
             $this->context->smarty->assign(
                 [
@@ -147,12 +179,13 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
             return $this->setTemplate('module:multisafepayofficial/views/templates/front/error.tpl');
         }
 
-        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-            LoggerHelper::logInfo(
-                'A transaction has been created for Cart ID: '.$this->context->cart->id.' with payment link '.$transaction->getPaymentUrl(
-                )
-            );
-        }
+        LoggerHelper::log(
+            'info',
+            'A transaction has been created with payment link ' . $transaction->getPaymentUrl(),
+            true,
+            $order ? (string)$order->id : null,
+            $cart->id ?? null
+        );
 
         Tools::redirect($transaction->getPaymentUrl());
         return null;

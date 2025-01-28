@@ -89,9 +89,12 @@ class Uninstaller
         foreach (array_keys($configValues) as $configValue) {
             Configuration::deleteByName((string)$configValue);
         }
-        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-            LoggerHelper::logInfo('Module config values has been removed');
-        }
+
+        LoggerHelper::log(
+            'info',
+            'Module config values has been removed',
+            true
+        );
     }
 
     /**

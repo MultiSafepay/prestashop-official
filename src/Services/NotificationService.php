@@ -100,22 +100,60 @@ abstract class NotificationService
      */
     public function getTransactionFromBody(string $body): TransactionResponse
     {
-        if (!Tools::getValue('transactionid') || empty(Tools::file_get_contents('php://input'))) {
-            $message = "It seems the notification URL has been triggered but does not contain the required information";
-            LoggerHelper::logWarning($message);
+        $transactionId = Tools::getValue('transactionid');
+        $message = 'It seems the notification URL has been triggered but does not contain the required information';
+
+        if (!$transactionId) {
+            LoggerHelper::log(
+                'warning',
+                $message
+            );
+            throw new PrestaShopException($message);
+        }
+
+        $orderCollection = Order::getByReference($transactionId);
+        $firstOrder = $orderCollection->getFirst();
+        if (!empty($firstOrder->id)) {
+            $order = new Order($firstOrder->id);
+            $orderId = (string)$order->id ?: null;
+            $idCart = $order->id_cart ?: null;
+        } else {
+            $orderId = $idCart = null;
+        }
+
+        if (empty(Tools::file_get_contents('php://input'))) {
+            LoggerHelper::log(
+                'warning',
+                $message,
+                false,
+                $orderId,
+                $idCart
+            );
             throw new PrestaShopException($message);
         }
 
         if (!Notification::verifyNotification($body, $_SERVER['HTTP_AUTH'], $this->sdkService->getApiKey())) {
-            $message = "Notification for transaction ID " . Tools::getValue('transactionid') . " has been received but is not valid";
-            LoggerHelper::logWarning($message);
+            $message = 'Notification for transaction ID ' . $transactionId . ' has been received but is not valid';
+            LoggerHelper::log(
+                'warning',
+                $message,
+                false,
+                $orderId,
+                $idCart
+            );
             throw new PrestaShopException($message);
         }
 
         try {
             return new TransactionResponse(json_decode($body, true), $body);
         } catch (ApiException $apiException) {
-            LoggerHelper::logError($apiException->getMessage());
+            LoggerHelper::logException(
+                'error',
+                $apiException,
+                '',
+                $orderId,
+                $idCart
+            );
             throw new PrestaShopException($apiException->getMessage());
         }
     }
@@ -132,38 +170,64 @@ abstract class NotificationService
     {
         if (!$order->id) {
             $message = "It seems a notification is trying to process an order which does not exist. Transaction ID received is " . Tools::getValue('transactionid');
-            LoggerHelper::logWarning($message);
+            LoggerHelper::log(
+                'warning',
+                $message
+            );
             throw new PrestaShopException($message);
         }
 
         if ($order->module && $order->module !== 'multisafepayofficial') {
             $message = "It seems a notification is trying to process an order processed by another payment method. Transaction ID received is " . Tools::getValue('transactionid');
-            LoggerHelper::logWarning($message);
+            LoggerHelper::log(
+                'warning',
+                $message,
+                false,
+                (string)$order->id ?: null,
+                $order->id_cart ?: null
+            );
             throw new PrestaShopException($message);
         }
 
         // If transaction status is initialized, but the current order status is PS_OS_OUTOFSTOCK_UNPAID
         // because this one changes quickly after order creation when there aren't products in stock
         if (Transaction::INITIALIZED === $transaction->getStatus() && (int)$order->current_state === (int)Configuration::get('PS_OS_OUTOFSTOCK_UNPAID')) {
-            if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-                LoggerHelper::logInfo('A notification has been received but is being ignored since the transaction status is initialized, and the current order status is PS_OS_OUTOFSTOCK_UNPAID');
-            }
+            $message = 'A notification has been received but is being ignored since the transaction status is initialized, and the current order status is PS_OS_OUTOFSTOCK_UNPAID';
+            LoggerHelper::log(
+                'info',
+                $message,
+                true,
+                (string)$order->id ?: null,
+                $order->id_cart ?: null
+            );
             return false;
         }
 
         // If transaction status is completed, but the current order status is PS_OS_OUTOFSTOCK_PAID
         // because this one changes quickly when payment is completed and there aren't products in stock
         if (Transaction::COMPLETED === $transaction->getStatus() && (int)$order->current_state === (int)Configuration::get('PS_OS_OUTOFSTOCK_PAID')) {
-            if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-                LoggerHelper::logInfo('A notification has been received but is being ignored since the transaction status is completed, and the current order status is PS_OS_OUTOFSTOCK_PAID');
-            }
+            $message = 'A notification has been received but is being ignored since the transaction status is completed, and the current order status is PS_OS_OUTOFSTOCK_PAID';
+            LoggerHelper::log(
+                'info',
+                $message,
+                true,
+                (string)$order->id ?: null,
+                $order->id_cart ?: null
+            );
             return false;
         }
 
         // If the PrestaShop order status is considered a final status
         if ($this->isFinalStatus((int)$order->current_state)) {
-            $message = "It seems a notification is trying to process an order which already have a final order status defined. For this reason notification is being ignored. Transaction ID received is " . Tools::getValue('transactionid') . " with status " . $transaction->getStatus();
-            LoggerHelper::logWarning($message);
+            $message = 'It seems a notification is trying to process an order which already have a final order status defined. For this reason notification is being ignored. ';
+            $message .= 'Transaction ID received is ' . Tools::getValue('transactionid') . ' with status ' . $transaction->getStatus();
+            LoggerHelper::log(
+                'warning',
+                $message,
+                false,
+                (string)$order->id ?: null,
+                $order->id_cart ?: null
+            );
             OrderMessageHelper::addMessage($order, $message);
             return false;
         }
@@ -197,10 +261,13 @@ abstract class NotificationService
 
         // Set new order status and set transaction id within the order information
         $this->updateOrderData($order, $transaction);
-
-        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-            LoggerHelper::logInfo('A notification has been processed for order ID: ' . $order->id . ' with status: ' . $transaction->getStatus() . ' and PSP ID: ' . $transaction->getTransactionId());
-        }
+        LoggerHelper::log(
+            'info',
+            'A notification has been processed with status: ' . $transaction->getStatus() . ' and PSP ID: ' . $transaction->getTransactionId(),
+            true,
+            (string)$order->id ?: null,
+            $order->id_cart ?: null
+        );
     }
 
     /**
@@ -232,8 +299,11 @@ abstract class NotificationService
         try {
             $payment->save();
         } catch (PrestaShopException | \PrestaShopDatabaseException $exception) {
-            LoggerHelper::logError('Error updating the order data when "Enable invoices"
-            option is not activated in backoffice: ' . $exception->getMessage());
+            LoggerHelper::logException(
+                'alert',
+                $exception,
+                'Error updating the order data when "Enable invoices option is not activated in backoffice'
+            );
         }
     }
 
@@ -356,9 +426,13 @@ abstract class NotificationService
         if ($order->payment !== 'Credit card') {
             $message = 'Notification received with a different payment method for Order ID: ' . $order->id . ' and Order Reference: ' . $order->reference . ' on ' . date('d/m/Y H:i:s') . '. Payment method changed from ' . $order->payment . ' to ' . $paymentMethodName . '.';
             OrderMessageHelper::addMessage($order, $message);
-            if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-                LoggerHelper::logInfo($message);
-            }
+            LoggerHelper::log(
+                'info',
+                $message,
+                true,
+                (string)$order->id ?: null,
+                $order->id_cart ?: null
+            );
         }
 
         // Update payment method
@@ -400,7 +474,10 @@ abstract class NotificationService
             $transaction = new TransactionResponse(json_decode($body, true), $body);
             return $transaction;
         } catch (ApiException $apiException) {
-            LoggerHelper::logError($apiException->getMessage());
+            LoggerHelper::logException(
+                'error',
+                $apiException
+            );
             throw new PrestaShopException($apiException->getMessage());
         }
     }

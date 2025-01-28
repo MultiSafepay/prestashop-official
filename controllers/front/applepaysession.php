@@ -59,7 +59,13 @@ class MultisafepayOfficialApplepaysessionModuleFrontController extends ModuleFro
             echo $this->getApplePayMerchantSession($appleSessionArguments);
         } catch (ApiException|Exception|ClientExceptionInterface $exception) {
             $errorMessage = 'Error when trying to get the ApplePay session via MultiSafepay SDK';
-            LoggerHelper::logAlert($errorMessage . ': ' . $exception->getMessage());
+            LoggerHelper::logException(
+                'alert',
+                $exception,
+                $errorMessage,
+                null,
+                $this->context->cart->id ?? null
+            );
             echo json_encode(['message' => $errorMessage]);
         }
 
@@ -77,12 +83,24 @@ class MultisafepayOfficialApplepaysessionModuleFrontController extends ModuleFro
         $originDomain = Tools::getValue(self::ORIGIN_DOMAIN_KEY);
 
         if (empty($validationUrl)) {
-            LoggerHelper::logError('Error when trying to get the ApplePay session. Validation URL empty');
+            LoggerHelper::log(
+                'error',
+                'Error when trying to get the ApplePay session. Validation URL empty',
+                false,
+                null,
+                $this->context->cart->id ?? null
+            );
             exit;
         }
 
         if (empty($originDomain)) {
-            LoggerHelper::logError('Error when trying to get the ApplePay session. Origin domain empty');
+            LoggerHelper::log(
+                'error',
+                'Error when trying to get the ApplePay session. Origin domain empty',
+                false,
+                null,
+                $this->context->cart->id ?? null
+            );
             exit;
         }
 

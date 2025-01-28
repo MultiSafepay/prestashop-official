@@ -80,12 +80,13 @@ class ShoppingCartBuilder implements OrderRequestBuilderInterface
         }
 
         $cartSummary = $cart->getSummaryDetails();
-
-        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-            LoggerHelper::logInfo(
-                'Cart Summary for Shopping Cart ID ' . $cart->id . ', contains: ' . json_encode($cartSummary)
-            );
-        }
+        LoggerHelper::log(
+            'info',
+            'Cart Summary contains: ' . json_encode($cartSummary),
+            true,
+            $order ? (string)$order->id : null,
+            $cart->id ?? null
+        );
 
         $cartItems = [];
         foreach ($this->shoppingCartBuilders as $shoppingCartBuilder) {

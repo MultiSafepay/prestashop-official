@@ -138,8 +138,12 @@ class GooglePay extends BasePaymentOption
             $accountManager = $sdkService->getSdk()->getAccountManager();
             $gatewayMerchantId = $accountManager->get()->getAccountId();
         } catch (ApiException|ClientExceptionInterface|Exception $exception) {
-            LoggerHelper::logAlert(
-                'Error when try to get the merchant account ID: ' . $exception->getMessage()
+            LoggerHelper::logException(
+                'alert',
+                $exception,
+                'Error when try to get the merchant account ID',
+                null,
+                Context::getContext()->cart->id ?? null
             );
         }
 

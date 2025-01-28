@@ -23,6 +23,7 @@
 namespace MultiSafepay\PrestaShop\Services;
 
 use Configuration;
+use Exception;
 use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
@@ -90,6 +91,7 @@ class SystemStatusService
      *
      * @return array
      * @phpcs:disable Generic.Files.LineLength.TooLong
+     * @throws Exception
      */
     public function getPrestaShopSettings(): array
     {
@@ -106,7 +108,7 @@ class SystemStatusService
                 ],
                 'log_location' => [
                     'label' => 'Log Location',
-                    'value' => LoggerHelper::MULTISAFEPAY_LOG_DESTINATION,
+                    'value' => LoggerHelper::getDefaultLogPath(),
                 ],
                 'multistore' => [
                     'label' => 'Multistore',
@@ -310,7 +312,7 @@ class SystemStatusService
      * Return an array of each setting for each MultiSafepay payment method to be used in system report
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      *
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
@@ -430,7 +432,7 @@ class SystemStatusService
 
     /**
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     private function isMultiStoreActive(): bool
     {
@@ -441,7 +443,7 @@ class SystemStatusService
      * Return an array with overwritten files
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     private function getListOfOverwrittenFiles(): array
     {
@@ -454,7 +456,7 @@ class SystemStatusService
      * Return an array with the missing files
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     private function getListOfMissingFiles(): array
     {
@@ -467,7 +469,7 @@ class SystemStatusService
      * Return an array with the updated files
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     private function getListOfUpdatedFiles(): array
     {

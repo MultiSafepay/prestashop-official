@@ -44,9 +44,13 @@ class CancelOrderHelper
             $history->changeIdOrderState((int) Configuration::get('PS_OS_CANCELED'), $order->id);
             $history->addWithemail(true, ['send_email' => true]);
 
-            if (Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')) {
-                LoggerHelper::logInfo('Order ID: ' . $order->id . ' has been canceled');
-            }
+            LoggerHelper::log(
+                'info',
+                'Order has been canceled',
+                true,
+                $order ? (string)$order->id : null,
+                $order->id_cart ?? null
+            );
         }
     }
 }
