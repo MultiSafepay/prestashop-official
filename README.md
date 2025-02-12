@@ -10,7 +10,7 @@ Easily integrate MultiSafepay payment solutions into your PrestaShop 1.7 webshop
 
 ## About MultiSafepay
 
-MultiSafepay is a collecting payment service provider, which means we take care of electronic contracts, technical details, and payment collection for each payment method. You can start selling online today and manage all your transactions in one place.
+MultiSafepay is a collecting payment service provider, which means we take care of electronic contracts, technical details, and payment collection for each payment method. You can start selling online today, and manage all your transactions in one place.
 
 ## Supported payment methods
 

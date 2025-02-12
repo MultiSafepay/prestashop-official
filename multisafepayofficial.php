@@ -318,7 +318,12 @@ class MultisafepayOfficial extends PaymentModule
     public function hookActionValidateOrder(array $params): void
     {
         $cart = $params['cart'];
-        if ($cart && !empty($cart->id_shop_group) && !empty($cart->id_guest)) {
+        $isAdminArea = defined('_PS_ADMIN_DIR_');
+        $isLoggedInAdminArea = !empty(Context::getContext()->employee) &&
+            Context::getContext()->employee->isLoggedBack();
+        $isNotGuest = (string)$cart->id_guest === '0';
+
+        if (empty($cart) || !$isAdminArea || !$isLoggedInAdminArea || !$isNotGuest) {
             return;
         }
 
@@ -330,12 +335,8 @@ class MultisafepayOfficial extends PaymentModule
         $customer = $params['customer'];
         $paymentUrl = false;
 
-        // Order is created from the back-end if id_shop_group and id_guest are 0
-        if ($cart &&
-            ((string)$cart->id_shop_group === '0') &&
-            ((string)$cart->id_guest === '0') &&
-            $customer) {
-
+        // Order is created from the back-end
+        if ($customer) {
             /** @var PaymentOptionService $paymentOptionService */
             $paymentOptionService = $this->get('multisafepay.payment_option_service');
             $paymentOption = $paymentOptionService->getMultiSafepayPaymentOption('');
