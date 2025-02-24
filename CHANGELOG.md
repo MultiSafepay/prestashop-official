@@ -6,6 +6,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 5.17.0
+Release date: Feb 24th, 2025
+
+### Added
++ DAVAMS-857: Add BILLINK payment method
++ PRES-330: Add more logging points in debug mode
+
+### Changed
++ DAVAMS-871: Change to prevent refunds in the Multibanco payment method
+
+### Fixed
++ PRES-440: Fix the payment link in backoffice orders emails
+
+***
+
 ## 5.16.0
 Release date: Dec 27th, 2024
 
