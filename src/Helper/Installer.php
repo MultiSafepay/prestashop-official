@@ -29,7 +29,6 @@ use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultisafepayOfficial;
 use OrderState;
 use Tab;
-use PrestaShopBundle\Entity\Repository\TabRepository;
 use Tools;
 
 /**
@@ -69,9 +68,7 @@ class Installer
      */
     private function installMultiSafepayTab(): void
     {
-        /** @var TabRepository $tabRepository */
-        $tabRepository = $this->module->get('prestashop.core.admin.tab.repository');
-        $idParent = $tabRepository->findOneIdByClassName('IMPROVE');
+        $idParent = (new SettingsBuilder($this->module))->getAdminTab('IMPROVE');
 
         $tab             = new Tab();
         $tab->class_name = 'AdminMultisafepayOfficial';

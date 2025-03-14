@@ -25,7 +25,6 @@ namespace MultiSafepay\PrestaShop\Helper;
 use Configuration;
 use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
 use OrderState;
-use PrestaShopBundle\Entity\Repository\TabRepository;
 use PrestaShopCollection;
 use Tab;
 use MultisafepayOfficial;
@@ -71,9 +70,7 @@ class Uninstaller
      */
     protected function uninstallMultiSafepayTab(): void
     {
-        /** @var TabRepository $tabRepository */
-        $tabRepository = $this->module->get('prestashop.core.admin.tab.repository');
-        $tabId = $tabRepository->findOneIdByClassName('AdminMultisafepayOfficial');
+        $tabId = (new SettingsBuilder($this->module))->getAdminTab('AdminMultisafepayOfficial');
 
         $tab   = new Tab($tabId);
         $tab->delete();

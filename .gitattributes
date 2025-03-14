@@ -4,15 +4,5 @@
 /.github export-ignore
 /.editorconfig export-ignore
 /bin export-ignore
-/phpcs.xml export-ignore
-/grumphp.yml export-ignore
 /README.md export-ignore
-/DEVELOPMENT.md export-ignore
-/.codecov.yml export-ignore
-/.dockerignore export-ignore
-/.env.example export-ignore
-/docker-compose.yml export-ignore
-/Dockerfile export-ignore
-/Makefile export-ignore
-/phpunit.xml export-ignore
 /CODE_OF_CONDUCT.md export-ignore

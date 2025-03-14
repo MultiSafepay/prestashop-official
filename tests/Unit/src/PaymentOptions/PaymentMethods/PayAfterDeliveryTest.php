@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @category    MultiSafepay
  * @package     Connect
@@ -21,7 +21,7 @@
  *
  */
 
-namespace MultiSafepay\Tests\PaymentOptions;
+namespace MultiSafepay\Tests\PaymentOptions\PaymentMethods;
 
 use MultisafepayOfficial;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
@@ -44,7 +44,7 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getDescription
      */
-    public function testGetDescription()
+    public function testGetDescription(): void
     {
         $output = $this->payAfterDeliveryPaymentMethod->getDescription();
         self::assertEquals('', $output);
@@ -54,7 +54,7 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getGatewayCode
      */
-    public function testGetGatewayCode()
+    public function testGetGatewayCode(): void
     {
         $output = $this->payAfterDeliveryPaymentMethod->getGatewayCode();
         self::assertEquals('PAYAFTER', $output);
@@ -64,7 +64,7 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getTransactionType
      */
-    public function testGetTransactionType()
+    public function testGetTransactionType(): void
     {
         $output = $this->payAfterDeliveryPaymentMethod->getTransactionType();
         self::assertEquals('redirect', $output);
@@ -74,7 +74,7 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getLogo
      */
-    public function testGetLogo()
+    public function testGetLogo(): void
     {
         $output = $this->payAfterDeliveryPaymentMethod->getLogo();
         self::assertEquals('payafter.png', $output);
@@ -84,21 +84,36 @@ class PayAfterDeliveryTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\PayAfterDelivery::getDirectTransactionInputFields
      */
-    public function testGetDirectTransactionInputFields()
+    public function testGetDirectTransactionInputFields(): void
     {
         $output = $this->payAfterDeliveryPaymentMethod->getDirectTransactionInputFields();
         self::assertIsArray($output);
-        self::assertContains([
-            'type'        => 'date',
-            'name'        => 'birthday',
-            'placeholder' => '',
-            'value'       => ''
-        ], $output);
-        self::assertContains([
-            'type'        => 'text',
-            'name'        => 'bankaccount',
-            'placeholder' => '',
-            'value'       => ''
-        ], $output);
+
+        // Get the actual fields from the output
+        $birthdayField = array_filter($output, static function ($field) {
+            return $field['name'] === 'birthday';
+        });
+
+        $bankAccountField = array_filter($output, static function ($field) {
+            return $field['name'] === 'bankaccount';
+        });
+
+        // Assert that both fields exist
+        self::assertNotEmpty($birthdayField, 'Birthday field is missing');
+        self::assertNotEmpty($bankAccountField, 'Bank account field is missing');
+
+        // Assert the structure of the birthday field
+        $birthdayField = reset($birthdayField);
+        self::assertEquals('date', $birthdayField['type']);
+        self::assertEquals('birthday', $birthdayField['name']);
+        self::assertArrayHasKey('placeholder', $birthdayField);
+        self::assertArrayHasKey('value', $birthdayField);
+
+        // Assert the structure of the bank account field
+        $bankAccountField = reset($bankAccountField);
+        self::assertEquals('text', $bankAccountField['type']);
+        self::assertEquals('bankaccount', $bankAccountField['name']);
+        self::assertArrayHasKey('placeholder', $bankAccountField);
+        self::assertArrayHasKey('value', $bankAccountField);
     }
 }

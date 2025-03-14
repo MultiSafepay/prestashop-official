@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @category    MultiSafepay
  * @package     Connect
@@ -37,13 +37,16 @@ class SdkServiceTest extends BaseMultiSafepayTest
         parent::setUp();
 
         $mockConfiguration = new class extends Configuration {
-            public static function get($key, $idLang = null, $idShopGroup = null, $idShop = null, $default = false)
+            public static function get($key, $idLang = null, $idShopGroup = null, $idShop = null, $default = false): string
             {
                 if ($key === 'MULTISAFEPAY_OFFICIAL_API_KEY') {
                     return 'MOCKED-REAL-API-KEY';
-                } elseif ($key === 'MULTISAFEPAY_OFFICIAL_TEST_API_KEY') {
+                }
+
+                if ($key === 'MULTISAFEPAY_OFFICIAL_TEST_API_KEY') {
                     return 'MOCKED-TEST-API-KEY';
                 }
+                return '';
             }
         };
         $this->sdkService = $this->getMockBuilder(SdkService::class)->setConstructorArgs([$mockConfiguration])->onlyMethods(['getTestMode'])->getMock();
@@ -52,7 +55,7 @@ class SdkServiceTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\Services\SdkService::getSdk
      */
-    public function testGetSdk()
+    public function testGetSdk(): void
     {
         $output = $this->sdkService->getSdk();
         self::assertInstanceOf(Sdk::class, $output);
@@ -61,7 +64,7 @@ class SdkServiceTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\Services\SdkService::getApiKey
      */
-    public function testGetApiKeyWhenTestModeIsEnable()
+    public function testGetApiKeyWhenTestModeIsEnable(): void
     {
         $this->sdkService->method('getTestMode')->willReturn(true);
         self::assertEquals('MOCKED-TEST-API-KEY', $this->sdkService->getApiKey());
@@ -70,7 +73,7 @@ class SdkServiceTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\Services\SdkService::getApiKey
      */
-    public function testGetApiKeyWhenTestModeIsDisable()
+    public function testGetApiKeyWhenTestModeIsDisable(): void
     {
         $this->sdkService->method('getTestMode')->willReturn(false);
         self::assertEquals('MOCKED-REAL-API-KEY', $this->sdkService->getApiKey());

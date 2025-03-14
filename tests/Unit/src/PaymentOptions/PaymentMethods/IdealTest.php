@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @category    MultiSafepay
  * @package     Connect
@@ -21,13 +21,12 @@
  *
  */
 
-namespace MultiSafepay\Tests\PaymentOptions;
+namespace MultiSafepay\Tests\PaymentOptions\PaymentMethods;
 
 use MultisafepayOfficial;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal;
 use MultiSafepay\PrestaShop\Services\IssuerService;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
-use Configuration;
 
 class IdealTest extends BaseMultiSafepayTest
 {
@@ -64,7 +63,7 @@ class IdealTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getDescription
      */
-    public function testGetDescription()
+    public function testGetDescription(): void
     {
         $output = $this->idealPaymentOption->getDescription();
         self::assertEquals('', $output);
@@ -74,7 +73,7 @@ class IdealTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getGatewayCode
      */
-    public function testGetGatewayCode()
+    public function testGetGatewayCode(): void
     {
         $output = $this->idealPaymentOption->getGatewayCode();
         self::assertEquals('IDEAL', $output);
@@ -84,7 +83,7 @@ class IdealTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getTransactionType
      */
-    public function testGetTransactionType()
+    public function testGetTransactionType(): void
     {
         $output = $this->idealPaymentOption->getTransactionType();
         self::assertEquals('direct', $output);
@@ -94,7 +93,7 @@ class IdealTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getLogo
      */
-    public function testGetLogo()
+    public function testGetLogo(): void
     {
         $output = $this->idealPaymentOption->getLogo();
         self::assertEquals('ideal.png', $output);
@@ -104,7 +103,7 @@ class IdealTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal::getDirectTransactionInputFields
      */
-    public function testGetInputFields()
+    public function testGetInputFields(): void
     {
         $output = $this->idealPaymentOption->getDirectTransactionInputFields();
         self::assertIsArray($output);

@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @category    MultiSafepay
  * @package     Connect
@@ -21,7 +21,7 @@
  *
  */
 
-namespace MultiSafepay\Tests\Services;
+namespace MultiSafepay\Tests\Helper;
 
 use PHPUnit\Framework\TestCase;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
@@ -32,7 +32,7 @@ class MoneyHelperTest extends TestCase
     /**
      * @covers \MultiSafepay\PrestaShop\Helper\MoneyHelper::createMoney
      */
-    public function testCreateMoneyReturnInstanceOfMoney()
+    public function testCreateMoneyReturnInstanceOfMoney(): void
     {
         $output = MoneyHelper::createMoney(525);
         self::assertInstanceOf(Money::class, $output);
@@ -41,7 +41,7 @@ class MoneyHelperTest extends TestCase
     /**
      * @covers \MultiSafepay\PrestaShop\Helper\MoneyHelper::priceToCents
      */
-    public function testPriceToCents()
+    public function testPriceToCents(): void
     {
         $output = MoneyHelper::priceToCents(34.75);
         self::assertEquals(3475, $output);

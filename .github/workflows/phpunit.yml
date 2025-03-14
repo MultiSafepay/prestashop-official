@@ -7,31 +7,73 @@ jobs:
   php_unit:
     name: PHPUnit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.3'
+          php-version: '8.1'
 
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           fetch-depth: '0'
 
+      - name: Clone private repository with submodules
+        uses: actions/checkout@v4
+        with:
+          repository: MultiSafepay/docker-prestashop
+          token: ${{ secrets.GLOBAL_GITHUB_TOKEN }}
+          path: docker-prestashop
+          submodules: true
+          fetch-depth: 0
+
+      - name: Checkout branch
+        run: git fetch --all && git checkout ${{ github.event.pull_request.head.ref }}
+        working-directory: docker-prestashop/modules/multisafepayofficial
+
+      - name: Update environment file
+        run: cp .env.example .env
+        working-directory: docker-prestashop
+
+      - name: Install Composer dependencies
+        run: composer install
+        working-directory: docker-prestashop/modules/multisafepayofficial
+
       - name: Run docker compose
-        run: docker compose up -d app db
+        run: |
+          docker compose -f docker-prestashop/docker-compose.yml build --build-arg GITHUB_ACTION="tests" app
+          docker compose -f docker-prestashop/docker-compose.yml up -d app db
+        env:
+          MYSQL_ROOT_PASSWORD: prestashop
+          MYSQL_DATABASE: prestashop
+          MYSQL_USER: prestashop
+          MYSQL_PASSWORD: prestashop
 
       - name: Sleep for 60 seconds to let PrestaShop installation script finish the process
         run: sleep 60s
         shell: bash
 
-      - name: Install MultiSafepay plugin
-        run:  make install
+      - name: Install MultiSafepay plugin and fix ownerships
+        run: bin/fixowns && bin/install
+        working-directory: docker-prestashop
         env:
           COMPOSE_INTERACTIVE_NO_CLI: 1
 
-      - name: Run PHPUnit PrestaShop 1.7
-        run:  docker compose exec -e XDEBUG_MODE=coverage -T --workdir /var/www/html/modules/multisafepayofficial app vendor/bin/phpunit --testsuite prestashop-unit-tests --coverage-clover=coverage.xml
+      - name: Run PHPUnit PrestaShop 8.2.x
+        run: |
+          docker compose exec -e XDEBUG_MODE=coverage -T --workdir /var/www/html/modules/multisafepayofficial app vendor/bin/phpunit --testsuite prestashop-unit-tests --coverage-clover=coverage.xml
+          docker compose cp app:/var/www/html/modules/multisafepayofficial/coverage.xml ./coverage.xml
+        working-directory: docker-prestashop
 
       - name: Send coverage.xml to codecov
-        run:  bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@v5
+        with:
+          directory: docker-prestashop
+          fail_ci_if_error: true
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-prestashop
+          token: ${{ secrets.CODECOV_TOKEN }}
+          verbose: true

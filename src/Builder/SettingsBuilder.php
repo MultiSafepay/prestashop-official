@@ -30,6 +30,7 @@ use MultisafepayOfficial;
 use Configuration;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOptionInterface;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
+use Tab;
 use Tools;
 use Context;
 use OrderState;
@@ -97,6 +98,34 @@ class SettingsBuilder
             'MULTISAFEPAY_OFFICIAL_CREATE_ORDER_BEFORE_PAYMENT' => ['default' => '1'],
             'MULTISAFEPAY_OFFICIAL_DISABLE_SHOPPING_CART'       => ['default' => '0'],
         ];
+    }
+
+    /**
+     * Return an array with the values of the settings form
+     *
+     * @param string $className
+     *
+     * @return int
+     */
+    public function getAdminTab(string $className = ''): int
+    {
+        $adminTab = null;
+
+        if (class_exists('PrestaShopBundle\Entity\Repository\TabRepository') &&
+            !empty($this->module->get('prestashop.core.admin.tab.repository'))
+        ) {
+            $tabRepository = $this->module->get('prestashop.core.admin.tab.repository');
+            if (method_exists($tabRepository, 'findOneIdByClassName')) {
+                $adminTab = $tabRepository->findOneIdByClassName($className);
+            }
+        }
+
+        // Fallback if the new method failed or is not available
+        if (empty($adminTab)) {
+            $adminTab = Tab::getIdFromClassName($className) ?: 0;
+        }
+
+        return (int)$adminTab;
     }
 
     /**

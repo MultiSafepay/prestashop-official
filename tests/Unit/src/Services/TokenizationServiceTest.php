@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @category    MultiSafepay
  * @package     Connect
@@ -23,22 +23,21 @@
 
 namespace MultiSafepay\Tests\Services;
 
+use Exception;
 use MultisafepayOfficial;
-use MultiSafepay\Api\TokenManager;
 use MultiSafepay\Api\Tokens\Token;
-use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay as MultiSafepayPaymentMethod;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Visa;
-use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\PrestaShop\Services\TokenizationService;
-use MultiSafepay\Sdk;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
+use Psr\Http\Client\ClientExceptionInterface;
 
 class TokenizationServiceTest extends BaseMultiSafepayTest
 {
     /**
      * @covers \MultiSafepay\PrestaShop\Services\TokenizationService::createTokenizationCheckoutFields
+     * @throws Exception
      */
-    public function testSaveTokenField()
+    public function testSaveTokenField(): void
     {
         $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
         $mockMultisafepay->method('l')->willReturn(
@@ -59,8 +58,9 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
 
     /**
      * @covers \MultiSafepay\PrestaShop\Services\TokenizationService::createTokenizationCheckoutFields
+     * @throws Exception|ClientExceptionInterface
      */
-    public function testTokenList()
+    public function testTokenList(): void
     {
         $mockTokenizationServiceForGateway = $this->getMockBuilder(
             TokenizationService::class

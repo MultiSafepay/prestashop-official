@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @category    MultiSafepay
  * @package     Connect
@@ -52,7 +52,7 @@ class RefundServiceTest extends BaseMultiSafepayTest
         $this->mockRefundService = $this->getMockBuilder(RefundService::class)->setConstructorArgs([$mockModule, $mockSdkService, $mockPaymentOptionService])->onlyMethods(['isVoucherRefund', 'handleMessage', 'isSplitOrder'])->getMock();
     }
 
-    public function testGetRefundData()
+    public function testGetRefundData(): void
     {
         $order = $this->getFixtureOrderForRefund();
         $productList = $this->getFixtureProductListForRefund();
@@ -62,7 +62,7 @@ class RefundServiceTest extends BaseMultiSafepayTest
         self::assertEquals(14.4, $output['amount']);
     }
 
-    public function testIsAllowedToRefundWhenOrderIsNotFromMultiSafepayModule()
+    public function testIsAllowedToRefundWhenOrderIsNotFromMultiSafepayModule(): void
     {
         $mockedOrder = $this->getFixtureOrderForRefund();
         $mockedOrder->module = 'not-multisafepay';
@@ -71,7 +71,7 @@ class RefundServiceTest extends BaseMultiSafepayTest
         self::assertFalse($output);
     }
 
-    public function testIsAllowedToRefundWhenProductListIsNotSet()
+    public function testIsAllowedToRefundWhenProductListIsNotSet(): void
     {
         $mockedOrder = $this->getFixtureOrderForRefund();
         $this->mockRefundService->method('isVoucherRefund')->willReturn(false);
@@ -79,7 +79,7 @@ class RefundServiceTest extends BaseMultiSafepayTest
         self::assertFalse($output);
     }
 
-    public function testIsAllowedToRefundWhenRefundViaVocuher()
+    public function testIsAllowedToRefundWhenRefundViaVocuher(): void
     {
         $mockedOrder = $this->getFixtureOrderForRefund();
         $this->mockRefundService->method('isVoucherRefund')->willReturn(true);
@@ -87,7 +87,7 @@ class RefundServiceTest extends BaseMultiSafepayTest
         self::assertFalse($output);
     }
 
-    public function testIsAllowedToRefundWhenIsSplitOrder()
+    public function testIsAllowedToRefundWhenIsSplitOrder(): void
     {
         $mockedOrder = $this->getFixtureOrderForRefund();
         $mockedOrder->module = 'not-multisafepay';
@@ -97,7 +97,7 @@ class RefundServiceTest extends BaseMultiSafepayTest
         self::assertFalse($output);
     }
 
-    public function testGetProductsRefundAmount()
+    public function testGetProductsRefundAmount(): void
     {
         if (version_compare(_PS_VERSION_, '1.7.7') <= 0) {
             $this->markTestSkipped();

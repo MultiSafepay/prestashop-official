@@ -16,8 +16,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Fetch config files
+        run: |
+          mkdir -p temp-config
+          cd temp-config
+          git init
+          git remote add origin https://x-access-token:${{ secrets.GLOBAL_GITHUB_TOKEN }}@github.com/MultiSafepay/docker-prestashop.git
+          git config core.sparsecheckout true
+          echo "include/phpcs.xml" >> .git/info/sparse-checkout
+          echo "include/grumphp.yml" >> .git/info/sparse-checkout
+          git pull --depth=1 origin main
+          cd ..
+          cp temp-config/include/phpcs.xml ./phpcs.xml
+          cp temp-config/include/grumphp.yml ./grumphp.yml
+          rm -rf temp-config
+
       - name: Install composer dependencies
-        run:  composer install
+        run: composer install
 
       - name: PHP Code Sniffer
-        run:  composer run-script phpcs
+        run: composer run-script phpcs

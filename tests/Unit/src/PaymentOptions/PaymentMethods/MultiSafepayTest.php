@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @category    MultiSafepay
  * @package     Connect
@@ -21,9 +21,8 @@
  *
  */
 
-namespace MultiSafepay\Tests\PaymentOptions;
+namespace MultiSafepay\Tests\PaymentOptions\PaymentMethods;
 
-use MultisafepayOfficial;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
 use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay as MultiSafepayPaymentMethod;
 
@@ -35,7 +34,7 @@ class MultiSafepayTest extends BaseMultiSafepayTest
     {
         parent::setUp();
 
-        /** @var Multisafepay $multisafepay */
+        /** @var MultiSafepayPaymentMethod $multisafepay */
         $multisafepay = $this->container->get('multisafepay');
 
         $mockMultiSafepay = $this->getMockBuilder(MultiSafepayPaymentMethod::class)->setConstructorArgs([$multisafepay])->onlyMethods(['allowTokenization'])->getMock();
@@ -48,7 +47,7 @@ class MultiSafepayTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getDescription
      */
-    public function testGetDescription()
+    public function testGetDescription(): void
     {
         $output = $this->multiSafepayPaymentMethod->getDescription();
         self::assertEquals('', $output);
@@ -58,7 +57,7 @@ class MultiSafepayTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getGatewayCode
      */
-    public function testGetGatewayCode()
+    public function testGetGatewayCode(): void
     {
         $output = $this->multiSafepayPaymentMethod->getGatewayCode();
         self::assertEmpty($output);
@@ -68,7 +67,7 @@ class MultiSafepayTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getTransactionType
      */
-    public function testGetTransactionType()
+    public function testGetTransactionType(): void
     {
         $output = $this->multiSafepayPaymentMethod->getTransactionType();
         self::assertEquals('redirect', $output);
@@ -78,7 +77,7 @@ class MultiSafepayTest extends BaseMultiSafepayTest
     /**
      * @covers \MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay::getLogo
      */
-    public function testGetLogo()
+    public function testGetLogo(): void
     {
         $output = $this->multiSafepayPaymentMethod->getLogo();
         self::assertEquals('multisafepay.png', $output);

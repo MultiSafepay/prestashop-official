@@ -2,7 +2,7 @@
 
 namespace MultiSafepay\Tests;
 
-use Configuration;
+use Exception;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -15,6 +15,9 @@ abstract class BaseMultiSafepayTest extends TestCase
      */
     protected $container;
 
+    /**
+     * @throws Exception
+     */
     public function setUp(): void
     {
         parent::setUp();

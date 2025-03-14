@@ -21,7 +21,7 @@
  *
  */
 
-namespace MultiSafepay\Tests\Services;
+namespace MultiSafepay\Tests\Util;
 
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\CustomerDetails;
 use MultiSafepay\PrestaShop\Util\CustomerUtil;
