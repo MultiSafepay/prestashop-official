@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -22,96 +22,21 @@
 
 namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
-use Address;
-use Cart;
-use Context;
 use Country;
-use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
-use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Meta;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
-use Tools;
 
 class Zinia extends BasePaymentOption
 {
-    public const CLASS_NAME = 'Zinia';
-    protected $gatewayCode = 'ZINIA';
-    protected $logo = 'zinia.png';
-    protected $hasConfigurableDirect = true;
-    protected $hasConfigurablePaymentComponent = true;
-
-    /**
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->module->l('Zinia', self::CLASS_NAME);
-    }
-
-    /**
-     * @phpcs:disable Generic.Files.LineLength.TooLong
-     */
-    public function getTransactionType(): string
-    {
-        $checkoutVars = Tools::getAllValues();
-        return (empty($checkoutVars['gender']) || empty($checkoutVars['birthday'])) ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
-    }
-
     public function getGatewaySettings(): array
     {
         $options = parent::getGatewaySettings();
 
-        $options['MULTISAFEPAY_OFFICIAL_MIN_AMOUNT_'.$this->getUniqueName()]['default'] = '50';
-        $options['MULTISAFEPAY_OFFICIAL_MAX_AMOUNT_'.$this->getUniqueName()]['default'] = '750';
-        $options['MULTISAFEPAY_OFFICIAL_COUNTRIES_'.$this->getUniqueName()]['default'] = json_encode([(string)Country::getByIso('NL')]) ?: [];
+        $options['MULTISAFEPAY_OFFICIAL_MIN_AMOUNT_' . $this->gatewayCode]['default'] = '50';
+        $options['MULTISAFEPAY_OFFICIAL_MAX_AMOUNT_' . $this->gatewayCode]['default'] = '750';
+        $options['MULTISAFEPAY_OFFICIAL_COUNTRIES_' . $this->gatewayCode]['default'] = json_encode(
+            [(string)Country::getByIso('NL')]
+        ) ?: [];
 
         return $options;
-    }
-
-    /**
-     * @return array[]
-     */
-    public function getDirectTransactionInputFields(): array
-    {
-        return [
-            [
-                'type'          => 'select',
-                'name'          => 'gender',
-                'placeholder'   => $this->module->l('Salutation', self::CLASS_NAME),
-                'options'       => [
-                    [
-                        'value' => 'mr',
-                        'name'  => $this->module->l('Mr.', self::CLASS_NAME),
-                    ],
-                    [
-                        'value' => 'mrs',
-                        'name'  => $this->module->l('Mrs.', self::CLASS_NAME),
-                    ],
-                ],
-            ],
-            [
-                'type'          => 'date',
-                'name'          => 'birthday',
-                'placeholder'   => $this->module->l('Birthday', self::CLASS_NAME),
-                'value'         => Context::getContext()->customer->birthday ?? '',
-            ]
-        ];
-    }
-
-    public function getGatewayInfo(Cart $cart, array $data = []): ?GatewayInfoInterface
-    {
-        if (empty($data['gender']) && empty($data['birthday'])) {
-            return null;
-        }
-
-        $gatewayInfo = new Meta();
-        $gatewayInfo->addPhoneAsString((new Address($cart->id_address_invoice))->phone);
-        if (!empty($data['gender'])) {
-            $gatewayInfo->addGenderAsString($data['gender']);
-        }
-        if (!empty($data['birthday'])) {
-            $gatewayInfo->addBirthdayAsString($data['birthday']);
-        }
-
-        return $gatewayInfo;
     }
 }

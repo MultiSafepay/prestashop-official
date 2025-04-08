@@ -24,6 +24,7 @@ namespace MultiSafepay\PrestaShop\Helper;
 
 use Configuration;
 use Exception;
+use Throwable;
 
 class LoggerHelper
 {
@@ -342,7 +343,7 @@ class LoggerHelper
      */
     public static function logException(
         string $level,
-        Exception $exception,
+        Throwable $exception,
         string $message = '',
         ?string $orderId = null,
         ?int $cartId = null

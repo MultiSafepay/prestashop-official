@@ -248,10 +248,13 @@ class SystemStatusService
      * @return array
      *
      * @phpcs:disable Generic.Files.LineLength.TooLong
+     * @throws Exception
      */
     public function getMultiSafepayModuleSettings(): array
     {
-        $moduleSettingsValues = (new SettingsBuilder($this->module->get('multisafepay')))->getConfigFormValues(false);
+        /** @var MultisafepayOfficial $multiSafepayModule */
+        $multiSafepayModule = $this->module->get('multisafepay');
+        $moduleSettingsValues = (new SettingsBuilder($multiSafepayModule))->getConfigFormValues(false);
 
         $moduleSettings =  [
             'title'    => 'MultiSafepay Module Settings',
@@ -376,6 +379,9 @@ class SystemStatusService
         $plainTextStatusReport .= PHP_EOL;
         foreach ($statusReport as $statusReportSection) {
             $plainTextStatusReport .= $statusReportSection['title'] . PHP_EOL;
+            if (!isset($statusReportSection['settings'])) {
+                $statusReportSection['settings'] = [];
+            }
             foreach ($statusReportSection['settings'] as $key => $value) {
                 $plainTextStatusReport .= $value['label'] . ': ' . $value['value'] . PHP_EOL;
             }

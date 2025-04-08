@@ -31,33 +31,26 @@ use Media;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Wallet;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
+use MultiSafepay\Api\Transactions\OrderRequest;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use Tools;
 
-class ApplePay extends BasePaymentOption
+class Applepay extends BasePaymentOption
 {
-    public const CLASS_NAME = 'ApplePay';
-    protected $gatewayCode = 'APPLEPAY';
-    protected $logo = 'applepay.png';
-    protected $hasConfigurableDirect = true;
-
     /**
-     * @return string
+     * @var bool
      */
-    public function getName(): string
-    {
-        return $this->module->l('Apple Pay', self::CLASS_NAME);
-    }
+    public $hasConfigurableDirect = true;
 
     public function getTransactionType(): string
     {
-        if ($this->isDirect()) {
+        if ($this->hasConfigurableDirect) {
             $checkoutVars = Tools::getAllValues();
-            return empty($checkoutVars['payment_token']) ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
+            return empty($checkoutVars['payment_token']) ? OrderRequest::REDIRECT_TYPE : OrderRequest::DIRECT_TYPE;
         }
 
-        return self::REDIRECT_TYPE;
+        return OrderRequest::REDIRECT_TYPE;
     }
 
     /**
@@ -103,16 +96,12 @@ class ApplePay extends BasePaymentOption
                 'configApplePayDebugMode'    => (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')
             ]);
         }
-
-        parent::registerJavascript($context);
     }
 
     /**
      * @param Cart $cart
      * @param array $data
      * @return GatewayInfoInterface|null
-     *
-     * @phpcs:disable -- Disable to avoid triggering a warning in validator about unused parameter
      */
     public function getGatewayInfo(Cart $cart, array $data = []): ?GatewayInfoInterface
     {
@@ -123,7 +112,6 @@ class ApplePay extends BasePaymentOption
         $gatewayInfo->addPaymentToken($data['payment_token']);
 
         return $gatewayInfo;
-        // phpcs:enable
     }
 
     /**
@@ -133,7 +121,7 @@ class ApplePay extends BasePaymentOption
     {
         $settings['MULTISAFEPAY_OFFICIAL_MERCHANT_NAME_APPLEPAY'] = [
             'type'          => 'text',
-            'name'          => $this->module->l('Merchant name', 'BasePaymentOption'),
+            'name'          => $this->module->l('Merchant name', self::CLASS_NAME),
             'value'         => Configuration::get('MULTISAFEPAY_OFFICIAL_MERCHANT_NAME_APPLEPAY'),
             'helperText'    => $this->module->l(
                 'The merchant name provided at your Apple Pay account',

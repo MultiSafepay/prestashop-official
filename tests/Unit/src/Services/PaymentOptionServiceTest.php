@@ -23,14 +23,15 @@
 
 namespace MultiSafepay\Tests\Services;
 
-use MultisafepayOfficial;
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BaseBrandedPaymentOption;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\IssuerService;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
+use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\PrestaShop\Services\TokenizationService;
+use MultiSafepay\Sdk;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
-use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay as MultiSafepayPaymentMethod;
-use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\Ideal;
+use MultisafepayOfficial;
 
 class PaymentOptionServiceTest extends BaseMultiSafepayTest
 {
@@ -75,6 +76,12 @@ class PaymentOptionServiceTest extends BaseMultiSafepayTest
             return $this->mockTokenizationService;
         }
 
+        if ('multisafepay.sdk_service' === $args[0]) {
+            $mockSdkService = $this->getMockBuilder(SdkService::class)->disableOriginalConstructor()->getMock();
+            $mockSdkService->method('getSdk')->willReturn($this->createMock(Sdk::class));
+            return $mockSdkService;
+        }
+
         return null;
     }
 
@@ -94,25 +101,10 @@ class PaymentOptionServiceTest extends BaseMultiSafepayTest
     {
         $paymentOptions = $this->paymentOptionsService->getMultiSafepayPaymentOptions();
         foreach ($paymentOptions as $paymentOption) {
-            self::assertInstanceOf(BasePaymentOption::class, $paymentOption);
+            self::assertTrue(
+                ($paymentOption instanceof BasePaymentOption) || ($paymentOption instanceof BaseBrandedPaymentOption),
+                'Payment option is not an instance of BasePaymentOption or BaseBrandedPaymentOption'
+            );
         }
-    }
-
-    /**
-     * @covers \MultiSafepay\PrestaShop\Services\PaymentOptionService::getMultiSafepayPaymentOption
-     */
-    public function testGetMultiSafepayPaymentOptionReturnInstanceOfMultiSafepayUsingEmptyArgument(): void
-    {
-        $paymentOption = $this->paymentOptionsService->getMultiSafepayPaymentOption('');
-        self::assertInstanceOf(MultiSafepayPaymentMethod::class, $paymentOption);
-    }
-
-    /**
-     * @covers \MultiSafepay\PrestaShop\Services\PaymentOptionService::getMultiSafepayPaymentOption
-     */
-    public function testGetMultiSafepayPaymentOptionReturnInstanceOfIdealUsingIdealArgument(): void
-    {
-        $paymentOption = $this->paymentOptionsService->getMultiSafepayPaymentOption('IDEAL');
-        self::assertInstanceOf(Ideal::class, $paymentOption);
     }
 }

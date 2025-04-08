@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -57,7 +57,7 @@ class TokenizationBuilder implements OrderRequestBuilderInterface
             if ($token !== null && 'new' !== $token) {
                 $orderRequest->addRecurringModel('cardOnFile');
                 $orderRequest->addRecurringId($token);
-                $orderRequest->addType(BasePaymentOption::DIRECT_TYPE);
+                $orderRequest->addType(OrderRequest::DIRECT_TYPE);
             }
         }
     }
@@ -67,7 +67,7 @@ class TokenizationBuilder implements OrderRequestBuilderInterface
      */
     private function shouldSaveToken(): bool
     {
-        return (bool)Tools::getValue('saveToken', false) === true;
+        return (bool)Tools::getValue('saveToken') === true;
     }
 
     /**

@@ -94,8 +94,16 @@ class RefundService
             $transaction = $transactionManager->get((string)$order->id_cart);
         }
 
+        $gatewayCode = $transaction->getPaymentDetails()->getType();
+
+        if (in_array($gatewayCode, PaymentOptionService::CREDIT_CARD_GATEWAYS, true) &&
+            (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS')
+        ) {
+            $gatewayCode = 'CREDITCARD';
+        }
+
         $paymentOption = $this->paymentOptionService->getMultiSafepayPaymentOption(
-            $transaction->getPaymentDetails()->getType()
+            $gatewayCode
         );
 
         // Do not process refunds for gateways that requires ShoppingCart

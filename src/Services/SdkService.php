@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -29,6 +29,7 @@ use Buzz\Client\Curl;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Configuration;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+use Tools;
 
 /**
  * Class SdkService
@@ -38,7 +39,7 @@ class SdkService
 {
 
     /**
-     * @var   Sdk       Sdk.
+     * @var Sdk
      */
     private $sdk;
 
@@ -49,9 +50,10 @@ class SdkService
 
     /**
      * SdkService constructor.
-     * @param Configuration $configuration
+     *
+     * @param Configuration|null  $configuration
      */
-    public function __construct($configuration = null)
+    public function __construct(Configuration $configuration = null)
     {
         if (is_null($configuration)) {
             $this->configuration = new Configuration();
@@ -67,17 +69,33 @@ class SdkService
      */
     public function getTestMode(): bool
     {
+        if (defined('_PS_ADMIN_DIR_')) {
+            return isset($_POST['MULTISAFEPAY_OFFICIAL_TEST_MODE'])
+                ? (bool)Tools::getValue('MULTISAFEPAY_OFFICIAL_TEST_MODE')
+                : (bool)$this->configuration::get('MULTISAFEPAY_OFFICIAL_TEST_MODE');
+        }
         return (bool)$this->configuration::get('MULTISAFEPAY_OFFICIAL_TEST_MODE');
     }
 
     /**
-     * Returns api key set in settings page according with
+     * Returns api key set in settings page according to
      * the environment selected
      *
      * @return  string
      */
     public function getApiKey(): string
     {
+        if (defined('_PS_ADMIN_DIR_')) {
+            if ($this->getTestMode()) {
+                return isset($_POST['MULTISAFEPAY_OFFICIAL_TEST_API_KEY'])
+                    ? (string)Tools::getValue('MULTISAFEPAY_OFFICIAL_TEST_API_KEY')
+                    : (string)$this->configuration::get('MULTISAFEPAY_OFFICIAL_TEST_API_KEY');
+            }
+            return isset($_POST['MULTISAFEPAY_OFFICIAL_API_KEY'])
+                ? (string)Tools::getValue('MULTISAFEPAY_OFFICIAL_API_KEY')
+                : (string)$this->configuration::get('MULTISAFEPAY_OFFICIAL_API_KEY');
+        }
+
         if ($this->getTestMode()) {
             return (string)$this->configuration::get('MULTISAFEPAY_OFFICIAL_TEST_API_KEY');
         }
@@ -85,9 +103,9 @@ class SdkService
     }
 
     /**
-     * @return Sdk
+     * @return Sdk|null
      */
-    public function getSdk()
+    public function getSdk(): ?Sdk
     {
         if (!isset($this->sdk)) {
             $this->initSdk();

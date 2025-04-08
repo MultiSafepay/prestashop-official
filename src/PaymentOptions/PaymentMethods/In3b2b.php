@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -24,17 +24,15 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
-class Bancontact extends BasePaymentOption
+class In3b2b extends BasePaymentOption
 {
-    public const CLASS_NAME = 'Bancontact';
-    protected $gatewayCode = 'MISTERCASH';
-    protected $logo = 'bancontact.png';
-
-    /**
-     * @return string
-     */
-    public function getName(): string
+    public function getGatewaySettings(): array
     {
-        return $this->module->l('Bancontact', self::CLASS_NAME);
+        $options = parent::getGatewaySettings();
+
+        $options['MULTISAFEPAY_OFFICIAL_MIN_AMOUNT_' . $this->gatewayCode]['default'] = '150';
+        $options['MULTISAFEPAY_OFFICIAL_MAX_AMOUNT_' . $this->gatewayCode]['default'] = '3000';
+
+        return $options;
     }
 }

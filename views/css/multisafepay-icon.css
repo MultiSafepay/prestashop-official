@@ -10,7 +10,7 @@
   font-style: normal;
 }
 [class^="icon-multisafepay"]:before, [class*=" icon-multisafepay"]:before {
-  font-family: "multisafepay";
+  font-family: 'multisafepay', sans-serif;
   font-style: normal;
   font-weight: normal;
   speak: never;
@@ -34,4 +34,8 @@
 .mi-multisafepay {
   width: 16px;
   visibility: hidden;
+}
+.no-payments {
+    margin-top: 30px !important;
+    font-size: 14px;
 }

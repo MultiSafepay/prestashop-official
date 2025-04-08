@@ -19,15 +19,17 @@
  *
  *}
 
-{assign var="gateway" value=$paymentOption->getGatewayCode()|escape:'html':'UTF-8'|lower}
+{assign var="gateway" value=$paymentOption->getGatewayCode()|escape:'html':'UTF-8'|upper}
+{assign var="paymentComponentId" value=$paymentOption->getPaymentComponentId()|escape:'html':'UTF-8'|lower}
+{assign var="paymentId" value=$paymentOption->getUniqueName()|escape:'html':'UTF-8'}
 {assign var="inputs" value=$paymentOption->getInputFields()}
 {assign var="tokenization" value=$paymentOption->allowTokenization()}
 {assign var="paymentComponent" value=$paymentOption->allowPaymentComponent()}
-<form action="{$action|escape:'htmlall':'UTF-8'}" id="multisafepay-form-{$gateway|escape:'html':'UTF-8'}" method="POST" class="additional-information{if $tokenization} multisafepay-tokenization{/if}">
-    <input type="hidden" name="gateway" value="{$gateway|upper}"/>
+<form action="{$action|escape:'htmlall':'UTF-8'}" id="multisafepay-form-{$paymentComponentId}" method="POST" class="additional-information{if $tokenization} multisafepay-tokenization{/if}">
+    <input type="hidden" name="gateway" value="{$paymentId}"/>
     {if $paymentComponent}
         <div class="form-group">
-            <div id="multisafepay-payment-component-{$gateway|escape:'html':'UTF-8'}" data-gateway="{$gateway|upper}" data-payment_component_config_name="{$gateway|upper}"></div>
+            <div id="multisafepay-payment-component-{$paymentComponentId}" data-payment-component-id="{$paymentComponentId}" data-payment-id="{$paymentId}" data-gateway="{$gateway}"></div>
         </div>
         <input type="hidden" name="payload" value=""/>
         <input type="hidden" name="tokenize" value=""/>

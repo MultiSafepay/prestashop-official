@@ -37,5 +37,20 @@ jobs:
       - name: Pull PrestaShop files (Tag ${{ matrix.presta-versions }})
         run: docker run -tid --rm -v ps-volume:/var/www/html --name temp-ps prestashop/prestashop:${{ matrix.presta-versions }}
 
+      - name: Fetch config file
+        run: |
+          mkdir -p temp-config
+          cd temp-config
+          git init
+          git remote add origin https://x-access-token:${{ secrets.GLOBAL_GITHUB_TOKEN }}@github.com/MultiSafepay/docker-prestashop.git
+          git config core.sparsecheckout true
+          echo "include/phpstan_stub.php" >> .git/info/sparse-checkout
+          echo "include/phpstan-ps-1.7.neon" >> .git/info/sparse-checkout
+          git pull --depth=1 origin main
+          cd ..
+          cp temp-config/include/phpstan_stub.php ./phpstan_stub.php
+          cp temp-config/include/phpstan-ps-1.7.neon ./phpstan-ps-1.7.neon
+          rm -rf temp-config
+
       - name: Run PHPStan
-        run: docker run --rm --volumes-from temp-ps -v $PWD:/web/module -e _PS_ROOT_DIR_=/var/www/html --workdir=/web/module phpstan/phpstan:0.12 analyse --configuration=tests/phpstan/phpstan-ps-1.7.neon --debug --error-format github
+        run: docker run --rm --volumes-from temp-ps -v $PWD:/web/module -e _PS_ROOT_DIR_=/var/www/html --workdir=/web/module phpstan/phpstan:0.12 analyse --configuration=phpstan-ps-1.7.neon --debug --error-format github

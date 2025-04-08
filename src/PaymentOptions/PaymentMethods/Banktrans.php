@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -24,17 +24,10 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
-class Giropay extends BasePaymentOption
+class Banktrans extends BasePaymentOption
 {
-    public const CLASS_NAME = 'Giropay';
-    protected $gatewayCode = 'GIROPAY';
-    protected $logo = 'giropay.png';
-
     /**
-     * @return string
+     * @var bool
      */
-    public function getName(): string
-    {
-        return $this->module->l('Giropay', self::CLASS_NAME);
-    }
+    public $hasConfigurableDirect = true;
 }

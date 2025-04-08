@@ -57,6 +57,6 @@ class PaymentComponentBuilder implements OrderRequestBuilderInterface
             return;
         }
         $orderRequest->addData(['payment_data' => ['payload' => $payload]]);
-        $orderRequest->addType(BasePaymentOption::DIRECT_TYPE);
+        $orderRequest->addType(OrderRequest::DIRECT_TYPE);
     }
 }

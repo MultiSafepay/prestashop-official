@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -24,20 +24,19 @@ namespace MultiSafepay\PrestaShop\Builder;
 
 use Country;
 use Currency;
+use Exception;
 use HelperForm;
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\SystemStatusService;
 use MultisafepayOfficial;
 use Configuration;
-use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOptionInterface;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
+use SmartyException;
 use Tab;
 use Tools;
 use Context;
 use OrderState;
 use Group;
-use Uploader;
-use ImageManager;
-use PrestaShopException;
 
 /**
  * Class SettingsBuilder
@@ -95,6 +94,7 @@ class SettingsBuilder
             'MULTISAFEPAY_OFFICIAL_OS_REFUNDED'                 => ['default' => Configuration::get('PS_OS_REFUND')],
             'MULTISAFEPAY_OFFICIAL_OS_SHIPPED'                  => ['default' => Configuration::get('PS_OS_SHIPPING')],
             'MULTISAFEPAY_OFFICIAL_OS_PARTIAL_REFUNDED'         => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_REFUNDED')],
+            'MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS'           => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS')],
             'MULTISAFEPAY_OFFICIAL_CREATE_ORDER_BEFORE_PAYMENT' => ['default' => '1'],
             'MULTISAFEPAY_OFFICIAL_DISABLE_SHOPPING_CART'       => ['default' => '0'],
         ];
@@ -106,6 +106,7 @@ class SettingsBuilder
      * @param string $className
      *
      * @return int
+     * @throws Exception
      */
     public function getAdminTab(string $className = ''): int
     {
@@ -130,10 +131,12 @@ class SettingsBuilder
 
     /**
      * @param array $result
+     *
      * @return string
-     * @throws PrestaShopException
+     * @throws SmartyException
+     * @throws Exception
      */
-    public function renderForm(array $result = [])
+    public function renderForm(array $result = []): string
     {
         $helper = new HelperForm();
 
@@ -143,7 +146,7 @@ class SettingsBuilder
 
         $helper->submit_action = 'submitMultisafepayOfficialModule';
         $helper->currentIndex  = $context->link->getAdminLink('AdminModules', false)
-            .'&configure='.$this->module->name.'&tab_module='.$this->module->tab.'&module_name='.$this->module->name;
+            .'&configure=' . $this->module->name . '&tab_module=' . $this->module->tab . '&module_name=' . $this->module->name;
         $helper->token         = Tools::getAdminTokenLite('AdminModules');
 
         $helper->tpl_vars = [
@@ -167,7 +170,7 @@ class SettingsBuilder
                     'description' => $this->module->l(
                         'There is a new version for MultiSafepay payment module. ',
                         self::CLASS_NAME
-                    ) . '<a href="' . self::MULTISAFEPAY_RELEASES_GITHUB_URL . '" target="_blank">Click here, to read more information</a>'
+                    ) . '<a href="' . self::MULTISAFEPAY_RELEASES_GITHUB_URL . '" target="_blank">Click here to read more information</a>'
                 ] + $configForm[0]['form'];
         }
 
@@ -178,6 +181,7 @@ class SettingsBuilder
      * Return an array with the structure of the settings page form.
      *
      * @return array
+     * @throws SmartyException
      *
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
@@ -261,6 +265,27 @@ class SettingsBuilder
                         'name'    => 'MULTISAFEPAY_OFFICIAL_SECOND_CHANCE',
                         'is_bool' => true,
                         'desc'    => $this->module->l('When a customer initiates but does not complete a payment, whatever the reason may be, MultiSafepay will send two Second Chance reminder emails. In the emails, MultiSafepay will include a link to allow the consumer to finalize the payment. The first Second Chance email is sent 1 hour after the transaction was initiated and the second after 24 hours. To receive second chance emails, this option must also be activated within your MultiSafepay account, otherwise it will not work.', self::CLASS_NAME),
+                        'values'  => [
+                            [
+                                'id'    => 'active_on',
+                                'value' => true,
+                                'label' => $this->module->l('Enabled', self::CLASS_NAME),
+                            ],
+                            [
+                                'id'    => 'active_off',
+                                'value' => false,
+                                'label' => $this->module->l('Disabled', self::CLASS_NAME),
+                            ],
+                        ],
+                        'section' => 'default'
+                    ],
+                    [
+                        'type'    => 'switch',
+                        'tab'     => 'general_settings',
+                        'label'   => $this->module->l('Group debit and credit cards', self::CLASS_NAME),
+                        'name'    => 'MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS',
+                        'is_bool' => true,
+                        'desc'    => $this->module->l('If turned on, payment methods classified as credit and debit cards (Amex, Maestro, Mastercard, and Visa) will shown grouped as a single payment method', self::CLASS_NAME),
                         'values'  => [
                             [
                                 'id'    => 'active_on',
@@ -456,7 +481,8 @@ class SettingsBuilder
      * Return the view of the PaymentMethods tab of the settings page
      *
      * @return string
-     * @throws \SmartyException
+     * @throws SmartyException
+     * @throws Exception
      */
     public function getPaymentMethodsHtmlContent(): string
     {
@@ -466,6 +492,7 @@ class SettingsBuilder
         Context::getContext()->smarty->assign(
             [
                 'payment_options' => $paymentOptionService->getMultiSafepayPaymentOptions(),
+                'no_payments'     => $this->module->l('Please enter your API key to view all supported payment methods.', self::CLASS_NAME),
                 'languages'       => Context::getContext()->controller->getLanguages(),
                 'id_language'     => Context::getContext()->language->id,
                 'countries'       => Country::getCountries((int)Context::getContext()->language->id, true),
@@ -473,17 +500,18 @@ class SettingsBuilder
                 'customer_groups' => $groups
             ]
         );
+
         return Context::getContext()->smarty->fetch(
             'module:multisafepayofficial/views/templates/admin/settings/payment-methods.tpl'
         );
     }
 
-
     /**
      * Return the view of the System Status tab of the settings page
      *
      * @return string
-     * @throws \SmartyException
+     * @throws SmartyException
+     * @throws Exception
      */
     public function getSystemStatusHtmlContent(): string
     {
@@ -496,6 +524,7 @@ class SettingsBuilder
                 'plain_status_report' => $systemStatusService->createPlainSystemStatusReport()
             ]
         );
+
         return Context::getContext()->smarty->fetch(
             'module:multisafepayofficial/views/templates/admin/settings/system-status.tpl'
         );
@@ -505,7 +534,7 @@ class SettingsBuilder
      * Return the view of the Support tab of the settings page
      *
      * @return string
-     * @throws \SmartyException
+     * @throws SmartyException
      */
     public function getSupportHtmlContent(): string
     {
@@ -518,14 +547,14 @@ class SettingsBuilder
      * Save form data.
      *
      * @return array
+     * @throws Exception
      */
     public function postProcess(): array
     {
         $result = ['success' => true];
-
-        $formValues = $this->filterToProcessConfigForm($this->getConfigFormValues());
+        $formValues = $this->getConfigFormValues();
         foreach ($formValues as $key => $value) {
-            // Because the PrestaShops form helper adds these brackets to a select field, with multiple set as true.
+            // Because the PrestaShops form helper adds these brackets to a select field, with the multiple set as true.
             // We have to manually remove them to get the correct value
             $key = trim($key, '[]');
             if (is_array($value)) {
@@ -539,71 +568,7 @@ class SettingsBuilder
             }
         }
 
-        if (!empty($_FILES)) {
-            try {
-                $this->processFiles();
-            } catch (PrestaShopException $exception) {
-                $result['error'] = $exception->getMessage();
-            }
-        }
-
         return $result;
-    }
-
-    /**
-     * @param array $fields
-     * @return array
-     */
-    private function filterToProcessConfigForm(array $fields): array
-    {
-        unset($fields['MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_GENERIC1']);
-        unset($fields['MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_GENERIC2']);
-        unset($fields['MULTISAFEPAY_OFFICIAL_GATEWAY_IMAGE_GENERIC3']);
-        return $fields;
-    }
-
-    /**
-     * Process $_FILES from generic gateway images
-     */
-    private function processFiles(): void
-    {
-        foreach ($_FILES as $key => $file) {
-            // User are submitting a file. New one or updating
-            if (!empty($file['tmp_name']) && !(bool)$file['error']) {
-                if (ImageManager::isCorrectImageFileExt($file['name']) &&
-                    is_uploaded_file($file['tmp_name']) &&
-                    ImageManager::isRealImage($file['tmp_name'], $file['type'])) {
-                    $uploader = new Uploader($key);
-                    $result = $uploader->process();
-                    if (!(bool)$result[0]['error']) {
-                        Configuration::updateValue($key, $result[0]['save_path']);
-                    }
-                } else {
-                    throw new PrestaShopException('There was an error uploading the image.');
-                }
-            }
-
-            // User are not submitting a file, but he want to remove the current one assigned.
-            // In these cases $_POST variable contains remove as value and $_FILE is empty.
-            if (empty($file['tmp_name']) && (bool)$file['error'] && Tools::getValue($key) === 'remove') {
-                $this->removeFile($key);
-            }
-        }
-    }
-
-    /**
-     * Remove file when is unassigned in a Generic gateway.
-     *
-     * @param string $key
-     */
-    private function removeFile(string $key): void
-    {
-        // Remove the file.
-        if (file_exists(Configuration::get($key))) {
-            @unlink(Configuration::get($key));
-        }
-        // Unset the value.
-        Configuration::updateValue($key, null);
     }
 
     /**
@@ -671,7 +636,9 @@ class SettingsBuilder
      * Set values for the inputs.
      *
      * @param bool $includePaymentOptionSettings
+     *
      * @return array
+     * @throws Exception
      */
     public function getConfigFormValues(bool $includePaymentOptionSettings = true): array
     {
@@ -681,13 +648,13 @@ class SettingsBuilder
                 $configFormValues[$configKey] = Configuration::get($configKey);
                 continue;
             }
-            $configFormValues[$configKey.'[]'] = $this->settingToArray(Configuration::get($configKey));
+            $configFormValues[$configKey . '[]'] = $this->settingToArray(Configuration::get($configKey));
         }
 
         if ($includePaymentOptionSettings) {
             /** @var PaymentOptionService $paymentOptionService */
             $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
-            /** @var BasePaymentOptionInterface $paymentOption */
+            /** @var BasePaymentOption $paymentOption */
             foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
                 foreach ($paymentOption->getGatewaySettings() as $settingKey => $settings) {
                     $configFormValues[$settingKey] = $settings['value'] ?? '';
@@ -700,6 +667,7 @@ class SettingsBuilder
 
     /**
      * Compare the version with
+     *
      * @return bool
      */
     private function isThereAnUpdateAvailable(): bool
@@ -714,7 +682,7 @@ class SettingsBuilder
         $context = stream_context_create($options);
         $content = Tools::file_get_contents('https://api.github.com/repos/multisafepay/prestashop-official/releases/latest', false, $context);
         if ($content) {
-            $information = json_decode($content);
+            $information = json_decode($content, false);
             if (version_compare($information->tag_name, $this->module->version, '>')) {
                 return true;
             }
@@ -727,10 +695,10 @@ class SettingsBuilder
      *
      * @return array
      */
-    protected function settingToArray($setting): array
+    protected function settingToArray(string $setting): array
     {
-        if (is_string($setting) && !empty($setting)) {
-            return json_decode($setting);
+        if (!empty($setting)) {
+            return (array) (json_decode($setting, false) ?? []);
         }
 
         return [];

@@ -23,6 +23,7 @@
 namespace MultiSafepay\PrestaShop\Helper;
 
 use Configuration;
+use Country;
 use Language;
 use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
@@ -97,6 +98,16 @@ class Installer
         foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
             foreach ($paymentOption->getGatewaySettings() as $settingKey => $settings) {
                 Configuration::updateGlobalValue($settingKey, $settings['default']);
+            }
+            // Adding default values for countries of the branded payment methods
+            $brandedCountries = $paymentOption->getAllowedCountries();
+            if (!empty($brandedCountries)) {
+                $isoBrandedCountries = [];
+                foreach ($brandedCountries as $brandedCountry) {
+                    $isoBrandedCountries[] = (string)Country::getByIso($brandedCountry);
+                }
+                Configuration::updateGlobalValue('MULTISAFEPAY_OFFICIAL_COUNTRIES_' .
+                    $paymentOption->getUniqueName(), json_encode($isoBrandedCountries));
             }
         }
     }

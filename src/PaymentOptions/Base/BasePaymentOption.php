@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -17,7 +17,6 @@
  * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  */
 
 namespace MultiSafepay\PrestaShop\PaymentOptions\Base;
@@ -29,22 +28,74 @@ use Configuration;
 use Context;
 use Country;
 use Currency;
+use Exception;
 use Group;
 use Media;
+use MultiSafepay\Api\PaymentMethods\PaymentMethod;
+use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\PrestaShop\Services\TokenizationService;
 use MultisafepayOfficial;
 use PrestaShopDatabaseException;
 use PrestaShopException;
+use Psr\Http\Client\ClientExceptionInterface;
 
-abstract class BasePaymentOption implements BasePaymentOptionInterface
+class BasePaymentOption
 {
+    /**
+     * @var string
+     */
     public const CLASS_NAME = 'BasePaymentOption';
-    public const MULTISAFEPAY_COMPONENT_JS_URL  = 'https://pay.multisafepay.com/sdk/components/v2/components.js';
+
+    /**
+     * @var string
+     */
+    public const MULTISAFEPAY_COMPONENT_JS_URL = 'https://pay.multisafepay.com/sdk/components/v2/components.js';
+
+    /**
+     * @var string
+     */
     public const MULTISAFEPAY_COMPONENT_CSS_URL = 'https://pay.multisafepay.com/sdk/components/v2/components.css';
-    public const REDIRECT_TYPE = 'redirect';
-    public const DIRECT_TYPE = 'direct';
+
+
+    /**
+     * @var array
+     */
+    public const CANNOT_PROCESS_REFUNDS_GIFTCARDS = [
+        'BABYCAD', 'BEAUTYANDWELLNESS', 'BOEKENBON', 'FASHIONCHEQUE',
+        'FASHIONGIFTCARD', 'FIETSENBON', 'GEZONDHEIDSBON', 'GIVACARD',
+        'GOOD4FUN', 'GOODCARD', 'NATIONALETUINBON', 'PARFUMCADEAUKAART',
+        'PODIUM', 'SPORTENFIT', 'VVVGIFTCRD', 'WEBSHOPGIFTCARD',
+        'WELLNESSGIFTCARD', 'WIJNCADEAU', 'WINKELCHEQUE', 'YOURGIFT'
+    ];
+
+    /**
+     * @var array
+     */
+    public const CANNOT_PROCESS_REFUNDS_PAYMENT_METHODS = [
+        'AFTERPAY', 'EINVOICE', 'IN3', 'IN3B2B', 'KLARNA', 'PAYAFTER'
+    ];
+
+    /**
+     * @var string
+     */
+    public $gatewayCode = '';
+
+    /**
+     * @var string
+     */
+    public $gatewayName = '';
+
+    /**
+     * @var string
+     */
+    public $parentGateway = '';
+
+    /**
+     * @var string
+     */
+    public $parentName = '';
 
     /**
      * @var string
@@ -52,19 +103,9 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     protected $description = '';
 
     /**
-     * @var string
-     */
-    protected $gatewayCode = '';
-
-    /**
-     * @var string
-     */
-    protected $logo = '';
-
-    /**
      * @var int
      */
-    protected $sortOrderPosition = null;
+    protected $sortOrderPosition;
 
     /**
      * @var bool
@@ -74,7 +115,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     /**
      * @var bool
      */
-    protected $hasConfigurableDirect = false;
+    public $hasConfigurableDirect = false;
 
     /**
      * @var bool
@@ -91,50 +132,156 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      */
     public $module;
 
-    public function __construct(MultisafepayOfficial $module)
+    /**
+     * @var PaymentMethod
+     */
+    private $paymentMethod;
+
+    public function __construct(PaymentMethod $paymentMethod, MultisafepayOfficial $module)
     {
+        $this->paymentMethod = $paymentMethod;
         $this->module = $module;
+        $this->gatewayCode = $this->paymentMethod->getId();
+        $this->gatewayName = $this->paymentMethod->getName() ?: '';
+        $this->description = $this->getDescription();
+        $this->sortOrderPosition = $this->getSortOrderPosition();
+        $this->canProcessRefunds = $this->canProcessRefunds();
+        $this->hasConfigurableTokenization = $this->paymentMethod->supportsTokenization();
+        $this->hasConfigurablePaymentComponent = $this->paymentMethod->supportsPaymentComponent();
     }
 
-    public function getGatewayCode(): string
+    /**
+     * @param bool $fromCheckout
+     *
+     * @return string
+     */
+    public function getGatewayCode(bool $fromCheckout = false): string
     {
         return $this->gatewayCode;
     }
 
+    /**
+     * This sanitization is necessary to avoid XSS attacks
+     * while &amp; is being replaced by '&', so payment methods
+     * including that character will be displayed correctly
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        $escapedName = htmlspecialchars(
+            $this->gatewayName,
+            ENT_QUOTES | ENT_HTML5,
+            'UTF-8',
+            false
+        );
+        return str_replace('&amp;', '&', $escapedName);
+    }
+
+    /**
+     * @return string
+     */
+    public function getBrandName(): string
+    {
+        return '';
+    }
+
+    /**
+     * @return string
+     */
+    public function getUniqueName(): string
+    {
+        return $this->gatewayCode;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPaymentComponentId(): string
+    {
+        return $this->getUniqueName();
+    }
+
+    /**
+     * @return array
+     */
+    public function getAllowedCountries(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return bool
+     */
     public function canProcessRefunds(): bool
     {
-        return $this->canProcessRefunds;
+        if (in_array($this->gatewayCode, self::CANNOT_PROCESS_REFUNDS_GIFTCARDS, true) ||
+            in_array($this->gatewayCode, self::CANNOT_PROCESS_REFUNDS_PAYMENT_METHODS, true)) {
+            return false;
+        }
+        return !$this->paymentMethod->isShoppingCartRequired() && $this->paymentMethod->getType() !== 'COUPON';
     }
 
+    /**
+     * @return string
+     */
     public function getDescription(): string
     {
-        return Configuration::get('MULTISAFEPAY_OFFICIAL_DESCRIPTION_'.$this->getUniqueName()) ?: $this->description;
+        return Configuration::get('MULTISAFEPAY_OFFICIAL_DESCRIPTION_' . $this->getUniqueName()) ?: $this->description;
     }
 
+    /**
+     * @return string
+     */
     public function getAction(): string
     {
         return Context::getContext()->link->getModuleLink('multisafepayofficial', 'payment', [], true);
     }
 
+    /**
+     * @return bool
+     */
+    public function isDirect(): bool
+    {
+        if ($this->allowPaymentComponent()) {
+            return true;
+        }
+
+        if ($this->hasConfigurableDirect) {
+            return (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DIRECT_' . $this->getUniqueName());
+        }
+
+        return false;
+    }
+
+    /**
+     * @return string
+     */
     public function getTransactionType(): string
     {
         if ($this->isDirect()) {
-            return self::DIRECT_TYPE;
+            return OrderRequest::DIRECT_TYPE;
         }
 
-        return self::REDIRECT_TYPE;
+        return OrderRequest::REDIRECT_TYPE;
     }
 
     public function getFrontEndName(): string
     {
-        return Configuration::get('MULTISAFEPAY_OFFICIAL_TITLE_'.$this->getUniqueName()) ?: $this->getName();
+        return Configuration::get('MULTISAFEPAY_OFFICIAL_TITLE_' . $this->getUniqueName()) ?: $this->getName();
     }
 
     public function getLogo(): string
     {
-        return $this->logo;
+        return $this->paymentMethod->getMediumIconUrl() ?: '';
     }
 
+    /**
+     *  Get the input fields for the payment methods in the front end
+     *
+     * @throws ClientExceptionInterface
+     * @throws Exception
+     */
     public function getInputFields(): array
     {
         $inputFields = [];
@@ -149,10 +296,6 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                     $this
                 )
             );
-        }
-
-        if ($this->isDirect()) {
-            $inputFields = array_merge($inputFields, $this->getDirectTransactionInputFields());
         }
 
         if ($this->allowTokenization() && !$this->allowPaymentComponent()) {
@@ -171,28 +314,14 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     {
         uasort(
             $inputFields,
-            function ($a, $b) {
-                return $a['order'] - $b['order'];
+            static function ($a, $b) {
+                $orderA = $a['order'] ?? 0;
+                $orderB = $b['order'] ?? 0;
+                return $orderA - $orderB;
             }
         );
 
         return $inputFields;
-    }
-
-    /**
-     * @return array
-     */
-    public function getDirectTransactionInputFields(): array
-    {
-        return [];
-    }
-
-    /**
-     * @return string
-     */
-    public function getUniqueName(): string
-    {
-        return $this->getGatewayCode();
     }
 
     /**
@@ -202,7 +331,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     {
         if (!isset($this->sortOrderPosition)) {
             $this->sortOrderPosition = (int)Configuration::get(
-                'MULTISAFEPAY_OFFICIAL_SORT_ORDER_'.$this->getUniqueName()
+                'MULTISAFEPAY_OFFICIAL_SORT_ORDER_' . $this->getUniqueName()
             );
         }
 
@@ -211,30 +340,31 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
     /**
      * @return array
+     *
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     public function getGatewaySettings(): array
     {
         $settings = [
-            'MULTISAFEPAY_OFFICIAL_GATEWAY_'.$this->getUniqueName()         => [
+            'MULTISAFEPAY_OFFICIAL_GATEWAY_' . $this->getUniqueName()         => [
                 'type'    => 'switch',
                 'name'    => $this->getName(),
-                'value'   => Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_'.$this->getUniqueName()),
+                'value'   => Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_' . $this->getUniqueName()),
                 'default' => '0',
                 'order'   => 10,
             ],
-            'MULTISAFEPAY_OFFICIAL_TITLE_'.$this->getUniqueName()           => [
+            'MULTISAFEPAY_OFFICIAL_TITLE_' . $this->getUniqueName()           => [
                 'type'       => 'text',
                 'name'       => $this->module->l('Title', self::CLASS_NAME),
-                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_TITLE_'.$this->getUniqueName()),
+                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_TITLE_' . $this->getUniqueName()),
                 'helperText' => $this->module->l('The title will be shown to the customer at the checkout page. When using translations, please leave this field empty.', self::CLASS_NAME),
                 'default'    => '',
                 'order'      => 20,
             ],
-            'MULTISAFEPAY_OFFICIAL_DESCRIPTION_'.$this->getUniqueName()     => [
+            'MULTISAFEPAY_OFFICIAL_DESCRIPTION_' . $this->getUniqueName()     => [
                 'type'       => 'text',
                 'name'       => $this->module->l('Description', self::CLASS_NAME),
-                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_DESCRIPTION_'.$this->getUniqueName()),
+                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_DESCRIPTION_' . $this->getUniqueName()),
                 'helperText' => $this->module->l(
                     'The description will be shown to the customer at the checkout page.',
                     self::CLASS_NAME
@@ -242,64 +372,64 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'default'    => '',
                 'order'      => 30,
             ],
-            'MULTISAFEPAY_OFFICIAL_MIN_AMOUNT_'.$this->getUniqueName()      => [
+            'MULTISAFEPAY_OFFICIAL_MIN_AMOUNT_' . $this->getUniqueName()      => [
                 'type'    => 'text',
                 'name'    => $this->module->l('Minimum amount', self::CLASS_NAME),
-                'value'   => Configuration::get('MULTISAFEPAY_OFFICIAL_MIN_AMOUNT_'.$this->getUniqueName()),
+                'value'   => Configuration::get('MULTISAFEPAY_OFFICIAL_MIN_AMOUNT_' . $this->getUniqueName()),
                 'default' => '',
                 'order'   => 40,
             ],
-            'MULTISAFEPAY_OFFICIAL_MAX_AMOUNT_'.$this->getUniqueName()      => [
+            'MULTISAFEPAY_OFFICIAL_MAX_AMOUNT_' . $this->getUniqueName()      => [
                 'type'    => 'text',
                 'name'    => $this->module->l('Maximum amount', self::CLASS_NAME),
-                'value'   => Configuration::get('MULTISAFEPAY_OFFICIAL_MAX_AMOUNT_'.$this->getUniqueName()),
+                'value'   => Configuration::get('MULTISAFEPAY_OFFICIAL_MAX_AMOUNT_' . $this->getUniqueName()),
                 'default' => '',
                 'order'   => 50,
             ],
-            'MULTISAFEPAY_OFFICIAL_COUNTRIES_'.$this->getUniqueName()       => [
+            'MULTISAFEPAY_OFFICIAL_COUNTRIES_' . $this->getUniqueName()       => [
                 'type'       => 'multi-select',
                 'name'       => $this->module->l('Select countries', self::CLASS_NAME),
                 'value'      => $this->settingToArray(
-                    Configuration::get('MULTISAFEPAY_OFFICIAL_COUNTRIES_'.$this->getUniqueName())
+                    Configuration::get('MULTISAFEPAY_OFFICIAL_COUNTRIES_' . $this->getUniqueName())
                 ),
                 'options'    => $this->mapArrayForSettings(
-                    Country::getCountries((int)Context::getContext()->language->id, true),
+                    Country::getCountries(Context::getContext()->language->id, true),
                     'id_country'
                 ),
                 'helperText' => $this->module->l('Leave blank to support all countries', self::CLASS_NAME),
                 'default'    => '',
                 'order'      => 60,
             ],
-            'MULTISAFEPAY_OFFICIAL_CURRENCIES_'.$this->getUniqueName()      => [
+            'MULTISAFEPAY_OFFICIAL_CURRENCIES_' . $this->getUniqueName()      => [
                 'type'       => 'multi-select',
                 'name'       => $this->module->l('Select currencies', self::CLASS_NAME),
                 'value'      => $this->settingToArray(
-                    Configuration::get('MULTISAFEPAY_OFFICIAL_CURRENCIES_'.$this->getUniqueName())
+                    Configuration::get('MULTISAFEPAY_OFFICIAL_CURRENCIES_' . $this->getUniqueName())
                 ),
                 'options'    => Currency::getCurrencies(false, true, true),
                 'helperText' => $this->module->l('Leave blank to support all currencies', self::CLASS_NAME),
                 'default'    => '',
                 'order'      => 70,
             ],
-            'MULTISAFEPAY_OFFICIAL_CUSTOMER_GROUPS_'.$this->getUniqueName() => [
+            'MULTISAFEPAY_OFFICIAL_CUSTOMER_GROUPS_' . $this->getUniqueName() => [
                 'type'       => 'multi-select',
                 'name'       => $this->module->l('Select customer groups', self::CLASS_NAME),
                 'value'      => $this->settingToArray(
-                    Configuration::get('MULTISAFEPAY_OFFICIAL_CUSTOMER_GROUPS_'.$this->getUniqueName())
+                    Configuration::get('MULTISAFEPAY_OFFICIAL_CUSTOMER_GROUPS_' . $this->getUniqueName())
                 ),
                 'options'    => $this->mapArrayForSettings(
-                    Group::getGroups((int)Context::getContext()->language->id),
+                    Group::getGroups(Context::getContext()->language->id),
                     'id_group'
                 ),
                 'helperText' => $this->module->l('Leave blank to support all customer groups', self::CLASS_NAME),
                 'default'    => '',
                 'order'      => 80,
             ],
-            'MULTISAFEPAY_OFFICIAL_CARRIERS_'.$this->getUniqueName()        => [
+            'MULTISAFEPAY_OFFICIAL_CARRIERS_' . $this->getUniqueName()        => [
                 'type'       => 'multi-select',
                 'name'       => $this->module->l('Select carriers', self::CLASS_NAME),
                 'value'      => $this->settingToArray(
-                    Configuration::get('MULTISAFEPAY_OFFICIAL_CARRIERS_'.$this->getUniqueName())
+                    Configuration::get('MULTISAFEPAY_OFFICIAL_CARRIERS_' . $this->getUniqueName())
                 ),
                 'options'    => $this->mapArrayForSettings(
                     Carrier::getCarriers(
@@ -316,10 +446,10 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
                 'default'    => '',
                 'order'      => 81,
             ],
-            'MULTISAFEPAY_OFFICIAL_SORT_ORDER_'.$this->getUniqueName()      => [
+            'MULTISAFEPAY_OFFICIAL_SORT_ORDER_' . $this->getUniqueName()      => [
                 'type'    => 'text',
                 'name'    => $this->module->l('Sort order', self::CLASS_NAME),
-                'value'   => Configuration::get('MULTISAFEPAY_OFFICIAL_SORT_ORDER_'.$this->getUniqueName()),
+                'value'   => Configuration::get('MULTISAFEPAY_OFFICIAL_SORT_ORDER_' . $this->getUniqueName()),
                 'default' => '',
                 'order'   => 90,
                 'class'   => 'sort-order',
@@ -327,10 +457,10 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         ];
 
         if ($this->hasConfigurableDirect) {
-            $settings['MULTISAFEPAY_OFFICIAL_DIRECT_'.$this->getUniqueName()] = [
+            $settings['MULTISAFEPAY_OFFICIAL_DIRECT_' . $this->getUniqueName()] = [
                 'type'       => 'switch',
                 'name'       => $this->module->l('Enable direct', self::CLASS_NAME),
-                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_DIRECT_'.$this->getUniqueName()),
+                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_DIRECT_' . $this->getUniqueName()),
                 'helperText' => $this->module->l(
                     'If enabled, additional information can be entered during checkout. If disabled, additional information will be requested on the MultiSafepay payment page.',
                     self::CLASS_NAME
@@ -341,10 +471,10 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         }
 
         if ($this->hasConfigurableTokenization) {
-            $settings['MULTISAFEPAY_OFFICIAL_TOKENIZATION_'.$this->getUniqueName()] = [
+            $settings['MULTISAFEPAY_OFFICIAL_TOKENIZATION_' . $this->getUniqueName()] = [
                 'type'       => 'switch',
                 'name'       => $this->module->l('Enable tokenization', self::CLASS_NAME),
-                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_TOKENIZATION_'.$this->getUniqueName()) ?? 0,
+                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_TOKENIZATION_' . $this->getUniqueName()) ?? '0',
                 'helperText' => $this->module->l(
                     'If enabled, payment details entered during checkout can be saved by the customer for future purchases.',
                     self::CLASS_NAME
@@ -355,10 +485,10 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         }
 
         if ($this->hasConfigurablePaymentComponent) {
-            $settings['MULTISAFEPAY_OFFICIAL_COMPONENT_'.$this->getUniqueName()] = [
+            $settings['MULTISAFEPAY_OFFICIAL_COMPONENT_' . $this->getUniqueName()] = [
                 'type'       => 'switch',
                 'name'       => $this->module->l('Enable payment component', self::CLASS_NAME),
-                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_COMPONENT_'.$this->getUniqueName()) ?? 0,
+                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_COMPONENT_' . $this->getUniqueName()) ?? '0',
                 'helperText' => $this->module->l(
                     'If enabled, embedded form will be used during checkout.',
                     self::CLASS_NAME
@@ -380,10 +510,10 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      *
      * @return array
      */
-    protected function settingToArray($setting): array
+    protected function settingToArray(string $setting): array
     {
-        if (is_string($setting) && !empty($setting)) {
-            return json_decode($setting);
+        if (!empty($setting)) {
+            return (array) (json_decode($setting, false) ?? []);
         }
 
         return [];
@@ -395,7 +525,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      *
      * @return array
      */
-    protected function mapArrayForSettings(array $list, string $idKey)
+    protected function mapArrayForSettings(array $list, string $idKey): array
     {
         $result = [];
         foreach ($list as $item) {
@@ -410,7 +540,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
     public function isActive(): bool
     {
-        return Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_'.$this->getUniqueName()) === '1';
+        return Configuration::get('MULTISAFEPAY_OFFICIAL_GATEWAY_' . $this->getUniqueName()) === '1';
     }
 
     /**
@@ -418,25 +548,10 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      * @param array $data
      *
      * @return GatewayInfoInterface|null
-     *
-     * @phpcs:disable -- Disable to avoid trigger a warning in validator about unused parameter
      */
     public function getGatewayInfo(Cart $cart, array $data = []): ?GatewayInfoInterface
     {
-        // phpcs:enable
         return null;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isDirect(): bool
-    {
-        if ($this->hasConfigurableDirect) {
-            return (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DIRECT_'.$this->getUniqueName());
-        }
-
-        return false;
     }
 
     /**
@@ -445,8 +560,8 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     public function allowTokenization(): bool
     {
         $customer = Context::getContext()->customer;
-        if ($this->hasConfigurableTokenization && $customer !== null && !(bool)$customer->is_guest) {
-            return (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_TOKENIZATION_'.$this->getUniqueName());
+        if ($this->hasConfigurableTokenization && ($customer !== null) && empty($customer->is_guest)) {
+            return (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_TOKENIZATION_' . $this->getUniqueName());
         }
 
         return false;
@@ -458,7 +573,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     public function allowPaymentComponent(): bool
     {
         if ($this->hasConfigurablePaymentComponent) {
-            return (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_COMPONENT_'.$this->getUniqueName());
+            return (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_COMPONENT_' . $this->getUniqueName());
         }
 
         return false;
@@ -470,6 +585,8 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      * @return void
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
+     * @throws Exception
+     *
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     public function registerJavascript(Context $context): void
@@ -488,7 +605,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
 
             Media::addJsDef(
                 [
-                    'multisafepayPaymentComponentConfig'.$this->getGatewayCode(
+                    'multisafepayPaymentComponentConfig' . $this->getGatewayCode(
                     ) => $orderService->createPaymentComponentOrder(
                         $this->getGatewayCode(),
                         $this->allowTokenization() ? (string) Context::getContext()->customer->id : null,
@@ -523,6 +640,14 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
     }
 
     /**
+     * @return array
+     */
+    public function getPaymentOptionSettingsFields(): array
+    {
+        return [];
+    }
+
+    /**
      * Return the country code from the context object
      *
      * @param Context $context
@@ -530,7 +655,7 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    protected function getCountryCode(Context $context): string
+    public function getCountryCode(Context $context): string
     {
         $idCountry = (new Address((int)$context->cart->id_address_invoice))->id_country;
         $country = (new Country($idCountry));
@@ -540,13 +665,5 @@ abstract class BasePaymentOption implements BasePaymentOptionInterface
         }
 
         return '';
-    }
-
-    /**
-     * @return array
-     */
-    public function getPaymentOptionSettingsFields(): array
-    {
-        return [];
     }
 }

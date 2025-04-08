@@ -90,7 +90,7 @@ class OrderService
         ?string $recurringModel
     ): array {
         $paymentComponentArguments = [
-            'debug'     => (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE') ?? false,
+            'debug'     => (bool)(Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE') ?? false),
             'env'       => $this->sdkService->getTestMode() ? 'test' : 'live',
             'apiToken'  => $this->getPaymentComponentApiToken(),
             'orderData' => [

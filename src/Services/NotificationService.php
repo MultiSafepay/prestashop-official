@@ -217,7 +217,6 @@ abstract class NotificationService
             return false;
         }
 
-        // If the PrestaShop order status is considered a final status
         if ($this->isFinalStatus((int)$order->current_state)) {
             $message = 'It seems a notification is trying to process an order which already have a final order status defined. For this reason notification is being ignored. ';
             $message .= 'Transaction ID received is ' . Tools::getValue('transactionid') . ' with status ' . $transaction->getStatus();
@@ -232,7 +231,6 @@ abstract class NotificationService
             return false;
         }
 
-        // If the PrestaShop order status is the same as the one received in the notification
         if ((int)$order->current_state === (int)$this->getOrderStatusId($transaction->getStatus())) {
             return false;
         }
@@ -409,6 +407,7 @@ abstract class NotificationService
                 return true;
             }
         }
+
         return false;
     }
 
@@ -450,6 +449,12 @@ abstract class NotificationService
     {
         $gatewayCode = $transaction->getPaymentDetails()->getType();
 
+        if (in_array($gatewayCode, PaymentOptionService::CREDIT_CARD_GATEWAYS, true) &&
+            (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS')
+        ) {
+            $gatewayCode = 'CREDITCARD';
+        }
+
         // When an order is being fully paid using a gift card
         if (strpos($gatewayCode, 'Coupon::') !== false) {
             $data = $transaction->getPaymentDetails()->getData();
@@ -466,13 +471,14 @@ abstract class NotificationService
 
     /**
      * @param string $body
+     *
      * @return TransactionResponse
+     * @throws PrestaShopException
      */
     public function getTransactionFromPostNotification(string $body): TransactionResponse
     {
         try {
-            $transaction = new TransactionResponse(json_decode($body, true), $body);
-            return $transaction;
+            return new TransactionResponse(json_decode($body, true), $body);
         } catch (ApiException $apiException) {
             LoggerHelper::logException(
                 'error',
@@ -545,6 +551,7 @@ abstract class NotificationService
             case Transaction::UNCLEARED:
                 return true;
         }
+
         return false;
     }
 

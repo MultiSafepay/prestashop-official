@@ -28,43 +28,37 @@ use Context;
 use Currency;
 use Exception;
 use Media;
-use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
+use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Wallet;
+use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\SdkService;
+use MultisafepayOfficial;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Tools;
 
-class GooglePay extends BasePaymentOption
+class Googlepay extends BasePaymentOption
 {
-    public const CLASS_NAME = 'GooglePay';
+    /**
+     * @var bool
+     */
+    public $hasConfigurableDirect = true;
+
     public const TEST_MERCHANT_NAME = 'Example Merchant';
     public const TEST_MERCHANT_ID = '12345678901234567890';
 
-    protected $gatewayCode = 'GOOGLEPAY';
-    protected $logo = 'googlepay.png';
-    protected $hasConfigurableDirect = true;
-
-    /**
-     * @return string
-     */
-    public function getName(): string
-    {
-        return $this->module->l('Google Pay', self::CLASS_NAME);
-    }
-
     public function getTransactionType(): string
     {
-        if ($this->isDirect()) {
+        if ($this->hasConfigurableDirect) {
             $checkoutVars = Tools::getAllValues();
-            return empty($checkoutVars['payment_token']) ? self::REDIRECT_TYPE : self::DIRECT_TYPE;
+            return empty($checkoutVars['payment_token']) ? OrderRequest::REDIRECT_TYPE : OrderRequest::DIRECT_TYPE;
         }
 
-        return self::REDIRECT_TYPE;
+        return OrderRequest::REDIRECT_TYPE;
     }
 
     /**
@@ -120,8 +114,6 @@ class GooglePay extends BasePaymentOption
                 'configGooglePayMerchantId'   => $merchantId,
                 'configGooglePayDebugMode'    => (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')
             ]);
-
-            parent::registerJavascript($context);
         }
     }
 
@@ -162,8 +154,6 @@ class GooglePay extends BasePaymentOption
      * @param Cart $cart
      * @param array $data
      * @return GatewayInfoInterface|null
-     *
-     * @phpcs:disable -- Disable to avoid triggering a warning in validator about unused parameter
      */
     public function getGatewayInfo(Cart $cart, array $data = []): ?GatewayInfoInterface
     {
@@ -174,7 +164,6 @@ class GooglePay extends BasePaymentOption
         $gatewayInfo->addPaymentToken($data['payment_token']);
 
         return $gatewayInfo;
-        // phpcs:enable
     }
 
     /**
@@ -184,7 +173,7 @@ class GooglePay extends BasePaymentOption
     {
         $settings['MULTISAFEPAY_OFFICIAL_MERCHANT_NAME_GOOGLEPAY'] = [
             'type'          => 'text',
-            'name'          => $this->module->l('Merchant name', 'BasePaymentOption'),
+            'name'          => $this->module->l('Merchant name', self::CLASS_NAME),
             'value'         => Configuration::get('MULTISAFEPAY_OFFICIAL_MERCHANT_NAME_GOOGLEPAY'),
             'helperText'    => $this->module->l(
                 'The merchant name provided at your Google Pay direct account',
@@ -196,7 +185,7 @@ class GooglePay extends BasePaymentOption
         ];
         $settings['MULTISAFEPAY_OFFICIAL_MERCHANT_ID_GOOGLEPAY'] = [
             'type'          => 'text',
-            'name'          => $this->module->l('Merchant ID', 'BasePaymentOption'),
+            'name'          => $this->module->l('Merchant ID', self::CLASS_NAME),
             'value'         => Configuration::get('MULTISAFEPAY_OFFICIAL_MERCHANT_ID_GOOGLEPAY'),
             'helperText'    => $this->module->l(
                 'The merchant ID provided at your Google Pay direct account',

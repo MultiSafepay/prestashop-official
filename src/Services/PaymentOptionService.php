@@ -22,18 +22,26 @@
 
 namespace MultiSafepay\PrestaShop\Services;
 
-use Exception;
-use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
-use MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\MultiSafepay;
-use MultisafepayOfficial;
-use Cart;
 use Address;
+use Cart;
+use Configuration;
 use Customer;
-use Media;
-use Context;
+use Exception;
+use MultiSafepay\Api\PaymentMethods\PaymentMethod;
+use MultiSafepay\Exception\ApiException;
+use MultiSafepay\Exception\InvalidApiKeyException;
+use MultiSafepay\Exception\InvalidDataInitializationException;
+use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BaseBrandedPaymentOption;
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
+use MultisafepayOfficial;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use Psr\Cache\CacheItemInterface;
+use Psr\Cache\InvalidArgumentException;
+use Psr\Http\Client\ClientExceptionInterface;
 use SmartyException;
-use Symfony\Component\Finder\Finder;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Tools;
 
 /**
@@ -42,13 +50,37 @@ use Tools;
  */
 class PaymentOptionService
 {
-    public const PAYMENT_OPTIONS_NAMESPACE = "MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\\";
-    public const PAYMENT_OPTIONS_DIR = _PS_ROOT_DIR_.'/modules/multisafepayofficial/src/PaymentOptions/PaymentMethods';
+
+    /**
+     * Credit and debit cards gateway IDs
+     *
+     * @var array
+     */
+    public const CREDIT_CARD_GATEWAYS = [ 'VISA', 'MASTERCARD', 'AMEX', 'MAESTRO' ];
+
+    /**
+     *  Cache expiration time in seconds
+     *
+     * @var int
+     */
+    public const CACHE_EXPIRE_TIME = 86400;
+
+    /**
+     *  Cache name
+     *
+     * @var string
+     */
+    public const CACHE_NAME = 'multisafepay_payment_methods_cache';
+
+    /**
+     * @var string
+     */
+    public const PAYMENT_OPT_NAMESPACE = "MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods\\";
 
     /**
      * @var array|null
      */
-    private $paymentOptions = null;
+    private $paymentOptions;
 
     /**
      * @var MultisafepayOfficial
@@ -67,18 +99,38 @@ class PaymentOptionService
      * Get all MultiSafepay payment options
      *
      * @return array
+     *
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     public function getMultiSafepayPaymentOptions(): array
     {
-        if (! isset($this->paymentOptions)) {
+        if (!isset($this->paymentOptions)) {
             $paymentOptions = [];
-            foreach ($this->getPaymentOptionClassNamesFromDirectory() as $className) {
-                $paymentOptions[] = new $className($this->module);
+            $paymentMethods = $this->getMultiSafepayPaymentMethods();
+
+            /** @var PaymentMethod $paymentMethod */
+            foreach ($paymentMethods as $paymentMethod) {
+                $childClass = $this->checkChildClassName($paymentMethod->getId());
+
+                if (!empty($childClass)) {
+                    /** @var BasePaymentOption[] $paymentOptions */
+                    $paymentOptions[] = (new $childClass($paymentMethod, $this->module));
+                } else {
+                    /** @var BasePaymentOption[] $paymentOptions */
+                    $paymentOptions[] = new BasePaymentOption($paymentMethod, $this->module);
+                }
+
+                if (!Configuration::get('MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS')) {
+                    $brandsList = $paymentMethod->getBrands() ?? [];
+                    if (!empty($brandsList)) {
+                        foreach ($brandsList as $brandedPaymentMethod) {
+                            $paymentOptions[] = new BaseBrandedPaymentOption($paymentMethod, $this->module, $brandedPaymentMethod);
+                        }
+                    }
+                }
             }
-            uasort($paymentOptions, function ($a, $b) {
-                return $a->getSortOrderPosition() - $b->getSortOrderPosition() ?: strcasecmp($a->getName(), $b->getName());
-            });
+
+            $paymentOptions = $this->sortOrderPaymentOptions($paymentOptions);
             $this->paymentOptions = $paymentOptions;
         }
 
@@ -90,19 +142,15 @@ class PaymentOptionService
      *
      * @return BasePaymentOption
      */
-    public function getMultiSafepayPaymentOption(string $gatewayCode): BasePaymentOption
+    public function getMultiSafepayPaymentOption(string $gatewayCode): ?BasePaymentOption
     {
-        if (empty($gatewayCode)) {
-            return new MultiSafepay($this->module);
-        }
-
         foreach ($this->getMultiSafepayPaymentOptions() as $paymentOption) {
-            if ($paymentOption->getGatewayCode() === $gatewayCode) {
+            if ($paymentOption->getGatewayCode(true) === $gatewayCode) {
                 return $paymentOption;
             }
         }
 
-        return new MultiSafepay($this->module);
+        return null;
     }
 
     /**
@@ -123,64 +171,104 @@ class PaymentOptionService
     }
 
     /**
+     * Get all active MultiSafepay payment options and filter the duplicated branded names
+     *
+     * @param array $paymentMethods
+     *
+     * @return array
+     */
+    private function getDuplicatedBrandedGateways(array $paymentMethods): array
+    {
+        $paymentGatewayCounts = [];
+        foreach ($paymentMethods as $paymentMethod) {
+            if (empty($paymentMethod->parentGateway)) {
+                continue;
+            }
+            /** @var BaseBrandedPaymentOption $paymentMethod */
+            $primaryGateway = $paymentMethod->gatewayCode;
+
+            if (!isset($paymentGatewayCounts[$primaryGateway])) {
+                $paymentGatewayCounts[$primaryGateway] = 0;
+            }
+
+            $paymentGatewayCounts[$primaryGateway]++;
+        }
+
+        $duplicatedBrandedGateways = array_filter($paymentGatewayCounts, static function ($count) {
+            return $count > 1;
+        });
+
+        return array_keys($duplicatedBrandedGateways);
+    }
+
+    /**
+     *  Filter the duplicated brand names to add just their names only when necessary
+     *
+     * @param BasePaymentOption $paymentMethod
+     * @param array $duplicatedBrandedNames
+     *
+     * @return string
+     */
+    private function filterDuplicatedBrandedNames(BasePaymentOption $paymentMethod, array $duplicatedBrandedNames): string
+    {
+        $isDuplicated = in_array($paymentMethod->gatewayCode, $duplicatedBrandedNames, true);
+        return $isDuplicated ? $paymentMethod->getFrontEndName() : $this->getFilteredFrontEndName($paymentMethod);
+    }
+
+    /**
+     * Get the filtered checkout name without the parent name if any
+     *
+     * @param BasePaymentOption $paymentMethod
+     *
+     * @return string
+     */
+    private function getFilteredFrontEndName(BasePaymentOption $paymentMethod): string
+    {
+        $frontName = $paymentMethod->getFrontEndName();
+        $parentName = $paymentMethod->parentName;
+        if (!empty($parentName) && (strpos($frontName, $parentName) !== false)) {
+            return $paymentMethod->getBrandName();
+        }
+
+        return $frontName;
+    }
+
+    /**
      * Return an array of MultiSafepay PaymentOptions
      *
-     * @param Cart $cart
+     * @param   Cart  $cart
+     *
      * @return array
-     * @throws SmartyException
-     * @throws Exception
+     * @throws SmartyException|Exception
      */
     public function getFilteredMultiSafepayPaymentOptions(Cart $cart): array
     {
         $paymentOptions = [];
         /** @var BasePaymentOption[] $paymentMethods */
         $paymentMethods = $this->getActivePaymentOptions();
+
+        $duplicatedBrandedNames = $this->getDuplicatedBrandedGateways($paymentMethods);
+
         foreach ($paymentMethods as $paymentMethod) {
             if ($this->excludePaymentOptionByPaymentOptionSettings($paymentMethod, $cart)) {
                 continue;
             }
 
             $option = new PaymentOption();
-            $option->setModuleName($paymentMethod->getGatewayCode());
-            $option->setCallToActionText($paymentMethod->getFrontEndName());
-            $option->setAction($paymentMethod->getAction());
             $option->setForm($this->module->getMultiSafepayPaymentOptionForm($paymentMethod));
+            $option->setModuleName($paymentMethod->getGatewayCode());
+            $option->setCallToActionText($this->filterDuplicatedBrandedNames($paymentMethod, $duplicatedBrandedNames));
+            $option->setAction($paymentMethod->getAction());
             if (!empty($paymentMethod->getLogo())) {
-                $option->setLogo($this->getLogoByName($paymentMethod->getLogo()));
+                $option->setLogo($paymentMethod->getLogo());
             }
             if ($paymentMethod->getDescription()) {
                 $option->setAdditionalInformation($paymentMethod->getDescription());
             }
             $paymentOptions[] = $option;
         }
+
         return $paymentOptions;
-    }
-
-    /**
-     * @param string $name
-     * @return string
-     *
-     * @phpcs:disable Generic.Files.LineLength.TooLong
-     */
-    private function getLogoByName(string $name): string
-    {
-        // If Generic Gateway, this will return a full URL
-        if (file_exists($name)) {
-            return Media::getMediaPath($name);
-        }
-
-        // Logo by language
-        $logoLocale = _PS_MODULE_DIR_ . $this->module->name . '/views/img/' . str_replace('.png', '', $name) . '-'. Tools::strtolower(Tools::substr(Context::getContext()->language->locale, 0, 2)).'.png';
-        if (file_exists($logoLocale)) {
-            return Media::getMediaPath($logoLocale);
-        }
-
-        // Default logo
-        if (file_exists(_PS_MODULE_DIR_ . $this->module->name . '/views/img/' . $name)) {
-            return Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/' . $name);
-        }
-
-        return '';
     }
 
     /**
@@ -190,9 +278,9 @@ class PaymentOptionService
      * @param Cart $cart
      *
      * @return bool
+     * @throws Exception
      *
      * @phpcs:disable Generic.Files.LineLength.TooLong
-     * @throws Exception
      */
     private function excludePaymentOptionByPaymentOptionSettings(BasePaymentOption $paymentMethod, Cart $cart): bool
     {
@@ -248,14 +336,166 @@ class PaymentOptionService
     /**
      * @return array
      */
-    private function getPaymentOptionClassNamesFromDirectory(): array
+    private function getMultiSafepayPaymentMethods(): array
     {
-        $classNames = [];
-        $finder = new Finder();
-        $files = $finder->files()->notName('index.php')->notName('IngHomePay.php')->name('*.php')->in(self::PAYMENT_OPTIONS_DIR);
-        foreach ($files as $file) {
-            $classNames[] = str_replace(".php", "", self::PAYMENT_OPTIONS_NAMESPACE.$file->getFilename());
+        try {
+            return $this->fetchPaymentMethods();
+        } catch (Exception $exception) {
+            LoggerHelper::logException(
+                'error',
+                $exception,
+                'General Error'
+            );
         }
-        return $classNames;
+
+        return [];
+    }
+
+    /**
+     * Fetch the payment methods from the SDK
+     *
+     * @return array
+     * @throws InvalidDataInitializationException
+     */
+    private function fetchPaymentMethods(): array
+    {
+        try {
+            /** @var SdkService $sdkService */
+            $sdkService = $this->module->get('multisafepay.sdk_service');
+        } catch (Exception | ServiceNotFoundException $exception) {
+            LoggerHelper::logException(
+                'error',
+                $exception,
+                'Error when try to get the Sdk Service'
+            );
+            $sdkService = new SdkService();
+        }
+
+        $apiKey = $sdkService->getApiKey();
+        if (empty($apiKey)) {
+            return [];
+        }
+
+        $options['group_cards'] = Configuration::get('MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS') ?: '0';
+        if (isset($_POST['MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS']) && defined('_PS_ADMIN_DIR_')) {
+            $newGroupCardsValue = Tools::getValue('MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS') ? '1' : '0';
+            if ($options['group_cards'] !== $newGroupCardsValue) {
+                Configuration::updateValue('MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS', $newGroupCardsValue);
+                $options['group_cards'] = $newGroupCardsValue;
+            }
+        }
+
+        $sdk = null;
+
+        try {
+            $sdk = $sdkService->getSdk();
+            $cache = new FilesystemAdapter();
+            $environment = $sdkService->getTestMode() ? 'test' : 'live';
+            $item = $cache->getItem(self::CACHE_NAME . '_' . $environment);
+
+            if (($item instanceof CacheItemInterface) &&
+                !defined('_PS_ADMIN_DIR_') &&
+                $item->isHit()
+            ) {
+                return $this->getCachedData($item);
+            }
+
+            if (!is_null($sdk)) {
+                $paymentMethods = $sdk->getPaymentMethodManager()->getPaymentMethods(true, $options) ?? [];
+                $this->cachePaymentMethods($paymentMethods, $cache, $item);
+                return $paymentMethods;
+            }
+
+            LoggerHelper::log(
+                'error',
+                'Error trying to get the MultiSafepay PHP-SDK',
+                true
+            );
+            return [];
+        } catch (InvalidArgumentException $cacheException) {
+            LoggerHelper::logException(
+                'error',
+                $cacheException,
+                'Error using class FilesystemAdapter. Direct call to the API had to be used'
+            );
+        } catch (ApiException | ClientExceptionInterface $exception) {
+            LoggerHelper::logException(
+                'error',
+                $exception,
+                'Client exception from the MultiSafepay API: '
+            );
+            return [];
+        }
+
+        // If the cache fails and no previous error occurred in the SDK, call the API directly
+        try {
+            return $sdk->getPaymentMethodManager()->getPaymentMethods(true, $options) ?? [];
+        } catch (ApiException | ClientExceptionInterface $exception) {
+            LoggerHelper::logException(
+                'error',
+                $exception,
+                'Error from the MultiSafepay API once FilesystemAdapter class failed'
+            );
+            return [];
+        }
+    }
+
+    /**
+     * Helper method to get cached data safely
+     *
+     * @param CacheItemInterface $item
+     *
+     * @return array
+     */
+    private function getCachedData(CacheItemInterface $item): array
+    {
+        $cachedData = $item->get();
+
+        return is_array($cachedData) && !empty($cachedData) ? $cachedData : [];
+    }
+
+    /**
+     * Helper method to cache payment methods
+     *
+     * @param array $paymentMethods
+     * @param FilesystemAdapter|null $cache
+     * @param CacheItemInterface|null $item
+     */
+    private function cachePaymentMethods(
+        array $paymentMethods,
+        ?FilesystemAdapter $cache,
+        ?CacheItemInterface $item
+    ): void {
+        if (($cache instanceof FilesystemAdapter) &&
+            ($item instanceof CacheItemInterface)
+        ) {
+            $item->set($paymentMethods);
+            $item->expiresAfter(self::CACHE_EXPIRE_TIME);
+            $cache->save($item);
+        }
+    }
+
+    /**
+     * @param string $gatewayCode
+     * @return string
+     */
+    private function checkChildClassName(string $gatewayCode): string
+    {
+        $childClassName = self::PAYMENT_OPT_NAMESPACE . ucfirst(strtolower($gatewayCode));
+        return class_exists($childClassName) ? $childClassName : '';
+    }
+
+    /**
+     * Sort the payment options by sort order position and name
+     *
+     * @param array $paymentOptions
+     * @return array
+     */
+    public function sortOrderPaymentOptions(array $paymentOptions): array
+    {
+        uasort($paymentOptions, static function ($a, $b) {
+            return $a->getSortOrderPosition() - $b->getSortOrderPosition() ?: strcasecmp($a->getName(), $b->getName());
+        });
+        return $paymentOptions;
     }
 }

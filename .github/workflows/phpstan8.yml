@@ -39,5 +39,20 @@ jobs:
       - name: Install composer dependencies
         run: composer install --working-dir=/var/www/html/modules/multisafepayofficial
 
+      - name: Fetch config file
+        run: |
+          mkdir -p temp-config
+          cd temp-config
+          git init
+          git remote add origin https://x-access-token:${{ secrets.GLOBAL_GITHUB_TOKEN }}@github.com/MultiSafepay/docker-prestashop.git
+          git config core.sparsecheckout true
+          echo "include/phpstan_stub.php" >> .git/info/sparse-checkout
+          echo "include/phpstan.neon" >> .git/info/sparse-checkout
+          git pull --depth=1 origin main
+          cd ..
+          cp temp-config/include/phpstan_stub.php /var/www/html/modules/multisafepayofficial/phpstan_stub.php
+          cp temp-config/include/phpstan.neon /var/www/html/modules/multisafepayofficial/phpstan.neon
+          rm -rf temp-config
+
       - name: Run PHPStan
-        run: cd /var/www/html/modules/multisafepayofficial && XDEBUG_MODE=off _PS_ROOT_DIR_=./../../ vendor/bin/phpstan analyse --configuration=tests/phpstan/phpstan.neon --memory-limit 1G --error-format github
+        run: cd /var/www/html/modules/multisafepayofficial && XDEBUG_MODE=off _PS_ROOT_DIR_=./../../ vendor/bin/phpstan analyse --configuration=phpstan.neon --memory-limit 1G --error-format github

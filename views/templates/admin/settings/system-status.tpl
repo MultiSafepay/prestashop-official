@@ -40,16 +40,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {foreach from=$status_report_section['settings'] item=setting}
-                        <tr>
-                            <td>
-                                {$setting['label']|escape:'html':'UTF-8'}
-                            </td>
-                            <td>
-                                {$setting['value']|escape:'html':'UTF-8'}
-                            </td>
-                        </tr>
-                    {/foreach}
+                    {if isset($status_report_section['settings'])}
+                        {foreach from=$status_report_section['settings'] item=setting}
+                            <tr>
+                                <td>
+                                    {$setting['label']|escape:'html':'UTF-8'}
+                                </td>
+                                <td>
+                                    {$setting['value']|escape:'html':'UTF-8'}
+                                </td>
+                            </tr>
+                        {/foreach}
+                    {/if}
                 </tbody>
             </table>
         </div>

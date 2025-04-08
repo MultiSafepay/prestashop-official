@@ -140,8 +140,10 @@ class MultisafepayOfficial extends PaymentModule
     }
 
     /**
+     *  Load the configuration form from the admin panel
+     *
      * @return string
-     * @throws PrestaShopException
+     * @throws Exception
      */
     public function getContent(): string
     {

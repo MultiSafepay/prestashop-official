@@ -12,5 +12,7 @@ config.xml
 grumphp.yml
 logs/multisafepay_log
 phpcs.xml
+phpstan.neon
+phpstan_stub.php
 phpunit.xml
 vendor
