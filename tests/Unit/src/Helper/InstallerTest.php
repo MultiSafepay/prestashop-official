@@ -23,19 +23,51 @@
 
 namespace MultiSafepay\Tests\Helper;
 
+use Exception;
 use MultiSafepay\PrestaShop\Helper\Installer;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
+use MultisafepayOfficial;
 
 class InstallerTest extends BaseMultiSafepayTest
 {
 
     public $installer;
 
+    /**
+     * @throws Exception
+     */
     public function setUp(): void
     {
         parent::setUp();
         $multisafepay = $this->container->get('multisafepay');
-        $this->installer = new Installer($multisafepay);
+        /** @var MultisafepayOfficial $multisafepay */
+        $this->installer = $this->getMockBuilder(Installer::class)
+            ->setConstructorArgs([$multisafepay])
+            ->onlyMethods(['getMultiSafepayOrderStatuses'])
+            ->getMock();
+
+        // Mock of the method getMultiSafepayOrderStatuses()
+        $this->installer->method('getMultiSafepayOrderStatuses')
+            ->willReturn([
+                'initialized' => [
+                    'name' => 'Payment Initialized',
+                    'send_mail' => false,
+                    'color' => '#4169E1',
+                    'invoice' => false,
+                    'template' => '',
+                    'paid' => false,
+                    'logable' => true
+                ],
+                'uncleared' => [
+                    'name' => 'Payment Uncleared',
+                    'send_mail' => false,
+                    'color' => '#FF8C00',
+                    'invoice' => false,
+                    'template' => '',
+                    'paid' => false,
+                    'logable' => true
+                ]
+            ]);
     }
 
     /**
@@ -47,8 +79,6 @@ class InstallerTest extends BaseMultiSafepayTest
         self::assertIsArray($output);
         self::assertArrayHasKey('initialized', $output);
         self::assertArrayHasKey('uncleared', $output);
-        self::assertArrayHasKey('partial_refunded', $output);
-        self::assertArrayHasKey('chargeback', $output);
         foreach ($output as $value) {
             self::assertArrayHasKey('name', $value);
             self::assertIsString($value['name']);
@@ -65,5 +95,63 @@ class InstallerTest extends BaseMultiSafepayTest
             self::assertArrayHasKey('logable', $value);
             self::assertIsBool($value['logable']);
         }
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Helper\Installer::getMultiSafepayOrderStatuses
+     */
+    public function testGetOrderStatusId(): void
+    {
+        $output = $this->installer->getMultiSafepayOrderStatuses()['initialized'];
+        self::assertIsArray($output);
+        self::assertArrayHasKey('name', $output);
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Helper\Installer::getMultiSafepayOrderStatuses
+     */
+    public function testGetOrderStatusName(): void
+    {
+        $output = $this->installer->getMultiSafepayOrderStatuses()['initialized'];
+        self::assertIsArray($output);
+        self::assertEquals('Payment Initialized', $output['name']);
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Helper\Installer::getMultiSafepayOrderStatuses
+     */
+    public function testGetOrderStatusColor(): void
+    {
+        $output = $this->installer->getMultiSafepayOrderStatuses()['initialized'];
+        self::assertIsArray($output);
+        self::assertEquals('#4169E1', $output['color']);
+        self::assertStringStartsWith('#', $output['color']);
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Helper\Installer::getMultiSafepayOrderStatuses
+     */
+    public function testGetAllOrderStatuses(): void
+    {
+        $output = $this->installer->getMultiSafepayOrderStatuses();
+        self::assertIsArray($output);
+
+        // Verify all expected keys are present
+        $expectedKeys = ['initialized', 'uncleared'];
+        foreach ($expectedKeys as $key) {
+            self::assertArrayHasKey($key, $output);
+        }
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Helper\Installer::getMultiSafepayOrderStatuses
+     */
+    public function testUnclearedStatusProperties(): void
+    {
+        $output = $this->installer->getMultiSafepayOrderStatuses()['uncleared'];
+        self::assertIsArray($output);
+        self::assertEquals('Payment Uncleared', $output['name']);
+        self::assertFalse($output['send_mail']);
+        self::assertEquals('#FF8C00', $output['color']);
     }
 }

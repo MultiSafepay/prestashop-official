@@ -23,9 +23,9 @@
 
 namespace MultiSafepay\Tests\Helper;
 
-use PHPUnit\Framework\TestCase;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultiSafepay\ValueObject\Money;
+use PHPUnit\Framework\TestCase;
 
 class MoneyHelperTest extends TestCase
 {
@@ -40,10 +40,75 @@ class MoneyHelperTest extends TestCase
 
     /**
      * @covers \MultiSafepay\PrestaShop\Helper\MoneyHelper::priceToCents
+     * @dataProvider priceProvider
      */
-    public function testPriceToCents(): void
+    public function testPriceToCents($input, $expected): void
     {
-        $output = MoneyHelper::priceToCents(34.75);
-        self::assertEquals(3475, $output);
+        $output = MoneyHelper::priceToCents($input);
+        self::assertEquals($expected, $output);
+    }
+
+    /**
+     * @return array
+     */
+    public function priceProvider(): array
+    {
+        return [
+            'regular price' => [34.75, 3475],
+            'zero price' => [0.00, 0],
+            'large price' => [999.99, 99999],
+            'integer price' => [50, 5000],
+            'small price' => [0.01, 1]
+        ];
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Helper\MoneyHelper::createMoney
+     */
+    public function testCreateMoneyWithZeroAmount(): void
+    {
+        $output = MoneyHelper::createMoney(0);
+        self::assertInstanceOf(Money::class, $output);
+        self::assertEquals(0, $output->getAmount());
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Helper\MoneyHelper::createMoney
+     */
+    public function testCreateMoneyWithCustomCurrency(): void
+    {
+        $output = MoneyHelper::createMoney(10.99, 'EUR');
+        self::assertInstanceOf(Money::class, $output);
+        self::assertEquals(1099, $output->getAmount());
+        self::assertEquals('EUR', $output->getCurrency());
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Helper\MoneyHelper::priceToCents
+     */
+    public function testPriceToCentsWithNegativeValue(): void
+    {
+        $output = MoneyHelper::priceToCents(-15.75);
+        self::assertEquals(-1575, $output);
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Helper\MoneyHelper::createMoney
+     */
+    public function testCreateMoneyWithNegativeAmount(): void
+    {
+        $output = MoneyHelper::createMoney(-25.50);
+        self::assertInstanceOf(Money::class, $output);
+        self::assertEquals(-2550, $output->getAmount());
+        self::assertEquals(MoneyHelper::DEFAULT_CURRENCY_CODE, $output->getCurrency());
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Helper\MoneyHelper::priceToCents
+     */
+    public function testPriceToCentsWithHighPrecision(): void
+    {
+        $output = MoneyHelper::priceToCents(10.999);
+        self::assertEquals(1099.9, $output);
     }
 }

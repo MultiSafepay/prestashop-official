@@ -23,13 +23,13 @@
 
 namespace MultiSafepay\Tests\Services;
 
-use MultisafepayOfficial;
-use MultiSafepay\PrestaShop\Services\PaymentOptionService;
-use MultiSafepay\PrestaShop\Services\SdkService;
-use Order;
 use Customer;
+use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\RefundService;
+use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
+use MultisafepayOfficial;
+use Order;
 
 class RefundServiceTest extends BaseMultiSafepayTest
 {
@@ -60,6 +60,46 @@ class RefundServiceTest extends BaseMultiSafepayTest
         self::assertIsArray($output);
         self::assertEquals('EUR', $output['currency']);
         self::assertEquals(14.4, $output['amount']);
+    }
+
+    /**
+     * @return Order
+     */
+    private function getFixtureOrderForRefund(): Order
+    {
+        $customerMock = $this->getMockBuilder(Customer::class)->getMock();
+        $customerMock->email = 'example@multisafepay.com';
+        $order = $this->getMockBuilder(Order::class)->onlyMethods(['getCustomer'])->getMock();
+        $order->method('getCustomer')->willReturn($customerMock);
+        $order->id = 99;
+        $order->id_currency = 1;
+        $order->reference = 'XQQFHXNJS';
+        $order->total_shipping = 8.470000;
+        $order->round_mode = 2;
+        $order->module = 'multisafepay';
+        return $order;
+    }
+
+    /**
+     * @return array[]
+     */
+    private function getFixtureProductListForRefund(): array
+    {
+        $randomNumber = rand(0, 100);
+        return [
+            $randomNumber => [
+                'quantity' => 1,
+                'id_order_detail' => $randomNumber,
+                'amount' => 14.399,
+                'unit_price' => 14.399,
+                'total_refunded_tax_incl' => 14.4,
+                'total_refunded_tax_excl' => 11.9,
+                'unit_price_tax_excl' => 11.9,
+                'unit_price_tax_incl' => 14.399,
+                'total_price_tax_excl' => 11.9,
+                'total_price_tax_incl' => 14.399,
+            ]
+        ];
     }
 
     public function testIsAllowedToRefundWhenOrderIsNotFromMultiSafepayModule(): void
@@ -99,52 +139,7 @@ class RefundServiceTest extends BaseMultiSafepayTest
 
     public function testGetProductsRefundAmount(): void
     {
-        if (version_compare(_PS_VERSION_, '1.7.7') <= 0) {
-            $this->markTestSkipped();
-        }
-
         $output = $this->mockRefundService->getProductsRefundAmount($this->getFixtureProductListForRefund());
         self::assertEquals('14.4', $output);
-    }
-
-
-    /**
-     * @return Order
-     */
-    private function getFixtureOrderForRefund(): Order
-    {
-        $customerMock = $this->getMockBuilder(Customer::class)->getMock();
-        $customerMock->email = 'example@multisafepay.com';
-        $order = $this->getMockBuilder(Order::class)->onlyMethods(['getCustomer'])->getMock();
-        $order->method('getCustomer')->willReturn($customerMock);
-        $order->id     = 99;
-        $order->id_currency = 1;
-        $order->reference = 'XQQFHXNJS';
-        $order->total_shipping = 8.470000;
-        $order->round_mode = 2;
-        $order->module = 'multisafepay';
-        return $order;
-    }
-
-    /**
-     * @return array[]
-     */
-    private function getFixtureProductListForRefund(): array
-    {
-        $randomNumber = rand(0, 100);
-        return [
-            $randomNumber => [
-                'quantity'                => 1,
-                'id_order_detail'         => $randomNumber,
-                'amount'                  => 14.399,
-                'unit_price'              => 14.399,
-                'total_refunded_tax_incl' => 14.4,
-                'total_refunded_tax_excl' => 11.9,
-                'unit_price_tax_excl'     => 11.9,
-                'unit_price_tax_incl'     => 14.399,
-                'total_price_tax_excl'    => 11.9,
-                'total_price_tax_incl'    => 14.399,
-            ]
-        ];
     }
 }

@@ -170,7 +170,7 @@ class CartItemBuilder implements ShoppingCartBuilderInterface
         float $price,
         string $currencyCode,
         float $taxrate,
-        Weight $weight = null
+        ?Weight $weight = null
     ): CartItem {
         $cartItem = new CartItem();
         $cartItem

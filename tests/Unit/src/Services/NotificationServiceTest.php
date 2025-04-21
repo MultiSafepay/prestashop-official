@@ -25,23 +25,23 @@ namespace MultiSafepay\Tests\Services;
 
 use Exception;
 use MultiSafepay\Api\PaymentMethods\PaymentMethod;
+use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\NotExistingOrderNotificationService;
-use MultisafepayOfficial;
-use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\PrestaShop\Services\NotificationService;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
+use MultisafepayOfficial;
 use PrestaShopException;
 use TypeError;
 
 class NotificationServiceTest extends BaseMultiSafepayTest
 {
-    /** @var string  */
+    /** @var string */
     protected $rawPostNotification;
 
-    /** @var NotificationService  */
+    /** @var NotificationService */
     protected $notificationService;
 
     /**
@@ -107,7 +107,7 @@ class NotificationServiceTest extends BaseMultiSafepayTest
             ->getMock();
 
         // Use an associative array to represent the data expected by the Ideal constructor.
-        $allData = (object) [
+        $allData = (object)[
             'paymentMethod' => $mockPaymentMethod,
             'module' => new MultisafepayOfficial(), // Simulate the module property.
         ];

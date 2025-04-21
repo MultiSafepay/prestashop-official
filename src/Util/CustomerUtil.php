@@ -56,8 +56,8 @@ class CustomerUtil
         ?string $ipAddress,
         ?string $userAgent,
         string $languageCode,
-        string $companyName = null,
-        string $reference = null,
+        ?string $companyName = null,
+        ?string $reference = null,
         ?array $browser = null
     ): CustomerDetails {
         $customerDetails = new CustomerDetails();

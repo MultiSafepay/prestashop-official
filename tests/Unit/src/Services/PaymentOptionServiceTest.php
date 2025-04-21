@@ -49,7 +49,7 @@ class PaymentOptionServiceTest extends BaseMultiSafepayTest
         $this->mockIssuerService->method('getIssuers')->willReturn(
             [
                 'value' => 1234,
-                'name'  => 'Test Issuer',
+                'name' => 'Test Issuer',
             ]
         );
 
@@ -61,7 +61,25 @@ class PaymentOptionServiceTest extends BaseMultiSafepayTest
         $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
         $mockMultisafepay->method('get')->willReturnCallback([$this, 'multisafepayGetCallback']);
         $mockMultisafepay->method('l')->willReturn('');
-        $this->paymentOptionsService = new PaymentOptionService($mockMultisafepay);
+
+        // Create mock PaymentOptionService
+        $this->paymentOptionsService = $this->getMockBuilder(PaymentOptionService::class)
+            ->setConstructorArgs([$mockMultisafepay])
+            ->onlyMethods(['getMultiSafepayPaymentOptions'])
+            ->getMock();
+
+        // Create mock payment options
+        $mockBasePaymentOption = $this->getMockBuilder(BasePaymentOption::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $mockBrandedPaymentOption = $this->getMockBuilder(BaseBrandedPaymentOption::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        // Set up getMultiSafepayPaymentOptions to return our mock payment options
+        $this->paymentOptionsService->method('getMultiSafepayPaymentOptions')
+            ->willReturn([$mockBasePaymentOption, $mockBrandedPaymentOption]);
     }
 
     public function multisafepayGetCallback()

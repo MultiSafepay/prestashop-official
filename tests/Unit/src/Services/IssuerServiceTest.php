@@ -25,10 +25,10 @@ namespace MultiSafepay\Tests\Services;
 
 use MultiSafepay\Api\IssuerManager;
 use MultiSafepay\Api\Issuers\Issuer;
+use MultiSafepay\PrestaShop\Services\IssuerService;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\Sdk;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
-use MultiSafepay\PrestaShop\Services\IssuerService;
 
 class IssuerServiceTest extends BaseMultiSafepayTest
 {

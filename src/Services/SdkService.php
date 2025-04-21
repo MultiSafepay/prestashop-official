@@ -53,7 +53,7 @@ class SdkService
      *
      * @param Configuration|null  $configuration
      */
-    public function __construct(Configuration $configuration = null)
+    public function __construct(?Configuration $configuration = null)
     {
         if (is_null($configuration)) {
             $this->configuration = new Configuration();
