@@ -282,7 +282,7 @@ class PaymentOptionService
      *
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
-    private function excludePaymentOptionByPaymentOptionSettings(BasePaymentOption $paymentMethod, Cart $cart): bool
+    public function excludePaymentOptionByPaymentOptionSettings(BasePaymentOption $paymentMethod, Cart $cart): bool
     {
         $orderTotal             = $cart->getOrderTotal();
         $orderCountryId         = (new Address($cart->id_address_invoice))->id_country;
@@ -336,7 +336,7 @@ class PaymentOptionService
     /**
      * @return array
      */
-    private function getMultiSafepayPaymentMethods(): array
+    public function getMultiSafepayPaymentMethods(): array
     {
         try {
             return $this->fetchPaymentMethods();

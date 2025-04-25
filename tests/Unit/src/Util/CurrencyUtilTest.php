@@ -49,61 +49,7 @@ class CurrencyUtilTest extends BaseMultiSafepayTest
      */
     public function testGetCurrencyIsoCodeById(): void
     {
-        $currencyId = 1;
-        $expected = 'EUR';
-
-        // Create a mock for Currency
-        $mockCurrency = $this->getMockBuilder(Currency::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        // Set the iso_code property on the mock
-        $mockCurrency->iso_code = $expected;
-
-        // Create a mock for CurrencyUtil to avoid actual calls to Currency constructor
-        $currencyUtilMock = $this->getMockBuilder(CurrencyUtil::class)
-            ->onlyMethods(['getCurrencyIsoCodeById'])
-            ->getMock();
-
-        // Configure the mock to return our expected value
-        $currencyUtilMock->expects($this->once())
-            ->method('getCurrencyIsoCodeById')
-            ->with($currencyId)
-            ->willReturn($expected);
-
-        // Call the method and assert results
-        $result = $currencyUtilMock->getCurrencyIsoCodeById($currencyId);
-        $this->assertEquals($expected, $result);
-    }
-
-    /**
-     * @covers \MultiSafepay\PrestaShop\Util\CurrencyUtil::getCurrencyIsoCodeById
-     */
-    public function testGetCurrencyIsoCodeByIdUsingReflection(): void
-    {
-        // Create a mock for Currency with our expected behavior
-        $mockCurrency = $this->getMockBuilder(Currency::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $mockCurrency->iso_code = 'EUR';
-
-        // Replace the global class_exists function to prevent autoload issues
-        global $mockCurrencyInstance;
-        $mockCurrencyInstance = $mockCurrency;
-
-        // Create a subclass of CurrencyUtil that overrides the Currency instantiation
-        $currencyUtil = new class extends CurrencyUtil {
-            public function getCurrencyIsoCodeById(int $currencyId): string
-            {
-                global $mockCurrencyInstance;
-                return $mockCurrencyInstance->iso_code;
-            }
-        };
-
-        // Call the method
-        $result = $currencyUtil->getCurrencyIsoCodeById(1);
-
-        // Assert the result
+        $result = $this->currencyUtil->getCurrencyIsoCodeById(1);
         $this->assertEquals('EUR', $result);
     }
 }

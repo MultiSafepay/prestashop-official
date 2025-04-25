@@ -46,33 +46,18 @@ class AddressUtilTest extends BaseMultiSafepayTest
     }
 
     /**
-     * @covers \MultiSafepay\PrestaShop\Util\AddressUtil::getAddress
-     */
+    * @covers \MultiSafepay\PrestaShop\Util\AddressUtil::getAddress
+    */
     public function testGetAddress(): void
     {
-        // Mock the PrestaShopAddress class since we can't use the real one in tests
-        $mockAddress = $this->getMockBuilder(PrestaShopAddress::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        // Use a real address ID or create a test address in setUp
+        $testAddressId = 1; // Use an existing ID or create a test address
 
-        // Create a reflection of the AddressUtil class to replace the creation of a new PrestaShopAddress
-        $reflectionClass = new ReflectionClass(AddressUtil::class);
-        $method = $reflectionClass->getMethod('getAddress');
-        $method->setAccessible(true);
+        // Call the actual method directly without mocking
+        $result = $this->addressUtil->getAddress($testAddressId);
 
-        // Create a partial mock to override the method
-        $addressUtilMock = $this->getMockBuilder(AddressUtil::class)
-            ->onlyMethods(['getAddress'])
-            ->getMock();
-
-        // Set up the mock to return our mocked address when called with ID 123
-        $addressUtilMock->expects($this->once())
-            ->method('getAddress')
-            ->with(123)
-            ->willReturn($mockAddress);
-
-        // Execute the method and assert the result
-        $address = $addressUtilMock->getAddress(123);
-        $this->assertInstanceOf(PrestaShopAddress::class, $address);
+        // Verify the result
+        $this->assertInstanceOf(PrestaShopAddress::class, $result);
+        $this->assertEquals($testAddressId, $result->id);
     }
 }

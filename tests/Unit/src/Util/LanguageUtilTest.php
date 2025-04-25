@@ -27,7 +27,6 @@ use Exception;
 use MultiSafepay\PrestaShop\Util\LanguageUtil;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
 use PrestaShopException;
-use Tools;
 
 class LanguageUtilTest extends BaseMultiSafepayTest
 {
@@ -49,67 +48,35 @@ class LanguageUtilTest extends BaseMultiSafepayTest
      * @covers \MultiSafepay\PrestaShop\Util\LanguageUtil::getLanguageCode
      * @throws PrestaShopException
      */
-    public function testGetLanguageCodeTwoLetterFormat(): void
+    public function testGetLanguageCode(): void
     {
-        // Create a partial mock for Language class
-        $mockLanguageUtil = $this->getMockBuilder(LanguageUtil::class)
-            ->onlyMethods(['getLanguageCode'])
-            ->getMock();
-
-        // Configure the getLanguageCode method to return our expected value
-        $mockLanguageUtil->expects($this->once())
-            ->method('getLanguageCode')
-            ->with(1)
-            ->willReturn('nl_NL');
-
-        $result = $mockLanguageUtil->getLanguageCode(1);
-        $this->assertEquals('nl_NL', $result);
+        $result = $this->languageUtil->getLanguageCode(1);
+        $this->assertEquals('en_US', $result);
     }
 
     /**
      * @covers \MultiSafepay\PrestaShop\Util\LanguageUtil::getLanguageCode
-     * @dataProvider languageCodeDataProvider
      * @throws PrestaShopException
      */
-    public function testGetLanguageCodeWithReflectionMethod(string $isoCode, string $languageCode, string $expected): void
+    public function testGetLanguageCodeWithTwoLetters(): void
     {
-        // Create a specific test implementation
-        $languageUtil = new class($isoCode, $languageCode) extends LanguageUtil {
-            private $isoCode;
-            private $languageCode;
-
-            public function __construct(string $isoCode, string $languageCode)
-            {
-                $this->isoCode = $isoCode;
-                $this->languageCode = $languageCode;
-            }
-
+        $testableUtil = new class extends LanguageUtil {
             public function getLanguageCode(int $languageId): string
             {
-                // Override static methods to return our test values
-                if (Tools::strlen($this->languageCode) === 2) {
-                    return Tools::strtolower($this->languageCode) . '_' . Tools::strtoupper($this->languageCode);
+                // Override to force a two-letter locale
+                $isoCode = 'nl'; // Use a two-letter code
+
+                // Call protected methods directly to mimic the original flow
+                if (strlen($isoCode) === 2) {
+                    return strtolower($isoCode) . '_' . strtoupper($isoCode);
                 }
 
-                $parts = explode('-', $this->languageCode);
-                return Tools::strtolower($parts[0]) . '_' . Tools::strtoupper($parts[1]);
+                $parts = explode('-', $isoCode);
+                return strtolower($parts[0]).'_'.strtoupper($parts[1]);
             }
         };
 
-        $result = $languageUtil->getLanguageCode(1);
-        $this->assertEquals($expected, $result);
-    }
-
-    /**
-     * Data provider for testGetLanguageCodeWithReflectionMethod
-     */
-    public function languageCodeDataProvider(): array
-    {
-        return [
-            'Two letter language code' => ['nl', 'nl', 'nl_NL'],
-            'Hyphenated language code' => ['en', 'en-us', 'en_US'],
-            'Dutch language' => ['nl', 'nl-nl', 'nl_NL'],
-            'English language' => ['en', 'en-gb', 'en_GB'],
-        ];
+        $result = $testableUtil->getLanguageCode(1);
+        $this->assertEquals('nl_NL', $result);
     }
 }

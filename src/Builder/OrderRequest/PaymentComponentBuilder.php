@@ -52,11 +52,21 @@ class PaymentComponentBuilder implements OrderRequestBuilderInterface
         OrderRequest $orderRequest,
         ?Order $order = null
     ): void {
-        $payload = Tools::getValue('payload');
+        $payload = $this->getPayload();
         if (!$paymentOption->allowPaymentComponent() || empty($payload)) {
             return;
         }
         $orderRequest->addData(['payment_data' => ['payload' => $payload]]);
         $orderRequest->addType(OrderRequest::DIRECT_TYPE);
+    }
+
+    /**
+     * Get payload from request
+     *
+     * @return string|null
+     */
+    protected function getPayload(): ?string
+    {
+        return Tools::getValue('payload');
     }
 }

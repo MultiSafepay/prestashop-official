@@ -36,14 +36,9 @@ use Order;
 class PaymentComponentBuilderTest extends BaseMultiSafepayTest
 {
     /**
-     * @var TestPaymentComponentBuilder
-     */
-    protected $paymentComponentBuilder;
-
-    /**
      * @var PaymentComponentBuilder
      */
-    protected $originalPaymentComponentBuilder;
+    protected $paymentComponentBuilder;
 
     /**
      * Set up the test
@@ -52,8 +47,7 @@ class PaymentComponentBuilderTest extends BaseMultiSafepayTest
     public function setUp(): void
     {
         parent::setUp();
-        $this->paymentComponentBuilder = new TestPaymentComponentBuilder();
-        $this->originalPaymentComponentBuilder = new PaymentComponentBuilder();
+        $this->paymentComponentBuilder = new PaymentComponentBuilder();
     }
 
     /**
@@ -62,36 +56,30 @@ class PaymentComponentBuilderTest extends BaseMultiSafepayTest
      */
     public function testBuildWithoutPaymentComponentAllowed(): void
     {
-        // Configure the test instance
-        $this->paymentComponentBuilder->setPayload(null);
+        // Create a mock order request
+        $mockOrderRequest = $this->getMockBuilder(OrderRequest::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
-        // Mock the dependencies
+        // Mock dependencies
         $mockCart = $this->createMock(Cart::class);
         $mockCustomer = $this->createMock(Customer::class);
         $mockOrder = $this->createMock(Order::class);
 
-        // Create a mock for the payment option
+        // Create mock payment option
         $mockPaymentOption = $this->getMockBuilder(BasePaymentOption::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        // Set the payment option to not allow the payment component
+        // Set payment option to not allow payment component
         $mockPaymentOption->method('allowPaymentComponent')
             ->willReturn(false);
 
-        // Create a mock order request
-        $mockOrderRequest = $this->getMockBuilder(OrderRequest::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        // OrderRequest should not have methods called
+        $mockOrderRequest->expects($this->never())->method('addData');
+        $mockOrderRequest->expects($this->never())->method('addType');
 
-        // The order request should NOT have addData nor addType called
-        $mockOrderRequest->expects($this->never())
-            ->method('addData');
-
-        $mockOrderRequest->expects($this->never())
-            ->method('addType');
-
-        // Execute the method under test
+        // Execute test
         $this->paymentComponentBuilder->build($mockCart, $mockCustomer, $mockPaymentOption, $mockOrderRequest, $mockOrder);
     }
 
@@ -99,17 +87,32 @@ class PaymentComponentBuilderTest extends BaseMultiSafepayTest
      * @covers \MultiSafepay\PrestaShop\Builder\OrderRequest\PaymentComponentBuilder::build
      * @throws InvalidArgumentException
      */
-    public function testBuildWithEmptyPayload(): void
+    public function testBuildWithPaymentComponentAllowed(): void
     {
-        // Configure the test instance
-        $this->paymentComponentBuilder->setPayload('');
+        // Create a testable subclass that overrides the getPayload method
+        $testableBuilder = new class extends PaymentComponentBuilder {
+            private $mockPayload = 'fake-payload';
 
-        // Mock the dependencies
+            protected function getPayload(): ?string
+            {
+                return $this->mockPayload;
+            }
+        };
+
+        // Use our testable builder for this test
+        $this->paymentComponentBuilder = $testableBuilder;
+
+        // Create a mock order request
+        $mockOrderRequest = $this->getMockBuilder(OrderRequest::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        // Mock dependencies
         $mockCart = $this->createMock(Cart::class);
         $mockCustomer = $this->createMock(Customer::class);
         $mockOrder = $this->createMock(Order::class);
 
-        // Create a mock for the payment option
+        // Create mock payment option
         $mockPaymentOption = $this->getMockBuilder(BasePaymentOption::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -118,61 +121,50 @@ class PaymentComponentBuilderTest extends BaseMultiSafepayTest
         $mockPaymentOption->method('allowPaymentComponent')
             ->willReturn(true);
 
-        // Create a mock order request
-        $mockOrderRequest = $this->getMockBuilder(OrderRequest::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        // The order request should NOT have addData nor addType called
-        $mockOrderRequest->expects($this->never())
-            ->method('addData');
-
-        $mockOrderRequest->expects($this->never())
-            ->method('addType');
-
-        // Execute the method under test
-        $this->paymentComponentBuilder->build($mockCart, $mockCustomer, $mockPaymentOption, $mockOrderRequest, $mockOrder);
-    }
-
-    /**
-     * @covers \MultiSafepay\PrestaShop\Builder\OrderRequest\PaymentComponentBuilder::build
-     * @throws InvalidArgumentException
-     */
-    public function testBuildWithValidPayload(): void
-    {
-        // Configure the test instance with a valid payload
-        $testPayload = 'valid-test-payload';
-        $this->paymentComponentBuilder->setPayload($testPayload);
-
-        // Mock the dependencies
-        $mockCart = $this->createMock(Cart::class);
-        $mockCustomer = $this->createMock(Customer::class);
-        $mockOrder = $this->createMock(Order::class);
-
-        // Create a mock for the payment option
-        $mockPaymentOption = $this->getMockBuilder(BasePaymentOption::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        // Set payment option to allow payment component
-        $mockPaymentOption->method('allowPaymentComponent')
-            ->willReturn(true);
-
-        // Create a mock order request
-        $mockOrderRequest = $this->getMockBuilder(OrderRequest::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        // The order request should have addData and addType called
+        // OrderRequest should have methods called with specific parameters
         $mockOrderRequest->expects($this->once())
             ->method('addData')
-            ->with(['payment_data' => ['payload' => $testPayload]]);
+            ->with(['payment_data' => ['payload' => 'fake-payload']]);
 
         $mockOrderRequest->expects($this->once())
             ->method('addType')
-            ->with(OrderRequest::DIRECT_TYPE);
+            ->with('direct');
 
-        // Execute the method under test
+        // Execute test
+        $this->paymentComponentBuilder->build($mockCart, $mockCustomer, $mockPaymentOption, $mockOrderRequest, $mockOrder);
+    }
+
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Builder\OrderRequest\PaymentComponentBuilder::build
+     * @throws InvalidArgumentException
+     */
+    public function testBuildWithPaymentComponentAllowedEmptyPayload(): void
+    {
+        // Create a mock order request
+        $mockOrderRequest = $this->getMockBuilder(OrderRequest::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        // Mock dependencies
+        $mockCart = $this->createMock(Cart::class);
+        $mockCustomer = $this->createMock(Customer::class);
+        $mockOrder = $this->createMock(Order::class);
+
+        // Create mock payment option
+        $mockPaymentOption = $this->getMockBuilder(BasePaymentOption::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        // Set payment option to not allow payment component
+        $mockPaymentOption->method('allowPaymentComponent')
+            ->willReturn(true);
+
+        // OrderRequest should not have methods called
+        $mockOrderRequest->expects($this->never())->method('addData');
+        $mockOrderRequest->expects($this->never())->method('addType');
+
+        // Execute test
         $this->paymentComponentBuilder->build($mockCart, $mockCustomer, $mockPaymentOption, $mockOrderRequest, $mockOrder);
     }
 }
