@@ -656,13 +656,57 @@ class SettingsBuilder
             $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
             /** @var BasePaymentOption $paymentOption */
             foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
+                $specialDefaultValues = $this->getSpecialDefaultValues($paymentOption);
                 foreach ($paymentOption->getGatewaySettings() as $settingKey => $settings) {
+                    // Check if special default values were removed or are missing;
+                    // they must be added unless intentionally modified by the merchant
+                    if (!empty($specialDefaultValues[$settingKey]) && empty(Configuration::get($settingKey))) {
+                        Configuration::updateGlobalValue($settingKey, $specialDefaultValues[$settingKey]);
+                        $configFormValues[$settingKey] = $specialDefaultValues[$settingKey];
+                        continue;
+                    }
                     $configFormValues[$settingKey] = $settings['value'] ?? '';
                 }
             }
         }
 
         return $configFormValues;
+    }
+
+    /**
+     * Get special default values from the API
+     *
+     * @param BasePaymentOption $paymentOption
+     *
+     * @return array
+     */
+    private function getSpecialDefaultValues(BasePaymentOption $paymentOption): array
+    {
+        $specialDefaultValues = [];
+
+        // Adding default values max amounts of the payment methods
+        $maxAmount = $paymentOption->getMaxAmount();
+        if ($maxAmount > 0.0) {
+            $specialDefaultValues['MULTISAFEPAY_OFFICIAL_MAX_AMOUNT_' . $paymentOption->getUniqueName()] = (string)$maxAmount;
+        }
+
+        // Adding default values max amounts of the payment methods
+        $minAmount = $paymentOption->getMinAmount();
+        if ($minAmount > 0.0) {
+            $specialDefaultValues['MULTISAFEPAY_OFFICIAL_MIN_AMOUNT_' . $paymentOption->getUniqueName()] = (string)$minAmount;
+        }
+
+        // Adding default values for countries of the branded payment methods
+        $brandedCountries = $paymentOption->getAllowedCountries();
+        if (!empty($brandedCountries)) {
+            $isoBrandedCountries = [];
+            foreach ($brandedCountries as $brandedCountry) {
+                $isoBrandedCountries[] = (string)Country::getByIso($brandedCountry);
+            }
+            $specialDefaultValues['MULTISAFEPAY_OFFICIAL_COUNTRIES_' . $paymentOption->getUniqueName()]= json_encode($isoBrandedCountries);
+        }
+
+        return $specialDefaultValues;
     }
 
     /**

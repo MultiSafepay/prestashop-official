@@ -137,6 +137,16 @@ class BasePaymentOption
      */
     private $paymentMethod;
 
+    /**
+     * @var float
+     */
+    private $maxAmount;
+
+    /**
+     * @var float
+     */
+    private $minAmount;
+
     public function __construct(PaymentMethod $paymentMethod, MultisafepayOfficial $module)
     {
         $this->paymentMethod = $paymentMethod;
@@ -148,6 +158,8 @@ class BasePaymentOption
         $this->canProcessRefunds = $this->canProcessRefunds();
         $this->hasConfigurableTokenization = $this->paymentMethod->supportsTokenization();
         $this->hasConfigurablePaymentComponent = $this->paymentMethod->supportsPaymentComponent();
+        $this->maxAmount = $this->paymentMethod->getMaxAmount() ?? 0.0;
+        $this->minAmount = $this->paymentMethod->getMinAmount() ?? 0.0;
     }
 
     /**
@@ -264,6 +276,38 @@ class BasePaymentOption
         }
 
         return OrderRequest::REDIRECT_TYPE;
+    }
+
+    /**
+     * Returns the maximum allowed amount for this payment method
+     *
+     * @return float
+     */
+    public function getMaxAmount(): float
+    {
+        // Handle null, non-numeric
+        // values, and invalid types
+        if (!is_numeric($this->maxAmount)) {
+            return 0.0;
+        }
+        $amount = (float)$this->maxAmount;
+
+        return $amount / 100;
+    }
+
+    /**
+     * Returns the minimum allowed amount for this payment method
+     *
+     * @return float
+     */
+    public function getMinAmount(): float
+    {
+        if (!is_numeric($this->minAmount)) {
+            return 0.0;
+        }
+        $amount = (float)$this->minAmount;
+
+        return $amount / 100;
     }
 
     public function getFrontEndName(): string
