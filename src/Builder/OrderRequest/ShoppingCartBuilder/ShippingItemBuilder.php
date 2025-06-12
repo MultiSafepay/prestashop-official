@@ -24,7 +24,9 @@ namespace MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder;
 
 use Cart;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\ShoppingCart\ShippingItem;
+use MultiSafepay\Exception\InvalidArgumentException;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
+use MultiSafepay\PrestaShop\Helper\TaxHelper;
 use MultisafepayOfficial;
 
 /**
@@ -41,6 +43,11 @@ class ShippingItemBuilder implements ShoppingCartBuilderInterface
     private $module;
 
     /**
+     * @var string|null
+     */
+    private $currentGatewayCode = null;
+
+    /**
      * DiscountItemBuilder constructor.
      *
      * @param MultisafepayOfficial $module
@@ -51,11 +58,23 @@ class ShippingItemBuilder implements ShoppingCartBuilderInterface
     }
 
     /**
+     * Set the current gateway code for this request
+     *
+     * @param string $gatewayCode
+     * @return void
+     */
+    public function setCurrentGatewayCode(string $gatewayCode): void
+    {
+        $this->currentGatewayCode = $gatewayCode;
+    }
+
+    /**
      * @param Cart $cart
      * @param array $cartSummary
      * @param string $currencyIsoCode
      *
      * @return ShippingItem[]
+     * @throws InvalidArgumentException
      */
     public function build(Cart $cart, array $cartSummary, string $currencyIsoCode): array
     {
@@ -64,6 +83,10 @@ class ShippingItemBuilder implements ShoppingCartBuilderInterface
         $totalShippingTax = $cartSummary['total_shipping'] - $cartSummary['total_shipping_tax_exc'];
         $shippingTaxRate  = $cartSummary['total_shipping'] > 0 ?
             ($totalShippingTax * 100) / ($cartSummary['total_shipping'] - $totalShippingTax) : 0;
+
+        if ($this->currentGatewayCode === TaxHelper::GATEWAY_CODE_BILLINK) {
+            $shippingTaxRate = TaxHelper::roundTaxRateForBillink($shippingTaxRate);
+        }
 
         $shippingItem
             ->addName(($cartSummary['carrier']->name ?? $this->module->l('Shipping', self::CLASS_NAME)))

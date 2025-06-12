@@ -25,6 +25,7 @@ namespace MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder;
 use Cart;
 use Configuration;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
+use MultiSafepay\PrestaShop\Helper\TaxHelper;
 use MultiSafepay\ValueObject\CartItem;
 use MultiSafepay\ValueObject\Weight;
 use Order;
@@ -37,6 +38,22 @@ use Tools;
 class CartItemBuilder implements ShoppingCartBuilderInterface
 {
     public const PRESTASHOP_ROUNDING_PRECISION = 2;
+
+    /**
+     * @var string|null
+     */
+    private $currentGatewayCode = null;
+
+    /**
+     * Set the current gateway code for this request
+     *
+     * @param string $gatewayCode
+     * @return void
+     */
+    public function setCurrentGatewayCode(string $gatewayCode): void
+    {
+        $this->currentGatewayCode = $gatewayCode;
+    }
 
     /**
      * @param Cart $cart
@@ -109,13 +126,19 @@ class CartItemBuilder implements ShoppingCartBuilderInterface
      */
     private function calculateProductTaxRate(array $product): float
     {
-        // Case in which the product have a product rate set, but the product in the order do not contain taxes
+        // Case in which the product has a product rate set, but the product in the order does not contain taxes
         $priceWithTaxes = $product['price_wt'] ? $product['price_wt'] : $product['price_with_reduction'];
         if ($priceWithTaxes === $product['price']) {
             return 0;
         }
 
-        return (float)$product['rate'];
+        $taxRate = (float)$product['rate'];
+
+        if ($this->currentGatewayCode === TaxHelper::GATEWAY_CODE_BILLINK) {
+            $taxRate = TaxHelper::roundTaxRateForBillink($taxRate);
+        }
+
+        return $taxRate;
     }
 
     /**
