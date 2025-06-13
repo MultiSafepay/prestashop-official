@@ -572,6 +572,54 @@ class SettingsBuilder
     }
 
     /**
+     * Process country settings ensuring mandatory countries are always preserved
+     *
+     * @param string $settingKey
+     * @return void
+     * @throws Exception
+     */
+    private function processMandatoryCountries(string $settingKey): void
+    {
+        $userSelectedCountries = Tools::getValue($settingKey);
+
+        if ($userSelectedCountries === false) {
+            $userSelectedCountries = [];
+        } else {
+            $userSelectedCountries = is_array($userSelectedCountries) ? $userSelectedCountries : [$userSelectedCountries];
+        }
+
+        // Get mandatory countries from a payment option
+        $mandatoryCountries = $this->getMandatoryCountriesForSetting($settingKey);
+
+        // Merge user selection with mandatory countries
+        $finalCountries = array_unique(array_merge($mandatoryCountries, $userSelectedCountries));
+
+        Configuration::updateValue($settingKey, json_encode($finalCountries));
+    }
+
+    /**
+     * Get mandatory countries for a specific setting key
+     *
+     * @param string $settingKey
+     * @return array
+     * @throws Exception
+     */
+    private function getMandatoryCountriesForSetting(string $settingKey): array
+    {
+        /** @var PaymentOptionService $paymentOptionService */
+        $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
+
+        foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
+            $specialDefaultValues = $this->getSpecialDefaultValues($paymentOption);
+            if (isset($specialDefaultValues[$settingKey])) {
+                return json_decode($specialDefaultValues[$settingKey], true) ?? [];
+            }
+        }
+
+        return [];
+    }
+
+    /**
      * @return array
      */
     private function getPrestaShopOrderStatusesOptions(): array
@@ -658,12 +706,26 @@ class SettingsBuilder
             foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
                 $specialDefaultValues = $this->getSpecialDefaultValues($paymentOption);
                 foreach ($paymentOption->getGatewaySettings() as $settingKey => $settings) {
-                    // Check if special default values were removed or are missing;
-                    // they must be added unless intentionally modified by the merchant
-                    if (!empty($specialDefaultValues[$settingKey]) && empty(Configuration::get($settingKey))) {
-                        Configuration::updateGlobalValue($settingKey, $specialDefaultValues[$settingKey]);
-                        $configFormValues[$settingKey] = $specialDefaultValues[$settingKey];
-                        continue;
+                    // Verify if special default values have been removed or are missing.
+                    // These values must be automatically restored if removed, particularly
+                    // in the case of countries, where they need to coexist with merchant's
+                    // manual selections.
+                    if (!empty($specialDefaultValues[$settingKey])) {
+                        $currentValue = Configuration::get($settingKey);
+
+                        // Special handling for country settings to ensure mandatory countries are preserved
+                        if (strpos($settingKey, 'MULTISAFEPAY_OFFICIAL_COUNTRIES_') === 0) {
+                            $this->processMandatoryCountries($settingKey);
+                            continue;
+                        }
+
+                        // For non-country settings (like min/max amounts), only apply default values
+                        // when the configuration is empty to preserve merchant's custom settings
+                        if (empty($currentValue)) {
+                            Configuration::updateGlobalValue($settingKey, $specialDefaultValues[$settingKey]);
+                            $configFormValues[$settingKey] = $specialDefaultValues[$settingKey];
+                            continue;
+                        }
                     }
                     $configFormValues[$settingKey] = $settings['value'] ?? '';
                 }
@@ -703,7 +765,7 @@ class SettingsBuilder
             foreach ($brandedCountries as $brandedCountry) {
                 $isoBrandedCountries[] = (string)Country::getByIso($brandedCountry);
             }
-            $specialDefaultValues['MULTISAFEPAY_OFFICIAL_COUNTRIES_' . $paymentOption->getUniqueName()]= json_encode($isoBrandedCountries);
+            $specialDefaultValues['MULTISAFEPAY_OFFICIAL_COUNTRIES_' . $paymentOption->getUniqueName()] = json_encode($isoBrandedCountries);
         }
 
         return $specialDefaultValues;
