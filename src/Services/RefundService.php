@@ -131,7 +131,12 @@ class RefundService
                 (string)$order->id ?: null,
                 $order->id_cart ?: null
             );
-            $this->handleMessage($order, "Refund for Order ID: $order->id has failed.");
+            $exceptionCode = $exception->getCode();
+            $this->handleMessage(
+                $order,
+                'Refund for Order ID: ' . $order->id . ' has failed' .
+                ($exceptionCode ? '. Error code: ' . $exceptionCode : '.')
+            );
 
             return false;
         }
