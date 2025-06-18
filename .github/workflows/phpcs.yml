@@ -8,16 +8,27 @@ on:
       - main
 jobs:
   code_sniffer:
-    name: Code sniffer
+    name: Code Sniffer on PHP ${{ matrix.php-version }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ['7.3', '8.1', '8.4']
     steps:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.3'
+          php-version: '${{ matrix.php-version }}'
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-${{ matrix.php-version }}-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-${{ matrix.php-version }}-
 
       - name: Fetch config files
         run: |
@@ -34,8 +45,8 @@ jobs:
           cp temp-config/include/grumphp.yml ./grumphp.yml
           rm -rf temp-config
 
-      - name: Install composer dependencies
+      - name: Install module composer dependencies
         run: composer install
 
-      - name: PHP Code Sniffer
+      - name: Run PHP Code Sniffer
         run: composer run-script phpcs

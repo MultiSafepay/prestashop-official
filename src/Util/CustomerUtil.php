@@ -23,6 +23,7 @@
 namespace MultiSafepay\PrestaShop\Util;
 
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\CustomerDetails;
+use MultiSafepay\Exception\InvalidArgumentException;
 use MultiSafepay\ValueObject\Customer\Address;
 use MultiSafepay\ValueObject\Customer\EmailAddress;
 use MultiSafepay\ValueObject\Customer\PhoneNumber;
@@ -41,11 +42,12 @@ class CustomerUtil
      * @param string $lastName
      * @param string|null $ipAddress
      * @param string|null $userAgent
-     * @param string|null $reference
      * @param string $languageCode
      * @param string|null $companyName
-     *
+     * @param string|null $reference
+     * @param array|null $browser
      * @return CustomerDetails
+     * @throws InvalidArgumentException
      */
     public function createCustomer(
         Address $address,

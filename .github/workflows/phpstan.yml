@@ -8,37 +8,34 @@ on:
       - main
 jobs:
   php_stan:
-    name: PHPStan
+    name: PHPStan on PS ${{ matrix.prestashop-version }} & PHP ${{ matrix.php-version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        presta-versions: ['1.7.6.0','1.7.7.0','1.7.8.7']
+        prestashop-version: ['1.7.8.11']
+        php-version: ['7.3']
     steps:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4'
+          php-version: '${{ matrix.php-version }}'
 
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Cache vendor folder
+      - name: Cache composer dependencies
         uses: actions/cache@v4
         with:
           path: vendor
-          key: php-${{ hashFiles('composer.lock') }}
-
-      - name: Cache composer folder
-        uses: actions/cache@v4
-        with:
-          path: ~/.composer/cache
-          key: php-composer-cache
+          key: composer-${{ runner.os }}-${{ matrix.php-version }}-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-${{ matrix.php-version }}-
 
       - name: Composer install
         run: composer install
 
-      - name: Pull PrestaShop files (Tag ${{ matrix.presta-versions }})
-        run: docker run -tid --rm -v ps-volume:/var/www/html --name temp-ps prestashop/prestashop:${{ matrix.presta-versions }}
+      - name: Pull PrestaShop files (Tag ${{ matrix.prestashop-version }})
+        run: docker run -tid --rm -v ps-volume:/var/www/html --name temp-ps prestashop/prestashop:${{ matrix.prestashop-version }}
 
       - name: Fetch config file
         run: |

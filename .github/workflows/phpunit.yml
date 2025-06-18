@@ -8,18 +8,27 @@ on:
       - main
 jobs:
   php_unit:
-    name: PHPUnit
+    name: PHPUnit on PS ${{ matrix.prestashop-version }} & PHP ${{ matrix.php-version }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - php-version: '7.3'
+            prestashop-version: '1.7.8.11'
+          - php-version: '8.1'
+            prestashop-version: '8.2.1'
+          - php-version: '8.4'
+            prestashop-version: '9.0.0'
     permissions:
       contents: read
     steps:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: '${{ matrix.php-version }}'
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: '0'
 
@@ -37,7 +46,27 @@ jobs:
         working-directory: docker-prestashop/modules/multisafepayofficial
 
       - name: Update environment file
-        run: cp .env.example .env
+        run: |
+          cp .env.example .env
+          # Set PHP version based on matrix
+          sed -i "s/PHP_VERSION=.*/PHP_VERSION=${{ matrix.php-version }}/" .env
+
+          # Set PrestaShop version based on matrix with special case for 9.0.0
+          if [ "${{ matrix.prestashop-version }}" = "9.0.0" ]; then
+            sed -i "s/PRESTASHOP_VERSION=.*/PRESTASHOP_VERSION=9.0.x/" .env
+          else
+            sed -i "s/PRESTASHOP_VERSION=.*/PRESTASHOP_VERSION=${{ matrix.prestashop-version }}/" .env
+          fi
+
+          # Set MySQL version based on PHP version for compatibility
+          if [ "${{ matrix.php-version }}" = "7.3" ]; then
+            sed -i "s/MYSQL_VERSION=.*/MYSQL_VERSION=5.7/" .env
+          else
+            sed -i "s/MYSQL_VERSION=.*/MYSQL_VERSION=8.4/" .env
+          fi
+
+          echo "Environment file updated for PrestaShop ${{ matrix.prestashop-version }} with PHP ${{ matrix.php-version }}"
+          cat .env
         working-directory: docker-prestashop
 
       - name: Install Composer dependencies
@@ -64,13 +93,20 @@ jobs:
         env:
           COMPOSE_INTERACTIVE_NO_CLI: 1
 
-      - name: Run PHPUnit PrestaShop 8.2.x
+      - name: Run PHPUnit PrestaShop 1.7.8.x and 8.2.x (without coverage)
+        if: matrix.prestashop-version == '1.7.8.11' || matrix.prestashop-version == '8.2.1'
+        run: docker compose exec -e XDEBUG_MODE=coverage -T --workdir /var/www/html/modules/multisafepayofficial app vendor/bin/phpunit --testsuite prestashop-unit-tests
+        working-directory: docker-prestashop
+
+      - name: Run PHPUnit on PS 9.0 (with coverage)
+        if: matrix.prestashop-version == '9.0.0'
         run: |
           docker compose exec -e XDEBUG_MODE=coverage -T --workdir /var/www/html/modules/multisafepayofficial app vendor/bin/phpunit --testsuite prestashop-unit-tests --coverage-clover=coverage.xml
           docker compose cp app:/var/www/html/modules/multisafepayofficial/coverage.xml ./coverage.xml
         working-directory: docker-prestashop
 
-      - name: Send coverage.xml to codecov
+      - name: Send coverage.xml from PS 9.0.x to codecov
+        if: matrix.prestashop-version == '9.0.0'
         uses: codecov/codecov-action@v5
         with:
           directory: docker-prestashop
