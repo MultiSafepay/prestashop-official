@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 6.0.0
+Release date: Jun 23rd, 2025
+
+### Added
++ PRES-457: Add error code when refund is rejected
++ PRES-452: Add rounding to shopping cart item tax rates in BILLINK gateway when discrepancy is less than 0.05 percent
++ PRES-434: Add support to register the payment methods dynamically, via API request
+
+### Removed
++ PRES-452: Remove generic gateways. If a generic payment method was previously active in your PrestaShop MultiSafepay module, it will no longer be listed. Instead, it will now appear as a non-generic payment method, which must be reconfigured and re-enabled
+
+***
+
 ## 5.17.0
 Release date: Feb 24th, 2025
 

@@ -2,11 +2,11 @@
     "name": "multisafepay/prestashop",
     "description": "MultiSafepay module for PrestaShop 1.7",
     "type": "prestashop-module",
-    "version": "5.17.0",
+    "version": "6.0.0",
     "keywords" : [ "prestashop" ],
     "license": "MIT",
     "require": {
-        "multisafepay/php-sdk": "^5.11",
+        "multisafepay/php-sdk": "^5.17",
         "kriswallsmith/buzz": "^1.1",
         "nyholm/psr7": "^1.3",
         "ext-json": "*"
