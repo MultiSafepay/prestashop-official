@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ***
 
 ## 6.0.0
-Release date: Jun 23rd, 2025
+Release date: Jun 25th, 2025
 
 ### Added
 + PRES-457: Add error code when refund is rejected
