@@ -59,6 +59,13 @@ class PaymentOptionService
     public const CREDIT_CARD_GATEWAYS = [ 'VISA', 'MASTERCARD', 'AMEX', 'MAESTRO' ];
 
     /**
+     * Payment methods with some specific features
+     *
+     * @var array
+     */
+    public const PAYMENTS_WITH_SPECIFIC_FEATURES = ['APPLEPAY', 'BANKTRANS', 'GOOGLEPAY', 'IN3', 'IN3B2B', 'ZINIA'];
+
+    /**
      *  Cache expiration time in seconds
      *
      * @var int
@@ -476,13 +483,15 @@ class PaymentOptionService
     }
 
     /**
+     * Determines if a gateway code has a special class implementation
+     *
      * @param string $gatewayCode
-     * @return string
+     * @return string The fully qualified class name
      */
     private function checkChildClassName(string $gatewayCode): string
     {
-        $childClassName = self::PAYMENT_OPT_NAMESPACE . ucfirst(strtolower($gatewayCode));
-        return class_exists($childClassName) ? $childClassName : '';
+        return in_array($gatewayCode, self::PAYMENTS_WITH_SPECIFIC_FEATURES) ?
+            self::PAYMENT_OPT_NAMESPACE . ucfirst(strtolower($gatewayCode)) : '';
     }
 
     /**
