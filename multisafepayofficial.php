@@ -194,7 +194,8 @@ class MultisafepayOfficial extends PaymentModule
             'module-multisafepay-styles',
             'modules/multisafepayofficial/views/css/front.css',
             [
-                'priority' => 2
+                'priority' => 2,
+                'server' => 'remote'
             ]
         );
 
@@ -202,7 +203,8 @@ class MultisafepayOfficial extends PaymentModule
             'module-multisafepay-javascript',
             'modules/multisafepayofficial/views/js/front.js',
             [
-                'priority' => 200
+                'priority' => 200,
+                'server' => 'remote'
             ]
         );
 

@@ -83,7 +83,8 @@ class Googlepay extends BasePaymentOption
                 'module-multisafepay-initialize-common-wallets-javascript',
                 'modules/multisafepayofficial/views/js/multisafepay-common-wallets.js',
                 [
-                    'priority' => 300
+                    'priority' => 300,
+                    'server' => 'remote'
                 ]
             );
 
@@ -91,7 +92,8 @@ class Googlepay extends BasePaymentOption
                 'module-multisafepay-googlepay-wallet-javascript',
                 'modules/multisafepayofficial/views/js/multisafepay-googlepay-wallet.js',
                 [
-                    'priority' => 200
+                    'priority' => 200,
+                    'server' => 'remote'
                 ]
             );
 

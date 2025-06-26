@@ -660,7 +660,10 @@ class BasePaymentOption
 
             $context->controller->registerJavascript(
                 'module-multisafepay-initialize-payment-component-javascript',
-                'modules/multisafepayofficial/views/js/multisafepayofficial.js'
+                'modules/multisafepayofficial/views/js/multisafepayofficial.js',
+                [
+                    'server' => 'remote'
+                ]
             );
         }
     }

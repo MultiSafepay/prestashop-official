@@ -91,7 +91,10 @@ class MultisafepayOfficialCallbackModuleFrontController extends ModuleFrontContr
 
         Context::getContext()->controller->registerJavascript(
             'module-multisafepay-check-order-exists-javascript',
-            'modules/multisafepayofficial/views/js/multisafepay-process-order.js'
+            'modules/multisafepayofficial/views/js/multisafepay-process-order.js',
+            [
+                'server' => 'remote'
+            ]
         );
 
         $this->setTemplate('module:multisafepayofficial/views/templates/front/processing-payment.tpl');
