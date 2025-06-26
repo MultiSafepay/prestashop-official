@@ -437,4 +437,4 @@ If you are upgrading from a 4.x version of our plugin, it is recommended to only
 + Add a settings field to define a custom order description.
 + Add a settings field to select if the confirmation order email should be sent after a customer places an order, but before the merchant receives the payment.
 + Add drag & drop support to sort the payment options in the backoffice settings page and checkout page. 
-+ Add new element in the backoffice main menu, under "Improve" section, to easily access the MultiSafepay settings page.
++ Add new element in the backoffice main menu, under "Improve" section, to easily access the MultiSafepay settings page
