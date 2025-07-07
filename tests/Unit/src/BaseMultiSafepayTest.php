@@ -23,30 +23,63 @@
 
 namespace MultiSafepay\Tests;
 
-use Exception;
+use MultiSafepay\Tests\Helper\MockHelper;
+use MultiSafepay\ValueObject\Customer\Address;
+use MultiSafepay\ValueObject\Customer\Country;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 abstract class BaseMultiSafepayTest extends TestCase
 {
-    /**
-     * @var ContainerBuilder
-     */
-    protected $container;
+    use MockHelper;
 
-    /**
-     * @throws Exception
-     */
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
+    }
 
-        $this->container = new ContainerBuilder();
-        $locator = new FileLocator(_PS_MODULE_DIR_ . 'multisafepayofficial/config');
-        $loader = new YamlFileLoader($this->container, $locator);
-        $loader->load('services.yml');
-        $this->container->compile();
+    /**
+     * Creates sample customer data for testing
+     */
+    protected function createValidCustomerData(): array
+    {
+        return [
+            'email' => 'test@multisafepay.com',
+            'phone' => '0612345678',
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'ip_address' => '192.168.1.1',
+            'user_agent' => 'Mozilla/5.0',
+            'locale' => 'nl_NL',
+            'company' => 'MultiSafepay'
+        ];
+    }
+
+    /**
+     * Creates a sample address for testing
+     */
+    protected function createValidAddress(): Address
+    {
+        return (new Address())
+            ->addCity('Amsterdam')
+            ->addCountry(new Country('NL'))
+            ->addHouseNumber('39')
+            ->addZipCode('1033 SC');
+    }
+
+    /**
+     * Creates minimal customer data for edge case testing
+     */
+    protected function createMinimalCustomerData(): array
+    {
+        return [
+            'email' => 'test@test.com',
+            'phone' => '',
+            'first_name' => 'Test',
+            'last_name' => 'User',
+            'ip_address' => null,
+            'user_agent' => null,
+            'locale' => 'nl_NL',
+            'company' => null
+        ];
     }
 }

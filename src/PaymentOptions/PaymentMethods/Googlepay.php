@@ -35,7 +35,6 @@ use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\SdkService;
-use MultisafepayOfficial;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -70,6 +69,8 @@ class Googlepay extends BasePaymentOption
     {
         // To avoid problems with the Google Pay button, we need to load them in the footer area
         if ($this->isDirect()) {
+            $baseUrl = rtrim($context->link->getBaseLink(), '/');
+
             $context->controller->registerJavascript(
                 'module-multisafepay-googlepay-direct-call-javascript',
                 'https://pay.google.com/gp/p/js/pay.js',
@@ -81,7 +82,7 @@ class Googlepay extends BasePaymentOption
 
             $context->controller->registerJavascript(
                 'module-multisafepay-initialize-common-wallets-javascript',
-                'modules/multisafepayofficial/views/js/multisafepay-common-wallets.js',
+                $baseUrl . '/modules/multisafepayofficial/views/js/multisafepay-common-wallets.js',
                 [
                     'priority' => 300,
                     'server' => 'remote'
@@ -90,7 +91,7 @@ class Googlepay extends BasePaymentOption
 
             $context->controller->registerJavascript(
                 'module-multisafepay-googlepay-wallet-javascript',
-                'modules/multisafepayofficial/views/js/multisafepay-googlepay-wallet.js',
+                $baseUrl . '/modules/multisafepayofficial/views/js/multisafepay-googlepay-wallet.js',
                 [
                     'priority' => 200,
                     'server' => 'remote'
@@ -127,8 +128,7 @@ class Googlepay extends BasePaymentOption
     private function getMultiSafepayAccountId(): int
     {
         try {
-            /** @var SdkService $sdkService */
-            $sdkService = $this->module->get('multisafepay.sdk_service');
+            $sdkService = new SdkService();
             $accountManager = $sdkService->getSdk()->getAccountManager();
             $gatewayMerchantId = $accountManager->get()->getAccountId();
         } catch (ApiException|ClientExceptionInterface|Exception $exception) {

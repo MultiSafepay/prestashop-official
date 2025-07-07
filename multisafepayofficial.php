@@ -28,18 +28,17 @@ require _PS_MODULE_DIR_ . 'multisafepayofficial/vendor/autoload.php';
 
 use MultiSafepay\Api\Transactions\UpdateRequest;
 use MultiSafepay\Exception\ApiException;
-use MultiSafepay\PrestaShop\Builder\OrderRequestBuilder;
 use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
 use MultiSafepay\PrestaShop\Helper\Installer;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\OrderMessageHelper;
+use MultiSafepay\PrestaShop\Helper\OrderRequestBuilderHelper;
 use MultiSafepay\PrestaShop\Helper\Uninstaller;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\RefundService;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use Psr\Http\Client\ClientExceptionInterface;
-use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 
 class MultisafepayOfficial extends PaymentModule
 {
@@ -118,6 +117,8 @@ class MultisafepayOfficial extends PaymentModule
             }
         }
 
+
+
         return true;
     }
 
@@ -130,7 +131,7 @@ class MultisafepayOfficial extends PaymentModule
     {
         try {
             (new Uninstaller($this))->uninstall();
-        } catch (PrestaShopException|PrestaShopDatabaseException $exception) {
+        } catch (PrestaShopException $exception) {
             LoggerHelper::logException(
                 'error',
                 $exception
@@ -190,9 +191,11 @@ class MultisafepayOfficial extends PaymentModule
             return;
         }
 
+        $baseUrl = rtrim($this->context->link->getBaseLink(), '/');
+
         $this->context->controller->registerStylesheet(
             'module-multisafepay-styles',
-            'modules/multisafepayofficial/views/css/front.css',
+            $baseUrl . '/modules/multisafepayofficial/views/css/front.css',
             [
                 'priority' => 2,
                 'server' => 'remote'
@@ -201,15 +204,14 @@ class MultisafepayOfficial extends PaymentModule
 
         $this->context->controller->registerJavascript(
             'module-multisafepay-javascript',
-            'modules/multisafepayofficial/views/js/front.js',
+            $baseUrl . '/modules/multisafepayofficial/views/js/front.js',
             [
                 'priority' => 200,
                 'server' => 'remote'
             ]
         );
 
-        /** @var PaymentOptionService $paymentOptionService */
-        $paymentOptionService = $this->get('multisafepay.payment_option_service');
+        $paymentOptionService = new PaymentOptionService($this);
 
         $paymentOptions = $paymentOptionService->getActivePaymentOptions();
         /** @var BasePaymentOption $paymentOption */
@@ -248,13 +250,12 @@ class MultisafepayOfficial extends PaymentModule
             return null;
         }
 
-        /** @var PaymentOptionService $paymentOptionService */
-        $paymentOptionService = $this->get('multisafepay.payment_option_service');
+        $paymentOptionService = new PaymentOptionService($this);
         return $paymentOptionService->getFilteredMultiSafepayPaymentOptions($params['cart']);
     }
 
     /**
-     * Return payment form
+     * Return the payment form
      *
      * @param BasePaymentOption  $paymentOption
      * @return ?string
@@ -341,17 +342,14 @@ class MultisafepayOfficial extends PaymentModule
 
         // Order is created from the back-end
         if ($customer) {
-            /** @var PaymentOptionService $paymentOptionService */
-            $paymentOptionService = $this->get('multisafepay.payment_option_service');
+            $paymentOptionService = new PaymentOptionService($this);
             $paymentOption = $paymentOptionService->getMultiSafepayPaymentOption('');
 
-            /** @var OrderRequestBuilder $orderRequestBuilder */
-            $orderRequestBuilder = $this->get('multisafepay.order_request_builder');
+            $orderRequestBuilder = OrderRequestBuilderHelper::create($this);
             $orderRequest = $orderRequestBuilder->build($cart, $customer, $paymentOption, $order);
 
             try {
-                /** @var SdkService $sdkService */
-                $sdkService         = $this->get('multisafepay.sdk_service');
+                $sdkService = new SdkService();
                 $transactionManager = $sdkService->getSdk()->getTransactionManager();
                 $transaction        = $transactionManager->create($orderRequest);
                 $paymentUrl         = $transaction->getPaymentUrl();
@@ -433,17 +431,7 @@ class MultisafepayOfficial extends PaymentModule
         $orderInvoiceNumber = $orderInvoice->getInvoiceNumberFormatted($order->id_lang, $order->id_shop);
 
         // Update order with invoice shipping information
-        try {
-            /** @var SdkService $sdkService */
-            $sdkService = $this->get('multisafepay.sdk_service');
-        } catch (ServiceNotFoundException $serviceNotFoundException) {
-            LoggerHelper::logException(
-                'alert',
-                $serviceNotFoundException,
-                'Error when try to get the Sdk Service'
-            );
-            $sdkService = new SdkService();
-        }
+        $sdkService = new SdkService();
 
         $transactionManager = $sdkService->getSdk()->getTransactionManager();
         $updateOrder        = new UpdateRequest();
@@ -489,17 +477,7 @@ class MultisafepayOfficial extends PaymentModule
             return;
         }
 
-        try {
-            /** @var SdkService $sdkService */
-            $sdkService = $this->get('multisafepay.sdk_service');
-        } catch (ServiceNotFoundException $serviceNotFoundException) {
-            LoggerHelper::logException(
-                'alert',
-                $serviceNotFoundException,
-                'Error when try to get the Sdk Service'
-            );
-            $sdkService = new SdkService();
-        }
+        $sdkService = new SdkService();
 
         $transactionManager = $sdkService->getSdk()->getTransactionManager();
         $updateOrder        = new UpdateRequest();
@@ -544,8 +522,7 @@ class MultisafepayOfficial extends PaymentModule
      */
     public function hookActionOrderSlipAdd(array $params): bool
     {
-        /** @var RefundService $refundService */
-        $refundService = $this->get('multisafepay.refund_service');
+        $refundService = new RefundService($this, new SdkService(), new PaymentOptionService($this));
 
         /** @var Order $order */
         $order = $params['order'];
@@ -559,7 +536,7 @@ class MultisafepayOfficial extends PaymentModule
     }
 
     /**
-     * Display account block with link to MultiSafepay tokens list.
+     * Display account block with a link to MultiSafepay tokens list.
      *
      * @param array $params
      *
@@ -574,23 +551,12 @@ class MultisafepayOfficial extends PaymentModule
      * @return bool
      * @throws Exception
      */
-    private function hasSetApiKey(): bool
+    public function hasSetApiKey(): bool
     {
-        try {
-            /** @var SdkService $sdkService */
-            $sdkService = $this->get('multisafepay.sdk_service');
-            $apiKey = $sdkService->getApiKey();
-            return !empty($apiKey);
-        } catch (ApiException $apiException) {
-            LoggerHelper::logException(
-                'alert',
-                $apiException,
-                'Error when try to get the Api Key',
-                null,
-                $this->context->cart->id ?? null
-            );
-            return false;
-        }
+        $sdkService = new SdkService();
+
+        $apiKey = $sdkService->getApiKey();
+        return !empty($apiKey);
     }
 
     public function isUsingNewTranslationSystem(): bool

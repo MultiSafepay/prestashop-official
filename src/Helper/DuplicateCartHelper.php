@@ -27,7 +27,6 @@ use Context;
 use Customer;
 use Currency;
 use Language;
-use Configuration;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 
 class DuplicateCartHelper

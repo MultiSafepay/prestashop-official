@@ -22,6 +22,9 @@
 
 use MultiSafepay\PrestaShop\Services\NotExistingOrderNotificationService;
 use MultiSafepay\PrestaShop\Services\ExistingOrderNotificationService;
+use MultiSafepay\PrestaShop\Services\PaymentOptionService;
+use MultiSafepay\PrestaShop\Services\SdkService;
+use MultiSafepay\PrestaShop\Services\OrderService;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -51,8 +54,15 @@ class MultisafepayOfficialNotificationModuleFrontController extends ModuleFrontC
             die();
         }
 
-        /** @var NotExistingOrderNotificationService $notificationService */
-        $notificationService = $this->module->get('multisafepay.not_existing_order_notification_service');
+        $sdkService = new SdkService();
+        $paymentOptionService = new PaymentOptionService($this->module);
+        $orderService = new OrderService($this->module, $sdkService);
+        $notificationService = new NotExistingOrderNotificationService(
+            $this->module,
+            $sdkService,
+            $paymentOptionService,
+            $orderService
+        );
 
         $transaction = $notificationService->getTransactionFromBody(Tools::file_get_contents('php://input'));
 
@@ -71,8 +81,15 @@ class MultisafepayOfficialNotificationModuleFrontController extends ModuleFrontC
 
         // If the order already exists we use a different service to handle the notification
         if ($cart->orderExists()) {
-            /** @var ExistingOrderNotificationService $notificationService */
-            $notificationService = $this->module->get('multisafepay.existing_order_notification_service');
+            $sdkService = new SdkService();
+            $paymentOptionService = new PaymentOptionService($this->module);
+            $orderService = new OrderService($this->module, $sdkService);
+            $notificationService = new ExistingOrderNotificationService(
+                $this->module,
+                $sdkService,
+                $paymentOptionService,
+                $orderService
+            );
         }
 
         try {

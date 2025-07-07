@@ -25,7 +25,6 @@ namespace MultiSafepay\PrestaShop\Services;
 use Cart;
 use Customer;
 use MultiSafepay\Api\Transactions\TransactionResponse;
-use MultiSafepay\Api\Transactions\Transaction;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultisafepayOfficial;
 use PrestaShopException;

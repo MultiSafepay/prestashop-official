@@ -21,8 +21,8 @@
  */
 
 use MultiSafepay\Exception\ApiException;
-use MultiSafepay\PrestaShop\Builder\OrderRequestBuilder;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+use MultiSafepay\PrestaShop\Helper\OrderRequestBuilderHelper;
 use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\SdkService;
@@ -86,11 +86,9 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
         $cart = $this->context->cart;
         $customer = new Customer($cart->id_customer);
 
-        /** @var OrderService $orderService */
-        $orderService = $this->get('multisafepay.order_service');
+        $orderService = new OrderService($this->module, new SdkService());
 
-        /** @var OrderRequestBuilder $orderRequestBuilder */
-        $orderRequestBuilder = $this->get('multisafepay.order_request_builder');
+        $orderRequestBuilder = OrderRequestBuilderHelper::create($this->module);
 
         $order = null;
 
@@ -143,8 +141,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
         );
 
         try {
-            /** @var SdkService $sdkService */
-            $sdkService         = $this->get('multisafepay.sdk_service');
+            $sdkService = new SdkService();
             $transactionManager = $sdkService->getSdk()->getTransactionManager();
             $transaction        = $transactionManager->create($orderRequest);
         } catch (ApiException $apiException) {
@@ -192,7 +189,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
     }
 
     /**
-     * Return according the context if the payment address is not supported by the module.
+     * Return according the context if the module does not support the payment address.
      *
      * @return boolean
      */
@@ -209,7 +206,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
     }
 
     /**
-     * Return if the basic variables are not supported by the module.
+     * Return if the module does not support the basic variables.
      *
      * @return boolean
      */
@@ -236,8 +233,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
      */
     private function getSelectedPaymentOption(): BasePaymentOption
     {
-        /** @var PaymentOptionService $paymentOptionService */
-        $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
+        $paymentOptionService = new PaymentOptionService($this->module);
         return $paymentOptionService->getMultiSafepayPaymentOption(Tools::getValue('gateway'));
     }
 }

@@ -84,8 +84,7 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
         }
 
         try {
-            /** @var SdkService $sdkService */
-            $sdkService         = $this->get('multisafepay.sdk_service');
+            $sdkService         = new SdkService();
             $transactionManager = $sdkService->getSdk()->getTransactionManager();
 
             $transaction = $transactionManager->get(Tools::getValue('id_reference'));

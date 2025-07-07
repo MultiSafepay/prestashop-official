@@ -177,8 +177,7 @@ class TokenizationService
      */
     public function getTokensForCustomerAccount(): array
     {
-        /** @var PaymentOptionService $paymentOptionService */
-        $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
+        $paymentOptionService = new PaymentOptionService($this->module);
 
         $tokens = $this->getTokensByCustomerId((string)Context::getContext()->customer->id);
 

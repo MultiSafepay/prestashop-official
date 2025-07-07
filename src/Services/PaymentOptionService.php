@@ -29,7 +29,6 @@ use Customer;
 use Exception;
 use MultiSafepay\Api\PaymentMethods\PaymentMethod;
 use MultiSafepay\Exception\ApiException;
-use MultiSafepay\Exception\InvalidApiKeyException;
 use MultiSafepay\Exception\InvalidDataInitializationException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BaseBrandedPaymentOption;
@@ -41,7 +40,6 @@ use Psr\Cache\InvalidArgumentException;
 use Psr\Http\Client\ClientExceptionInterface;
 use SmartyException;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Tools;
 
 /**
@@ -366,17 +364,7 @@ class PaymentOptionService
      */
     private function fetchPaymentMethods(): array
     {
-        try {
-            /** @var SdkService $sdkService */
-            $sdkService = $this->module->get('multisafepay.sdk_service');
-        } catch (Exception | ServiceNotFoundException $exception) {
-            LoggerHelper::logException(
-                'error',
-                $exception,
-                'Error when try to get the Sdk Service'
-            );
-            $sdkService = new SdkService();
-        }
+        $sdkService = new SdkService();
 
         $apiKey = $sdkService->getApiKey();
         if (empty($apiKey)) {

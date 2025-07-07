@@ -31,26 +31,37 @@ use MultisafepayOfficial;
 use Psr\Http\Client\ClientExceptionInterface;
 use ReflectionClass;
 use ReflectionException;
+use MultiSafepay\PrestaShop\Services\SdkService;
 
 class TokenizationServiceTest extends BaseMultiSafepayTest
 {
+    /** @var TokenizationService */
+    private $tokenizationService;
+
+    /** @var MultisafepayOfficial */
+    private $mockMultisafepay;
+
+    /** @var SdkService */
+    private $mockSdkService;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->disableOriginalConstructor()->getMock();
+        $this->mockSdkService = $this->getMockBuilder(SdkService::class)->disableOriginalConstructor()->getMock();
+        $this->tokenizationService = new TokenizationService($this->mockMultisafepay, $this->mockSdkService);
+    }
+
     /**
      * @covers \MultiSafepay\PrestaShop\Services\TokenizationService::createTokenizationSavePaymentDetailsCheckbox
      * @throws Exception
      */
     public function testSaveTokenField(): void
     {
-        $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
-        $mockMultisafepay->method('l')->willReturn(
+        $this->mockMultisafepay->method('l')->willReturn(
             ''
         );
-
-        $mockTokenizationService = $this->getMockBuilder(TokenizationService::class)->setConstructorArgs(
-            [$mockMultisafepay, $this->container->get('multisafepay.sdk_service')]
-        )->onlyMethods([])->getMock();
-
-        $output = $mockTokenizationService->createTokenizationSavePaymentDetailsCheckbox();
-
+        $output = $this->tokenizationService->createTokenizationSavePaymentDetailsCheckbox();
         self::assertCount(1, $output);
         self::assertCount(3, $output[0]);
         self::assertEquals('checkbox', $output[0]['type']);
@@ -64,24 +75,16 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
      */
     public function testFormatExpiryDate(): void
     {
-        $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
-        $mockMultisafepay->method('l')->willReturn('');
-
-        $tokenizationService = new TokenizationService(
-            $mockMultisafepay,
-            $this->container->get('multisafepay.sdk_service')
-        );
-
         // Using reflection to access the private method
-        $reflection = new ReflectionClass(get_class($tokenizationService));
+        $reflection = new ReflectionClass(get_class($this->tokenizationService));
         $method = $reflection->getMethod('formatExpiryDate');
         $method->setAccessible(true);
 
         // Verify different formats
-        self::assertEquals('12/25', $method->invokeArgs($tokenizationService, ['2512']));
-        self::assertEquals('--', $method->invokeArgs($tokenizationService, [null]));
-        self::assertEquals('--', $method->invokeArgs($tokenizationService, ['123']));
-        self::assertEquals('--', $method->invokeArgs($tokenizationService, ['12345']));
+        self::assertEquals('12/25', $method->invokeArgs($this->tokenizationService, ['2512']));
+        self::assertEquals('--', $method->invokeArgs($this->tokenizationService, [null]));
+        self::assertEquals('--', $method->invokeArgs($this->tokenizationService, ['123']));
+        self::assertEquals('--', $method->invokeArgs($this->tokenizationService, ['12345']));
     }
 
     /**
@@ -91,10 +94,6 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
      */
     public function testDeleteTokenSuccess(): void
     {
-        $mockSdkService = $this->getMockBuilder('MultiSafepay\PrestaShop\Services\SdkService')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $mockTokenManager = $this->getMockBuilder('MultiSafepay\Api\TokenManager')
             ->disableOriginalConstructor()
             ->getMock();
@@ -104,7 +103,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
             ->getMock();
 
         // Configure expected behavior
-        $mockSdkService->expects($this->once())
+        $this->mockSdkService->expects($this->once())
             ->method('getSdk')
             ->willReturn($mockSdk);
 
@@ -117,10 +116,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
             ->with('token123', 'customer456')
             ->willReturn(true);
 
-        $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
-
-        $tokenizationService = new TokenizationService($mockMultisafepay, $mockSdkService);
-        $result = $tokenizationService->deleteToken('customer456', 'token123');
+        $result = $this->tokenizationService->deleteToken('customer456', 'token123');
 
         self::assertTrue($result);
     }
@@ -132,10 +128,6 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
      */
     public function testDeleteTokenFail(): void
     {
-        $mockSdkService = $this->getMockBuilder('MultiSafepay\PrestaShop\Services\SdkService')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $mockTokenManager = $this->getMockBuilder('MultiSafepay\Api\TokenManager')
             ->disableOriginalConstructor()
             ->getMock();
@@ -145,7 +137,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
             ->getMock();
 
         // Configure expected behavior
-        $mockSdkService->expects($this->once())
+        $this->mockSdkService->expects($this->once())
             ->method('getSdk')
             ->willReturn($mockSdk);
 
@@ -159,10 +151,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
             ->with('token123', 'customer456')
             ->will($this->throwException(new ApiException('API Error')));
 
-        $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
-
-        $tokenizationService = new TokenizationService($mockMultisafepay, $mockSdkService);
-        $result = $tokenizationService->deleteToken('customer456', 'token123');
+        $result = $this->tokenizationService->deleteToken('customer456', 'token123');
 
         self::assertFalse($result);
     }
@@ -174,10 +163,6 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
      */
     public function testGetTokensByCustomerIdAndGatewayCodeSuccess(): void
     {
-        $mockSdkService = $this->getMockBuilder('MultiSafepay\PrestaShop\Services\SdkService')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $mockTokenManager = $this->getMockBuilder('MultiSafepay\Api\TokenManager')
             ->disableOriginalConstructor()
             ->getMock();
@@ -191,7 +176,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
             ->getMock();
 
         // Configure expected behavior
-        $mockSdkService->expects($this->once())
+        $this->mockSdkService->expects($this->once())
             ->method('getSdk')
             ->willReturn($mockSdk);
 
@@ -204,10 +189,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
             ->with('customer123', 'VISA')
             ->willReturn([$mockToken]);
 
-        $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
-
-        $tokenizationService = new TokenizationService($mockMultisafepay, $mockSdkService);
-        $result = $tokenizationService->getTokensByCustomerIdAndGatewayCode('customer123', 'VISA');
+        $result = $this->tokenizationService->getTokensByCustomerIdAndGatewayCode('customer123', 'VISA');
 
         self::assertIsArray($result);
         self::assertCount(1, $result);
@@ -221,10 +203,6 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
      */
     public function testGetTokensByCustomerIdAndGatewayCodeEmpty(): void
     {
-        $mockSdkService = $this->getMockBuilder('MultiSafepay\PrestaShop\Services\SdkService')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $mockTokenManager = $this->getMockBuilder('MultiSafepay\Api\TokenManager')
             ->disableOriginalConstructor()
             ->getMock();
@@ -234,7 +212,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
             ->getMock();
 
         // Configure expected behavior
-        $mockSdkService->expects($this->once())
+        $this->mockSdkService->expects($this->once())
             ->method('getSdk')
             ->willReturn($mockSdk);
 
@@ -248,10 +226,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
             ->with('customer123', 'VISA')
             ->will($this->throwException(new ApiException('No tokens found')));
 
-        $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
-
-        $tokenizationService = new TokenizationService($mockMultisafepay, $mockSdkService);
-        $result = $tokenizationService->getTokensByCustomerIdAndGatewayCode('customer123', 'VISA');
+        $result = $this->tokenizationService->getTokensByCustomerIdAndGatewayCode('customer123', 'VISA');
 
         self::assertIsArray($result);
         self::assertEmpty($result);
@@ -264,10 +239,6 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
      */
     public function testGetTokensByCustomerIdSuccess(): void
     {
-        $mockSdkService = $this->getMockBuilder('MultiSafepay\PrestaShop\Services\SdkService')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $mockTokenManager = $this->getMockBuilder('MultiSafepay\Api\TokenManager')
             ->disableOriginalConstructor()
             ->getMock();
@@ -281,7 +252,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
             ->getMock();
 
         // Configure expected behavior
-        $mockSdkService->expects($this->once())
+        $this->mockSdkService->expects($this->once())
             ->method('getSdk')
             ->willReturn($mockSdk);
 
@@ -294,10 +265,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
             ->with('customer123')
             ->willReturn([$mockToken]);
 
-        $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
-
-        $tokenizationService = new TokenizationService($mockMultisafepay, $mockSdkService);
-        $result = $tokenizationService->getTokensByCustomerId('customer123');
+        $result = $this->tokenizationService->getTokensByCustomerId('customer123');
 
         self::assertIsArray($result);
         self::assertCount(1, $result);
@@ -311,10 +279,6 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
      */
     public function testGetTokensByCustomerIdEmpty(): void
     {
-        $mockSdkService = $this->getMockBuilder('MultiSafepay\PrestaShop\Services\SdkService')
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $mockTokenManager = $this->getMockBuilder('MultiSafepay\Api\TokenManager')
             ->disableOriginalConstructor()
             ->getMock();
@@ -324,7 +288,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
             ->getMock();
 
         // Configure expected behavior
-        $mockSdkService->expects($this->once())
+        $this->mockSdkService->expects($this->once())
             ->method('getSdk')
             ->willReturn($mockSdk);
 
@@ -338,10 +302,7 @@ class TokenizationServiceTest extends BaseMultiSafepayTest
             ->with('customer123')
             ->will($this->throwException(new ApiException('No tokens found')));
 
-        $mockMultisafepay = $this->getMockBuilder(MultisafepayOfficial::class)->getMock();
-
-        $tokenizationService = new TokenizationService($mockMultisafepay, $mockSdkService);
-        $result = $tokenizationService->getTokensByCustomerId('customer123');
+        $result = $this->tokenizationService->getTokensByCustomerId('customer123');
 
         self::assertIsArray($result);
         self::assertEmpty($result);

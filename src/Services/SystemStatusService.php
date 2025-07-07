@@ -29,10 +29,7 @@ use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\Util\Version;
 use MultisafepayOfficial;
-use PrestaShop\PrestaShop\Adapter\Module\Module;
 use PrestaShop\PrestaShop\Adapter\Requirement\CheckMissingOrUpdatedFiles;
-use PrestaShop\PrestaShop\Core\Addon\AddonsCollection;
-use PrestaShop\PrestaShop\Core\Addon\Module\ModuleRepository;
 use Tools;
 use OrderState;
 use Context;
@@ -252,9 +249,7 @@ class SystemStatusService
      */
     public function getMultiSafepayModuleSettings(): array
     {
-        /** @var MultisafepayOfficial $multiSafepayModule */
-        $multiSafepayModule = $this->module->get('multisafepay');
-        $moduleSettingsValues = (new SettingsBuilder($multiSafepayModule))->getConfigFormValues(false);
+        $moduleSettingsValues = (new SettingsBuilder($this->module))->getConfigFormValues(false);
 
         $moduleSettings =  [
             'title'    => 'MultiSafepay Module Settings',
@@ -325,8 +320,7 @@ class SystemStatusService
             'title'    => 'Payment Method Settings',
         ];
 
-        /** @var PaymentOptionService $paymentOptionService */
-        $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
+        $paymentOptionService = new PaymentOptionService($this->module);
 
         /** @var BasePaymentOption $paymentOption */
         foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
@@ -528,8 +522,15 @@ class SystemStatusService
     {
         $output = [];
 
-        /** @var ExistingOrderNotificationService $notificationService */
-        $notificationService = $this->module->get('multisafepay.existing_order_notification_service');
+        $sdkService = new SdkService();
+        $paymentOptionService = new PaymentOptionService($this->module);
+        $orderService = new OrderService($this->module, $sdkService);
+        $notificationService = new ExistingOrderNotificationService(
+            $this->module,
+            $sdkService,
+            $paymentOptionService,
+            $orderService
+        );
         $transactionStatuses = ['cancelled', 'expired', 'void', 'declined', 'completed', 'uncleared', 'refunded', 'partial_refunded', 'chargedback', 'shipped', 'initialized'];
         foreach ($transactionStatuses as $transactionStatus) {
             $orderStatusId = $notificationService->getOrderStatusId($transactionStatus);

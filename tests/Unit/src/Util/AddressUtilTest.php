@@ -27,7 +27,6 @@ use Address as PrestaShopAddress;
 use Exception;
 use MultiSafepay\PrestaShop\Util\AddressUtil;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
-use ReflectionClass;
 
 class AddressUtilTest extends BaseMultiSafepayTest
 {

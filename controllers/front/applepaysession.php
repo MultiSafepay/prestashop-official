@@ -120,8 +120,7 @@ class MultisafepayOfficialApplepaysessionModuleFrontController extends ModuleFro
      */
     private function getApplePayMerchantSession(array $appleSessionArguments): string
     {
-        /** @var SdkService $sdkService */
-        $sdkService = $this->module->get('multisafepay.sdk_service');
+        $sdkService = new SdkService();
         $wallerManager = $sdkService->getSdk()->getWalletManager();
         $applePayMerchantSessionRequest = $this->getMerchantSessionRequest($appleSessionArguments);
 

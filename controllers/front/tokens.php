@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -21,6 +21,8 @@
  */
 
 use MultiSafepay\PrestaShop\Services\TokenizationService;
+use MultiSafepay\PrestaShop\Services\SdkService;
+use Psr\Http\Client\ClientExceptionInterface;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -31,16 +33,15 @@ class MultisafepayOfficialTokensModuleFrontController extends ModuleFrontControl
 
     /**
      * @return void
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws ClientExceptionInterface
+     * @throws Exception
      */
     public function postProcess()
     {
         parent::postProcess();
 
         if (Tools::isSubmit('submitRemoveToken')) {
-
-            /** @var TokenizationService $tokenizationService */
-            $tokenizationService = $this->get('multisafepay.tokenization_service');
+            $tokenizationService = new TokenizationService($this->module, new SdkService());
 
             if ($tokenizationService->deleteToken((string)$this->context->customer->id, Tools::getValue('tokenId'))) {
                 $this->success[] = $this->module->l('Payment details have been removed', 'tokens');
@@ -51,16 +52,16 @@ class MultisafepayOfficialTokensModuleFrontController extends ModuleFrontControl
     }
 
     /**
-     * @return string
+     * @return string|null
      * @throws PrestaShopException
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws ClientExceptionInterface
+     * @throws Exception
      */
-    public function initContent()
+    public function initContent(): ?string
     {
         parent::initContent();
 
-        /** @var TokenizationService $tokenizationService */
-        $tokenizationService = $this->get('multisafepay.tokenization_service');
+        $tokenizationService = new TokenizationService($this->module, new SdkService());
 
         $this->context->smarty->assign([
             'action' => $this->getCurrentURL(),
@@ -73,7 +74,7 @@ class MultisafepayOfficialTokensModuleFrontController extends ModuleFrontControl
     /**
      * @return array
      */
-    public function getTemplateVarPage()
+    public function getTemplateVarPage(): array
     {
         $tplVars = parent::getTemplateVarPage();
         $tplVars['body_classes']['page-customer-account'] = true;
@@ -83,7 +84,7 @@ class MultisafepayOfficialTokensModuleFrontController extends ModuleFrontControl
     /**
      * @return array
      */
-    public function getBreadcrumbLinks()
+    public function getBreadcrumbLinks(): array
     {
         $breadcrumb = parent::getBreadcrumbLinks();
         $breadcrumb['links'][] = $this->addMyAccountToBreadcrumb();

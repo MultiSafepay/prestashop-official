@@ -30,3 +30,6 @@ require_once $prestashopDirectory . '/vendor/autoload.php';
 // Load MultiSafepay dependencies.
 $multisafepayModuleDirectory = dirname(__DIR__, 2);
 require_once $multisafepayModuleDirectory . '/vendor/autoload.php';
+
+// Load the main module file where MultisafepayOfficial class is defined
+require_once $multisafepayModuleDirectory . '/multisafepayofficial.php';

@@ -60,9 +60,11 @@ class Applepay extends BasePaymentOption
      */
     public function registerJavascript(Context $context): void
     {
+        $baseUrl = rtrim($context->link->getBaseLink(), '/');
+
         $context->controller->registerJavascript(
             'module-multisafepay-applepay-javascript',
-            'modules/multisafepayofficial/views/js/multisafepay-applepay.js',
+            $baseUrl . '/modules/multisafepayofficial/views/js/multisafepay-applepay.js',
             [
                 'priority' => 200,
                 'server' => 'remote'
@@ -73,7 +75,7 @@ class Applepay extends BasePaymentOption
         if ($this->isDirect()) {
             $context->controller->registerJavascript(
                 'module-multisafepay-initialize-common-wallets-javascript',
-                'modules/multisafepayofficial/views/js/multisafepay-common-wallets.js',
+                $baseUrl . '/modules/multisafepayofficial/views/js/multisafepay-common-wallets.js',
                 [
                     'priority' => 300,
                     'server' => 'remote'
@@ -82,7 +84,7 @@ class Applepay extends BasePaymentOption
 
             $context->controller->registerJavascript(
                 'module-multisafepay-applepay-wallet-javascript',
-                'modules/multisafepayofficial/views/js/multisafepay-applepay-wallet.js',
+                $baseUrl . '/modules/multisafepayofficial/views/js/multisafepay-applepay-wallet.js',
                 [
                     'priority' => 200,
                     'server' => 'remote'

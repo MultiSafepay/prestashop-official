@@ -35,6 +35,7 @@ use MultiSafepay\Api\PaymentMethods\PaymentMethod;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\PrestaShop\Services\OrderService;
+use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\PrestaShop\Services\TokenizationService;
 use MultisafepayOfficial;
 use PrestaShopDatabaseException;
@@ -331,8 +332,7 @@ class BasePaymentOption
         $inputFields = [];
 
         if ($this->allowTokenization() && !$this->allowPaymentComponent()) {
-            /** @var TokenizationService $tokenizationService */
-            $tokenizationService = $this->module->get('multisafepay.tokenization_service');
+            $tokenizationService = new TokenizationService($this->module, new SdkService());
             $inputFields         = array_merge(
                 $inputFields,
                 $tokenizationService->createTokenizationCheckoutFields(
@@ -343,8 +343,7 @@ class BasePaymentOption
         }
 
         if ($this->allowTokenization() && !$this->allowPaymentComponent()) {
-            /** @var TokenizationService $tokenizationService */
-            $tokenizationService = $this->module->get('multisafepay.tokenization_service');
+            $tokenizationService = new TokenizationService($this->module, new SdkService());
             $inputFields         = array_merge(
                 $inputFields,
                 $tokenizationService->createTokenizationSavePaymentDetailsCheckbox()
@@ -640,12 +639,11 @@ class BasePaymentOption
                 'module-multisafepay-payment-component-javascript',
                 self::MULTISAFEPAY_COMPONENT_JS_URL,
                 [
-                    'server' => 'remote',
+                    'server' => 'remote'
                 ]
             );
 
-            /** @var OrderService $orderService */
-            $orderService = $this->module->get('multisafepay.order_service');
+            $orderService = new OrderService($this->module, new SdkService());
 
             Media::addJsDef(
                 [
@@ -658,9 +656,11 @@ class BasePaymentOption
                 ]
             );
 
+            $baseUrl = rtrim($context->link->getBaseLink(), '/');
+
             $context->controller->registerJavascript(
                 'module-multisafepay-initialize-payment-component-javascript',
-                'modules/multisafepayofficial/views/js/multisafepayofficial.js',
+                $baseUrl . '/modules/multisafepayofficial/views/js/multisafepayofficial.js',
                 [
                     'server' => 'remote'
                 ]

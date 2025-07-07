@@ -26,6 +26,7 @@ use Exception;
 use Media;
 use MultiSafepay\Api\PaymentMethods\PaymentMethod;
 use MultiSafepay\PrestaShop\Services\OrderService;
+use MultiSafepay\PrestaShop\Services\SdkService;
 use MultisafepayOfficial;
 use PrestaShopDatabaseException;
 use PrestaShopException;
@@ -159,12 +160,11 @@ class BaseBrandedPaymentOption extends BasePaymentOption
                 'module-multisafepay-payment-component-javascript',
                 self::MULTISAFEPAY_COMPONENT_JS_URL,
                 [
-                    'server' => 'remote',
+                    'server' => 'remote'
                 ]
             );
 
-            /** @var OrderService $orderService */
-            $orderService = $this->module->get('multisafepay.order_service');
+            $orderService = new OrderService($this->module, new SdkService());
 
             Media::addJsDef(
                 [
@@ -177,9 +177,11 @@ class BaseBrandedPaymentOption extends BasePaymentOption
                 ]
             );
 
+            $baseUrl = rtrim($context->link->getBaseLink(), '/');
+
             $context->controller->registerJavascript(
                 'module-multisafepay-initialize-payment-component-javascript',
-                'modules/multisafepayofficial/views/js/multisafepayofficial.js',
+                $baseUrl . '/modules/multisafepayofficial/views/js/multisafepayofficial.js',
                 [
                     'server' => 'remote'
                 ]

@@ -366,7 +366,7 @@ class SettingsBuilder
                     [
                         'tab'         => 'general_settings',
                         'type'        => 'text',
-                        'desc'        => $this->module->l('A text which will be shown with the order in MultiSafepay Control. If the customer’s bank supports it this description will also be shown on the customer’s bank statement. You can include the order number using {order_reference}', self::CLASS_NAME),
+                        'desc'        => $this->module->l("A text which will be shown with the order in MultiSafepay Control. If the customer's bank supports it this description will also be shown on the customer's bank statement. You can include the order number using {order_reference}", self::CLASS_NAME),
                         'name'        => 'MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION',
                         'label'       => $this->module->l('Order description', self::CLASS_NAME),
                         'placeholder' => $this->module->l('Payment for order: {order_reference}', self::CLASS_NAME),
@@ -486,8 +486,7 @@ class SettingsBuilder
      */
     public function getPaymentMethodsHtmlContent(): string
     {
-        /** @var PaymentOptionService $paymentOptionService */
-        $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
+        $paymentOptionService = new PaymentOptionService($this->module);
         $groups = Group::getGroups((int)Context::getContext()->language->id);
         Context::getContext()->smarty->assign(
             [
@@ -515,8 +514,7 @@ class SettingsBuilder
      */
     public function getSystemStatusHtmlContent(): string
     {
-        /** @var systemStatusService $systemStatusService */
-        $systemStatusService = $this->module->get('multisafepay.system_status_service');
+        $systemStatusService = new SystemStatusService($this->module);
 
         Context::getContext()->smarty->assign(
             [
@@ -606,8 +604,7 @@ class SettingsBuilder
      */
     private function getMandatoryCountriesForSetting(string $settingKey): array
     {
-        /** @var PaymentOptionService $paymentOptionService */
-        $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
+        $paymentOptionService = new PaymentOptionService($this->module);
 
         foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
             $specialDefaultValues = $this->getSpecialDefaultValues($paymentOption);
@@ -700,8 +697,7 @@ class SettingsBuilder
         }
 
         if ($includePaymentOptionSettings) {
-            /** @var PaymentOptionService $paymentOptionService */
-            $paymentOptionService = $this->module->get('multisafepay.payment_option_service');
+            $paymentOptionService = new PaymentOptionService($this->module);
             /** @var BasePaymentOption $paymentOption */
             foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
                 $specialDefaultValues = $this->getSpecialDefaultValues($paymentOption);

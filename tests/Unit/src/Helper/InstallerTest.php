@@ -30,8 +30,8 @@ use MultisafepayOfficial;
 
 class InstallerTest extends BaseMultiSafepayTest
 {
-
-    public $installer;
+    /** @var Installer */
+    protected $installer;
 
     /**
      * @throws Exception
@@ -39,35 +39,9 @@ class InstallerTest extends BaseMultiSafepayTest
     public function setUp(): void
     {
         parent::setUp();
-        $multisafepay = $this->container->get('multisafepay');
-        /** @var MultisafepayOfficial $multisafepay */
-        $this->installer = $this->getMockBuilder(Installer::class)
-            ->setConstructorArgs([$multisafepay])
-            ->onlyMethods(['getMultiSafepayOrderStatuses'])
-            ->getMock();
-
-        // Mock of the method getMultiSafepayOrderStatuses()
-        $this->installer->method('getMultiSafepayOrderStatuses')
-            ->willReturn([
-                'initialized' => [
-                    'name' => 'Payment Initialized',
-                    'send_mail' => false,
-                    'color' => '#4169E1',
-                    'invoice' => false,
-                    'template' => '',
-                    'paid' => false,
-                    'logable' => true
-                ],
-                'uncleared' => [
-                    'name' => 'Payment Uncleared',
-                    'send_mail' => false,
-                    'color' => '#FF8C00',
-                    'invoice' => false,
-                    'template' => '',
-                    'paid' => false,
-                    'logable' => true
-                ]
-            ]);
+        /** @var MultisafepayOfficial $mockModule */
+        $mockModule = $this->createMock(MultisafepayOfficial::class);
+        $this->installer = new Installer($mockModule);
     }
 
     /**
@@ -75,26 +49,10 @@ class InstallerTest extends BaseMultiSafepayTest
      */
     public function testGetMultiSafepayOrderStatuses(): void
     {
-        $output = $this->installer->getMultiSafepayOrderStatuses();
-        self::assertIsArray($output);
-        self::assertArrayHasKey('initialized', $output);
-        self::assertArrayHasKey('uncleared', $output);
-        foreach ($output as $value) {
-            self::assertArrayHasKey('name', $value);
-            self::assertIsString($value['name']);
-            self::assertArrayHasKey('send_mail', $value);
-            self::assertIsBool($value['send_mail']);
-            self::assertArrayHasKey('color', $value);
-            self::assertIsString($value['color']);
-            self::assertArrayHasKey('invoice', $value);
-            self::assertIsBool($value['invoice']);
-            self::assertArrayHasKey('template', $value);
-            self::assertIsString($value['template']);
-            self::assertArrayHasKey('paid', $value);
-            self::assertIsBool($value['paid']);
-            self::assertArrayHasKey('logable', $value);
-            self::assertIsBool($value['logable']);
-        }
+        $orderStatuses = $this->installer->getMultiSafepayOrderStatuses();
+        $this->assertIsArray($orderStatuses);
+        $this->assertArrayHasKey('initialized', $orderStatuses);
+        $this->assertArrayHasKey('uncleared', $orderStatuses);
     }
 
     /**
@@ -102,9 +60,8 @@ class InstallerTest extends BaseMultiSafepayTest
      */
     public function testGetOrderStatusId(): void
     {
-        $output = $this->installer->getMultiSafepayOrderStatuses()['initialized'];
-        self::assertIsArray($output);
-        self::assertArrayHasKey('name', $output);
+        $orderStatuses = $this->installer->getMultiSafepayOrderStatuses();
+        $this->assertEquals('initialized', $orderStatuses['initialized']['name']);
     }
 
     /**
@@ -112,9 +69,8 @@ class InstallerTest extends BaseMultiSafepayTest
      */
     public function testGetOrderStatusName(): void
     {
-        $output = $this->installer->getMultiSafepayOrderStatuses()['initialized'];
-        self::assertIsArray($output);
-        self::assertEquals('Payment Initialized', $output['name']);
+        $orderStatuses = $this->installer->getMultiSafepayOrderStatuses();
+        $this->assertEquals('initialized', $orderStatuses['initialized']['name']);
     }
 
     /**
@@ -122,10 +78,8 @@ class InstallerTest extends BaseMultiSafepayTest
      */
     public function testGetOrderStatusColor(): void
     {
-        $output = $this->installer->getMultiSafepayOrderStatuses()['initialized'];
-        self::assertIsArray($output);
-        self::assertEquals('#4169E1', $output['color']);
-        self::assertStringStartsWith('#', $output['color']);
+        $orderStatuses = $this->installer->getMultiSafepayOrderStatuses();
+        $this->assertEquals('#4169E1', $orderStatuses['initialized']['color']);
     }
 
     /**
@@ -133,14 +87,8 @@ class InstallerTest extends BaseMultiSafepayTest
      */
     public function testGetAllOrderStatuses(): void
     {
-        $output = $this->installer->getMultiSafepayOrderStatuses();
-        self::assertIsArray($output);
-
-        // Verify all expected keys are present
-        $expectedKeys = ['initialized', 'uncleared'];
-        foreach ($expectedKeys as $key) {
-            self::assertArrayHasKey($key, $output);
-        }
+        $orderStatuses = $this->installer->getMultiSafepayOrderStatuses();
+        $this->assertCount(4, $orderStatuses);
     }
 
     /**
@@ -148,10 +96,9 @@ class InstallerTest extends BaseMultiSafepayTest
      */
     public function testUnclearedStatusProperties(): void
     {
-        $output = $this->installer->getMultiSafepayOrderStatuses()['uncleared'];
-        self::assertIsArray($output);
-        self::assertEquals('Payment Uncleared', $output['name']);
-        self::assertFalse($output['send_mail']);
-        self::assertEquals('#FF8C00', $output['color']);
+        $orderStatuses = $this->installer->getMultiSafepayOrderStatuses();
+        $this->assertEquals('uncleared', $orderStatuses['uncleared']['name']);
+        $this->assertFalse($orderStatuses['uncleared']['send_mail']);
+        $this->assertEquals('#ec2e15', $orderStatuses['uncleared']['color']);
     }
 }

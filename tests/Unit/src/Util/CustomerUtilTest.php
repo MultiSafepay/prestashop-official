@@ -34,19 +34,16 @@ use MultiSafepay\ValueObject\Customer\PhoneNumber;
 
 class CustomerUtilTest extends BaseMultiSafepayTest
 {
-    /**
-     * @var CustomerUtil
-     */
-    protected $customerUtil;
+    /** @var CustomerUtil */
+    private $customerUtil;
 
     /**
      * @throws Exception
      */
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
-
-        $this->customerUtil = $this->container->get('multisafepay.customer_util');
+        $this->customerUtil = new CustomerUtil();
     }
 
     /**
@@ -54,15 +51,17 @@ class CustomerUtilTest extends BaseMultiSafepayTest
      */
     public function testCreateCustomer(): void
     {
+        $customerData = $this->createValidCustomerData();
+        
         $output = $this->customerUtil->createCustomer(
             new Address(),
-            'john.doe@multisafepay.com',
-            '0612345678',
-            'John',
-            'Doe',
-            null,
-            null,
-            'nl_NL'
+            $customerData['email'],
+            $customerData['phone'],
+            $customerData['first_name'],
+            $customerData['last_name'],
+            $customerData['ip_address'],
+            $customerData['user_agent'],
+            $customerData['locale']
         );
 
         self::assertInstanceOf(CustomerDetails::class, $output);
@@ -75,19 +74,18 @@ class CustomerUtilTest extends BaseMultiSafepayTest
      */
     public function testCreateCustomerAddress(): void
     {
+        $customerData = $this->createValidCustomerData();
+        $address = $this->createValidAddress();
+        
         $customer = $this->customerUtil->createCustomer(
-            (new Address())
-                ->addCity('Amsterdam')
-                ->addCountry(new Country('NL'))
-                ->addHouseNumber('39')
-                ->addZipCode('1033 SC'),
-            'john.doe@multisafepay.com',
-            '0612345678',
-            'John',
-            'Doe',
-            null,
-            null,
-            'nl_NL'
+            $address,
+            $customerData['email'],
+            $customerData['phone'],
+            $customerData['first_name'],
+            $customerData['last_name'],
+            $customerData['ip_address'],
+            $customerData['user_agent'],
+            $customerData['locale']
         );
 
         $output = $customer->getAddress();
@@ -124,24 +122,124 @@ class CustomerUtilTest extends BaseMultiSafepayTest
 
     /**
      * @covers \MultiSafepay\PrestaShop\Util\CustomerUtil::createCustomer
+     * @dataProvider customerDataProvider
      */
-    public function testCreateCustomerWithMinimalData(): void
+    public function testCreateCustomerWithVariousData(array $customerData, array $expectedChecks): void
     {
         $output = $this->customerUtil->createCustomer(
-            new Address(),
-            'test@test.com',
-            '',  // Empty phone
-            'Test',
-            'User',
-            null,
-            null,
-            'nl_NL'
+            $customerData['address'],
+            $customerData['email'],
+            $customerData['phone'],
+            $customerData['first_name'],
+            $customerData['last_name'],
+            $customerData['ip_address'],
+            $customerData['user_agent'],
+            $customerData['locale'],
+            $customerData['company'] ?? null
         );
 
         self::assertInstanceOf(CustomerDetails::class, $output);
-        self::assertEquals('test@test.com', $output->getEmailAddress()->get());
-        self::assertEquals('Test', $output->getFirstName());
-        self::assertEquals('User', $output->getLastName());
+        
+        foreach ($expectedChecks as $property => $expectedValue) {
+            switch ($property) {
+                case 'email':
+                    self::assertEquals($expectedValue, $output->getEmailAddress()->get());
+                    break;
+                case 'first_name':
+                    self::assertEquals($expectedValue, $output->getFirstName());
+                    break;
+                case 'last_name':
+                    self::assertEquals($expectedValue, $output->getLastName());
+                    break;
+                case 'ip_address':
+                    if ($expectedValue !== null) {
+                        self::assertEquals($expectedValue, $output->getIpAddress()->get());
+                    }
+                    break;
+                case 'user_agent':
+                    if ($expectedValue !== null) {
+                        self::assertEquals($expectedValue, $output->getUserAgent());
+                    }
+                    break;
+                case 'company':
+                    if ($expectedValue !== null) {
+                        self::assertEquals($expectedValue, $output->getCompanyName());
+                    }
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Data provider for customer creation tests
+     */
+    public function customerDataProvider(): array
+    {
+        return [
+            'minimal_data' => [
+                'customer_data' => [
+                    'address' => new Address(),
+                    'email' => 'test@test.com',
+                    'phone' => '',
+                    'first_name' => 'Test',
+                    'last_name' => 'User',
+                    'ip_address' => null,
+                    'user_agent' => null,
+                    'locale' => 'nl_NL',
+                ],
+                'expected_checks' => [
+                    'email' => 'test@test.com',
+                    'first_name' => 'Test',
+                    'last_name' => 'User',
+                ]
+            ],
+            'full_data' => [
+                'customer_data' => [
+                    'address' => (new Address())
+                        ->addCity('Amsterdam')
+                        ->addCountry(new Country('NL'))
+                        ->addHouseNumber('39')
+                        ->addZipCode('1033 SC'),
+                    'email' => 'john.doe@multisafepay.com',
+                    'phone' => '0612345678',
+                    'first_name' => 'John',
+                    'last_name' => 'Doe',
+                    'ip_address' => '1.1.1.1',
+                    'user_agent' => 'Mozilla/5.0',
+                    'locale' => 'nl_NL',
+                    'company' => 'MultiSafepay'
+                ],
+                'expected_checks' => [
+                    'email' => 'john.doe@multisafepay.com',
+                    'first_name' => 'John',
+                    'last_name' => 'Doe',
+                    'ip_address' => '1.1.1.1',
+                    'user_agent' => 'Mozilla/5.0',
+                    'company' => 'MultiSafepay'
+                ]
+            ],
+            'special_characters' => [
+                'customer_data' => [
+                    'address' => (new Address())
+                        ->addCity('Tübingen')
+                        ->addCountry(new Country('DE'))
+                        ->addHouseNumber('123-A')
+                        ->addZipCode('72070'),
+                    'email' => 'test.special@example.com',
+                    'phone' => '+49 30 123 4567',
+                    'first_name' => 'Jörg',
+                    'last_name' => 'van Güldenpfennig',
+                    'ip_address' => null,
+                    'user_agent' => null,
+                    'locale' => 'de_DE',
+                ],
+                'expected_checks' => [
+                    'email' => 'test.special@example.com',
+                    'first_name' => 'Jörg',
+                    'last_name' => 'van Güldenpfennig',
+                ]
+            ]
+        ];
     }
 
     /**

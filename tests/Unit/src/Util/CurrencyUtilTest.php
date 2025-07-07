@@ -23,7 +23,6 @@
 
 namespace MultiSafepay\Tests\Util;
 
-use Currency;
 use Exception;
 use MultiSafepay\PrestaShop\Util\CurrencyUtil;
 use MultiSafepay\Tests\BaseMultiSafepayTest;

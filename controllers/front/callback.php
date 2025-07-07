@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -20,10 +20,6 @@
  *
  */
 
-use MultiSafepay\PrestaShop\Helper\LoggerHelper;
-use MultiSafepay\PrestaShop\Services\NotExistingOrderNotificationService;
-use MultiSafepay\PrestaShop\Services\OrderService;
-use MultiSafepay\PrestaShop\Services\SdkService;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -89,9 +85,11 @@ class MultisafepayOfficialCallbackModuleFrontController extends ModuleFrontContr
             ]
         );
 
+        $baseUrl = rtrim($this->context->link->getBaseLink(), '/');
+
         Context::getContext()->controller->registerJavascript(
             'module-multisafepay-check-order-exists-javascript',
-            'modules/multisafepayofficial/views/js/multisafepay-process-order.js',
+            $baseUrl . '/modules/multisafepayofficial/views/js/multisafepay-process-order.js',
             [
                 'server' => 'remote'
             ]

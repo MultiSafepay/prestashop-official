@@ -28,13 +28,14 @@ use Exception;
 use MultiSafepay\Api\PaymentMethods\PaymentMethod;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
+use MultisafepayOfficial;
 
 class BasePaymentOptionTest extends BaseMultiSafepayTest
 {
     /**
      * @var BasePaymentOption
      */
-    public BasePaymentOption $basePaymentOption;
+    public $basePaymentOption;
 
     /**
      * @throws Exception
@@ -42,9 +43,10 @@ class BasePaymentOptionTest extends BaseMultiSafepayTest
     public function setUp(): void
     {
         parent::setUp();
-        $multisafepayModule = $this->container->get('multisafepay');
+        /** @var MultisafepayOfficial $mockModule */
+        $mockModule = $this->createMock(MultisafepayOfficial::class);
         $paymentMethod = new PaymentMethod($this->visaPaymentMethodData());
-        $this->basePaymentOption = new BasePaymentOption($paymentMethod, $multisafepayModule);
+        $this->basePaymentOption = new BasePaymentOption($paymentMethod, $mockModule);
     }
 
     public function testBasePaymentOption(): void
