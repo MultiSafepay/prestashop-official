@@ -111,6 +111,25 @@ class GooglePayDirect {
     }
 
     /**
+     * Validate the Terms of Service and prevent event propagation if not checked
+     *
+     * @param {Event} event - The click event
+     * @param {string} source - Source identifier for debugging
+     * @returns {boolean} - true if TOS is checked, false otherwise
+     */
+    validateTosAndPreventEvent(event, source = 'unknown')
+    {
+        const checkTos = isTosChecked();
+        if (!checkTos) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            debugDirect(`Terms of Service for Google Pay not checked - ${source} click prevented`, this.debug, 'warn');
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Create the Google Pay button
      *
      * @returns {Promise<void>}
@@ -134,6 +153,13 @@ class GooglePayDirect {
             onClick: this.onGooglePaymentButtonClicked.bind(this)
         });
 
+        // Add a capturing event listener to intercept clicks before Google Pay processes them
+        button.addEventListener('click', (event) => {
+            if (!this.validateTosAndPreventEvent(event, 'button')) {
+                return false;
+            }
+        }, true);
+
         if (this.isLegacyOPC || this.isLatestOPC) {
             // Create a wrapper div to avoid the PrestaShop automated disabling
             const wrapperDiv = document.createElement('div');
@@ -141,8 +167,11 @@ class GooglePayDirect {
             // Add the click event to the wrapper to avoid the propagation,
             // so the button can be clicked without activate the redirect mode
             wrapperDiv.addEventListener('click', (event) => {
+                if (!this.validateTosAndPreventEvent(event, 'wrapper')) {
+                    return false;
+                }
                 event.stopPropagation();
-            });
+            }, true);
 
             // Add the OPC classes to the button
             if (this.isLegacyOPC) {
@@ -200,8 +229,7 @@ class GooglePayDirect {
      */
     async onGooglePaymentButtonClicked()
     {
-        const checkTos = isTosChecked();
-        if (checkTos && paymentsClient && paymentsClient.loadPaymentData) {
+        if (paymentsClient && paymentsClient.loadPaymentData) {
             try {
                 const dataRequest = this.getGooglePaymentDataRequest();
                 if (this.debug && (!dataRequest || (typeof dataRequest !== 'object'))) {
@@ -218,8 +246,6 @@ class GooglePayDirect {
                 // It is shown as a warning, since this cannot be considered as an error
                 console.warn('Message from the Google Pay API:', message);
             }
-        } else {
-            debugDirect('Terms of Service for Google Pay not checked', this.debug, 'warn');
         }
     }
 
