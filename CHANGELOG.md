@@ -7,12 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ***
 
 ## 6.0.0
-Release date: Jun 26th, 2025
+Release date: Jul 21st, 2025
 
 ### Added
 + PRES-457: Add error code when refund is rejected
 + PRES-452: Add rounding to shopping cart item tax rates in BILLINK gateway when discrepancy is less than 0.05 percent
 + PRES-434: Add support to register the payment methods dynamically, via API request
+
+### Changed
++ PRES-466: Change the dependency on Symfony services to instantiate our classes
+
+### Fixed
++ PRES-467: Fix unchecked TOS does not prevent Google Pay transaction pop-up in Safari
++ PRES-465: Fix JS/CSS scripts are loaded differently at PS 1.7.x compared to PS 8.x and 9.x
 
 ### Removed
 + PRES-452: Remove generic gateways. If a generic payment method was previously active in your PrestaShop MultiSafepay module, it will no longer be listed. Instead, it will now appear as a non-generic payment method, which must be reconfigured and re-enabled
