@@ -33,6 +33,7 @@ use MultiSafepay\PrestaShop\Helper\Installer;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\OrderMessageHelper;
 use MultiSafepay\PrestaShop\Helper\OrderRequestBuilderHelper;
+use MultiSafepay\PrestaShop\Helper\PathHelper;
 use MultiSafepay\PrestaShop\Helper\Uninstaller;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
@@ -166,11 +167,17 @@ class MultisafepayOfficial extends PaymentModule
      */
     public function hookActionAdminControllerSetMedia(array $params): void
     {
-        $this->context->controller->addCSS($this->_path.'views/css/multisafepay-icon.css');
+        // Initialize PathHelper only when needed for admin assets
+        if (!PathHelper::isInitialized()) {
+            PathHelper::initialize($this->_path);
+        }
+
+        // Using PathHelper instead of $this->_path for consistency and reusability
+        $this->context->controller->addCSS(PathHelper::getAssetPath('multisafepay-icon.css'));
         if ('multisafepayofficial' === $this->name) {
-            $this->context->controller->addJS($this->_path.'views/js/dragula.js');
-            $this->context->controller->addJS($this->_path.'views/js/admin.js');
-            $this->context->controller->addCSS($this->_path.'views/css/back.css');
+            $this->context->controller->addJS(PathHelper::getAssetPath('dragula.js'));
+            $this->context->controller->addJS(PathHelper::getAssetPath('admin.js'));
+            $this->context->controller->addCSS(PathHelper::getAssetPath('back.css'));
         }
     }
 
@@ -191,23 +198,24 @@ class MultisafepayOfficial extends PaymentModule
             return;
         }
 
-        $baseUrl = rtrim($this->context->link->getBaseLink(), '/');
+        // Initialize PathHelper only when needed for frontend assets
+        if (!PathHelper::isInitialized()) {
+            PathHelper::initialize($this->_path);
+        }
 
         $this->context->controller->registerStylesheet(
             'module-multisafepay-styles',
-            $baseUrl . '/modules/multisafepayofficial/views/css/front.css',
+            PathHelper::getAssetPath('front.css'),
             [
-                'priority' => 2,
-                'server' => 'remote'
+                'priority' => 2
             ]
         );
 
         $this->context->controller->registerJavascript(
             'module-multisafepay-javascript',
-            $baseUrl . '/modules/multisafepayofficial/views/js/front.js',
+            PathHelper::getAssetPath('front.js'),
             [
-                'priority' => 200,
-                'server' => 'remote'
+                'priority' => 200
             ]
         );
 

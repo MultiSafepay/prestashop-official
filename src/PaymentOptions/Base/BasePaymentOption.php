@@ -34,6 +34,7 @@ use Media;
 use MultiSafepay\Api\PaymentMethods\PaymentMethod;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
+use MultiSafepay\PrestaShop\Helper\PathHelper;
 use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\PrestaShop\Services\TokenizationService;
@@ -656,14 +657,9 @@ class BasePaymentOption
                 ]
             );
 
-            $baseUrl = rtrim($context->link->getBaseLink(), '/');
-
             $context->controller->registerJavascript(
                 'module-multisafepay-initialize-payment-component-javascript',
-                $baseUrl . '/modules/multisafepayofficial/views/js/multisafepayofficial.js',
-                [
-                    'server' => 'remote'
-                ]
+                PathHelper::getAssetPath('multisafepayofficial.js')
             );
         }
     }

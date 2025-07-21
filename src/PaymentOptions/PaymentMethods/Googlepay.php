@@ -33,6 +33,7 @@ use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Wallet;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+use MultiSafepay\PrestaShop\Helper\PathHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use PrestaShopDatabaseException;
@@ -69,8 +70,6 @@ class Googlepay extends BasePaymentOption
     {
         // To avoid problems with the Google Pay button, we need to load them in the footer area
         if ($this->isDirect()) {
-            $baseUrl = rtrim($context->link->getBaseLink(), '/');
-
             $context->controller->registerJavascript(
                 'module-multisafepay-googlepay-direct-call-javascript',
                 'https://pay.google.com/gp/p/js/pay.js',
@@ -81,20 +80,20 @@ class Googlepay extends BasePaymentOption
             );
 
             $context->controller->registerJavascript(
-                'module-multisafepay-initialize-common-wallets-javascript',
-                $baseUrl . '/modules/multisafepayofficial/views/js/multisafepay-common-wallets.js',
+                'module-multisafepay-googlepay-wallet-javascript',
+                PathHelper::getAssetPath('multisafepay-googlepay-wallet.js'),
                 [
-                    'priority' => 300,
-                    'server' => 'remote'
+                    'priority' => 200,
+                    'attributes' => 'async'
                 ]
             );
 
             $context->controller->registerJavascript(
-                'module-multisafepay-googlepay-wallet-javascript',
-                $baseUrl . '/modules/multisafepayofficial/views/js/multisafepay-googlepay-wallet.js',
+                'module-multisafepay-initialize-common-wallets-javascript',
+                PathHelper::getAssetPath('multisafepay-common-wallets.js'),
                 [
-                    'priority' => 200,
-                    'server' => 'remote'
+                    'priority' => 300,
+                    'attributes' => 'async'
                 ]
             );
 

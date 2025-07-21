@@ -30,6 +30,7 @@ use Exception;
 use Media;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfo\Wallet;
+use MultiSafepay\PrestaShop\Helper\PathHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use PrestaShopDatabaseException;
@@ -60,34 +61,31 @@ class Applepay extends BasePaymentOption
      */
     public function registerJavascript(Context $context): void
     {
-        $baseUrl = rtrim($context->link->getBaseLink(), '/');
-
         $context->controller->registerJavascript(
             'module-multisafepay-applepay-javascript',
-            $baseUrl . '/modules/multisafepayofficial/views/js/multisafepay-applepay.js',
+            PathHelper::getAssetPath('multisafepay-applepay.js'),
             [
-                'priority' => 200,
-                'server' => 'remote'
+                'priority' => 200
             ]
         );
 
         // To avoid problems with the Apple Pay button, we need to load them in the footer area
         if ($this->isDirect()) {
             $context->controller->registerJavascript(
-                'module-multisafepay-initialize-common-wallets-javascript',
-                $baseUrl . '/modules/multisafepayofficial/views/js/multisafepay-common-wallets.js',
+                'module-multisafepay-applepay-wallet-javascript',
+                PathHelper::getAssetPath('multisafepay-applepay-wallet.js'),
                 [
-                    'priority' => 300,
-                    'server' => 'remote'
+                    'priority' => 200,
+                    'attributes' => 'async'
                 ]
             );
 
             $context->controller->registerJavascript(
-                'module-multisafepay-applepay-wallet-javascript',
-                $baseUrl . '/modules/multisafepayofficial/views/js/multisafepay-applepay-wallet.js',
+                'module-multisafepay-initialize-common-wallets-javascript',
+                PathHelper::getAssetPath('multisafepay-common-wallets.js'),
                 [
-                    'priority' => 200,
-                    'server' => 'remote'
+                    'priority' => 300,
+                    'attributes' => 'async'
                 ]
             );
 

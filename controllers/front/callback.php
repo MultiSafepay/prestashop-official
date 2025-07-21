@@ -21,6 +21,8 @@
  */
 
 
+use MultiSafepay\PrestaShop\Helper\PathHelper;
+
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -85,13 +87,11 @@ class MultisafepayOfficialCallbackModuleFrontController extends ModuleFrontContr
             ]
         );
 
-        $baseUrl = rtrim($this->context->link->getBaseLink(), '/');
-
-        Context::getContext()->controller->registerJavascript(
+        $this->context->controller->registerJavascript(
             'module-multisafepay-check-order-exists-javascript',
-            $baseUrl . '/modules/multisafepayofficial/views/js/multisafepay-process-order.js',
+            PathHelper::getAssetPath('multisafepay-process-order.js'),
             [
-                'server' => 'remote'
+                'attributes' => 'async'
             ]
         );
 
