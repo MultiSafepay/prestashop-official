@@ -34,6 +34,7 @@ use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\OrderMessageHelper;
 use MultiSafepay\PrestaShop\Helper\OrderRequestBuilderHelper;
 use MultiSafepay\PrestaShop\Helper\PathHelper;
+use MultiSafepay\PrestaShop\Helper\PaymentMethodConfigHelper;
 use MultiSafepay\PrestaShop\Helper\Uninstaller;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
@@ -352,6 +353,13 @@ class MultisafepayOfficial extends PaymentModule
         if ($customer) {
             $paymentOptionService = new PaymentOptionService($this);
             $paymentOption = $paymentOptionService->getMultiSafepayPaymentOption('');
+
+            if (!$paymentOption) {
+                $paymentOption = new BasePaymentOption(
+                    PaymentMethodConfigHelper::createDefaultPaymentMethod(),
+                    $this
+                );
+            }
 
             $orderRequestBuilder = OrderRequestBuilderHelper::create($this);
             $orderRequest = $orderRequestBuilder->build($cart, $customer, $paymentOption, $order);
