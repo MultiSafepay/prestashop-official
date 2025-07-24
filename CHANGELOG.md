@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 6.0.1
+Release date: Jul 24th, 2025
+
+### Fixed
++ PRES-476: Fix backoffice orders adding a default payment method
+
+***
+
 ## 6.0.0
 Release date: Jul 21st, 2025
 
