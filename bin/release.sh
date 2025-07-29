@@ -14,6 +14,9 @@ then
   RELEASE_VERSION=$(git describe --tags --abbrev=0)
 fi
 
+# Store script directory before changing directories
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Remove old folder
 rm -rf "$RELEASE_FOLDER"
 
@@ -32,13 +35,20 @@ rm "$FILENAME_PREFIX""$RELEASE_VERSION".zip
 rm "$FOLDER_PREFIX"/*/.gitkeep
 
 # Install composer with dev dependencies
-composer install --working-dir="$FOLDER_PREFIX"
+composer install --working-dir="$FOLDER_PREFIX" --no-interaction
 
-# Generate index.php file in all directories according with PrestaShop security guidelines.
-"$FOLDER_PREFIX"/vendor/bin/autoindex --exclude="$FOLDER_PREFIX"/vendor/amphp,"$FOLDER_PREFIX"/vendor/doctrine,"$FOLDER_PREFIX"/vendor/friendsofphp,"$FOLDER_PREFIX"/vendor/gitonomy,"$FOLDER_PREFIX"/vendor/monolog,"$FOLDER_PREFIX"/vendor/myclabs,"$FOLDER_PREFIX"/vendor/nikic,"$FOLDER_PREFIX"/vendor/ondram,"$FOLDER_PREFIX"/vendor/opis,"$FOLDER_PREFIX"/vendor/phar-io,"$FOLDER_PREFIX"/vendor/php-cs-fixer,"$FOLDER_PREFIX"/vendor/phpdocumentor,"$FOLDER_PREFIX"/vendor/phpro,"$FOLDER_PREFIX"/vendor/phpspec,"$FOLDER_PREFIX"/vendor/phpstan,"$FOLDER_PREFIX"/vendor/phpunit,"$FOLDER_PREFIX"/vendor/prestashop,"$FOLDER_PREFIX"/vendor/sebastian,"$FOLDER_PREFIX"/vendor/seld,"$FOLDER_PREFIX"/vendor/squizlabs,"$FOLDER_PREFIX"/vendor/theseer,"$FOLDER_PREFIX"/vendor/webmozart
+# Override the autoindex template with the license header required by PrestaShop
+if [ -d "$FOLDER_PREFIX/vendor/prestashop/autoindex/assets" ]; then
+  cp "$SCRIPT_DIR/index_template.txt" "$FOLDER_PREFIX/vendor/prestashop/autoindex/assets/index.php"
+fi
+
+# Generate index.php files in all necessary folders
+cd "$FOLDER_PREFIX"
+vendor/bin/autoindex --exclude=vendor
+cd ..
 
 # Update composer dependencies to uninstall dev dependencies
-composer update --no-dev --working-dir="$FOLDER_PREFIX"
+composer update --no-dev --working-dir="$FOLDER_PREFIX" --no-interaction
 
 # Zip everything
 zip -9 -r "$FILENAME_PREFIX""$RELEASE_VERSION".zip "$FOLDER_PREFIX" -x "$FOLDER_PREFIX""/composer.json" -x "$FOLDER_PREFIX""/composer.lock"
