@@ -23,5 +23,5 @@
 
 {block name='content'}
     <p style="text-align: center">{l s='Please wait a moment, while we are processing your payment.' mod='multisafepayofficial'}</p>
-    <img src="{$spinnerUrl}" alt="We are processing your payment" style="display: block; margin-left: auto; margin-right: auto;">
+    <img src="{$spinnerUrl|escape:'htmlall':'UTF-8'}" alt="We are processing your payment" style="display: block; margin-left: auto; margin-right: auto;">
 {/block}

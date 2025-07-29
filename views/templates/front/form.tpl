@@ -25,11 +25,11 @@
 {assign var="inputs" value=$paymentOption->getInputFields()}
 {assign var="tokenization" value=$paymentOption->allowTokenization()}
 {assign var="paymentComponent" value=$paymentOption->allowPaymentComponent()}
-<form action="{$action|escape:'htmlall':'UTF-8'}" id="multisafepay-form-{$paymentComponentId}" method="POST" class="additional-information{if $tokenization} multisafepay-tokenization{/if}">
-    <input type="hidden" name="gateway" value="{$paymentId}"/>
+<form action="{$action|escape:'htmlall':'UTF-8'}" id="multisafepay-form-{$paymentComponentId|escape:'htmlall':'UTF-8'}" method="POST" class="additional-information{if $tokenization} multisafepay-tokenization{/if}">
+    <input type="hidden" name="gateway" value="{$paymentId|escape:'htmlall':'UTF-8'}"/>
     {if $paymentComponent}
         <div class="form-group">
-            <div id="multisafepay-payment-component-{$paymentComponentId}" data-payment-component-id="{$paymentComponentId}" data-payment-id="{$paymentId}" data-gateway="{$gateway}"></div>
+            <div id="multisafepay-payment-component-{$paymentComponentId|escape:'htmlall':'UTF-8'}" data-payment-component-id="{$paymentComponentId|escape:'htmlall':'UTF-8'}" data-payment-id="{$paymentId|escape:'htmlall':'UTF-8'}" data-gateway="{$gateway|escape:'htmlall':'UTF-8'}"></div>
         </div>
         <input type="hidden" name="payload" value=""/>
         <input type="hidden" name="tokenize" value=""/>
@@ -97,7 +97,7 @@
                             <input type="checkbox" name="{$inputField.name|escape:'html':'UTF-8'}" >
                             {if isset($inputField.label)}
                                 {if isset($inputField.url)}
-                                    <a href="{$inputField.url}" target="_blank"> {$inputField.label|escape:'html':'UTF-8'}</a>
+                                    <a href="{$inputField.url|escape:'htmlall':'UTF-8'}" target="_blank"> {$inputField.label|escape:'html':'UTF-8'}</a>
                                 {else}
                                     {$inputField.label|escape:'html':'UTF-8'}
                                 {/if}

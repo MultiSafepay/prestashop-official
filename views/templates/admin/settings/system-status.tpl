@@ -25,7 +25,7 @@
         <a href="#" onclick="jQuery( '#multisafepay-system-status-report' ).toggle( 'slow');" class="btn btn-default pull-right multisafepay-system-status-report">{l s='Get system report'  mod='multisafepayofficial' }</a>
     </p>
     <div id="multisafepay-system-status-report">
-        <textarea readonly="readonly" style="min-height: 300px;">{$plain_status_report}</textarea>
+        <textarea readonly="readonly" style="min-height: 300px;">{$plain_status_report|escape:'htmlall':'UTF-8'}</textarea>
     </div>
     {foreach from=$status_report item=status_report_section}
         <div class="table-responsive">

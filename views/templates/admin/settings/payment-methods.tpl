@@ -24,7 +24,7 @@
         <div class="fields-rows" id="dragula-container">
             <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
             {if empty($payment_options)}
-                <p class="text-center w-100 no-payments">{$no_payments}</p>
+                <p class="text-center w-100 no-payments">{$no_payments|escape:'htmlall':'UTF-8'}</p>
             {else}
                 {foreach from=$payment_options key=key item=paymentOption}
                     {assign var="options" value=$paymentOption->getGatewaySettings()}
@@ -98,7 +98,7 @@
                                                 {$option['name']|escape:'html':'UTF-8'}
                                             </label>
                                             <div class="col-lg-9">
-                                                {$option['render']}
+                                                {$option['render']|escape:'htmlall':'UTF-8'}
                                                 {if isset($option['helperText'])}
                                                     <p class="help-block">{$option['helperText']|escape:'html':'UTF-8'}</p>
                                                 {/if}
