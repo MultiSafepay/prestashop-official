@@ -39,9 +39,9 @@ class SdkService
 {
 
     /**
-     * @var Sdk
+     * @var Sdk|null
      */
-    private $sdk;
+    private $sdk = null;
 
     /**
      * @var Configuration
@@ -63,7 +63,7 @@ class SdkService
     }
 
     /**
-     * Returns if test mode is enable
+     * Returns if test mode is enabled
      *
      * @return  boolean
      */

@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -28,11 +28,15 @@ use Configuration;
 use Context;
 use Country;
 use Currency;
+use Exception;
 use MultiSafepay\Exception\ApiException;
+use MultiSafepay\Exception\InvalidDataInitializationException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultisafepayOfficial;
 use PrestaShopCollection;
+use PrestaShopDatabaseException;
+use PrestaShopException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Tools;
 
@@ -55,7 +59,7 @@ class OrderService
     private $sdkService;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $paymentComponentApiToken = null;
 
@@ -81,8 +85,10 @@ class OrderService
      * @param string|null $recurringModel
      *
      * @return array
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws Exception
+     * @throws ClientExceptionInterface
      */
     public function createPaymentComponentOrder(
         string $gatewayCode,
@@ -90,9 +96,9 @@ class OrderService
         ?string $recurringModel
     ): array {
         $paymentComponentArguments = [
-            'debug'     => (bool)(Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE') ?? false),
+            'debug'     => (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE'),
             'env'       => $this->sdkService->getTestMode() ? 'test' : 'live',
-            'apiToken'  => $this->getPaymentComponentApiToken(),
+            'apiToken'  => $this->getPaymentComponentApiToken() ?? '',
             'orderData' => [
                 'currency'  => (new Currency(Context::getContext()->cart->id_currency))->iso_code,
                 'amount'    => MoneyHelper::priceToCents(
@@ -117,7 +123,7 @@ class OrderService
         ];
 
         // Payment Component Template ID.
-        $templateId = Configuration::get('MULTISAFEPAY_OFFICIAL_TEMPLATE_ID_VALUE') ?? '';
+        $templateId = Configuration::get('MULTISAFEPAY_OFFICIAL_TEMPLATE_ID_VALUE');
         if (!empty($templateId)) {
             $paymentComponentArguments['orderData']['payment_options']['template_id'] = $templateId;
         }
@@ -152,9 +158,11 @@ class OrderService
     }
 
     /**
-     * @return string
+     * @return string|null
+     * @throws ClientExceptionInterface
+     * @throws InvalidDataInitializationException
      */
-    public function getPaymentComponentApiToken(): string
+    public function getPaymentComponentApiToken(): ?string
     {
         if (!isset($this->paymentComponentApiToken)) {
             try {
@@ -183,7 +191,7 @@ class OrderService
      * @param string $secureKey
      * @param array $extraVars
      *
-     * @throws \PrestaShopException
+     * @throws PrestaShopException
      */
     public function validateOrder(
         Cart $cart,
@@ -193,7 +201,7 @@ class OrderService
         string $secureKey,
         array $extraVars = []
     ): void {
-        // If order already exist we don't have to validate it again
+        // If order already exists, we don't have to validate it again
         if ($cart->OrderExists()) {
             return;
         }
@@ -205,7 +213,7 @@ class OrderService
             $paymentMethod,
             null,
             array_merge(
-                ['send_email' => (Configuration::get('MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL') ?? false)],
+                ['send_email' => (Configuration::get('MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL'))],
                 $extraVars
             ),
             $cart->id_currency, // @phpstan-ignore-line

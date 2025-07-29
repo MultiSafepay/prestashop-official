@@ -5,7 +5,6 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -63,14 +62,13 @@ class CustomerUtil
         ?array $browser = null
     ): CustomerDetails {
         $customerDetails = new CustomerDetails();
-        $customerDetails
-            ->addAddress($address)
-            ->addEmailAddress(new EmailAddress($emailAddress))
-            ->addFirstName($firstName)
-            ->addLastName($lastName)
-            ->addPhoneNumber(new PhoneNumber($phoneNumber))
-            ->addLocale($languageCode)
-            ->addCompanyName($companyName ?: '');
+        $customerDetails->addAddress($address);
+        $customerDetails->addEmailAddress(new EmailAddress($emailAddress));
+        $customerDetails->addFirstName($firstName);
+        $customerDetails->addLastName($lastName);
+        $customerDetails->addPhoneNumber(new PhoneNumber($phoneNumber));
+        $customerDetails->addLocale($languageCode);
+        $customerDetails->addCompanyName($companyName ?: '');
 
         if (! empty($ipAddress)) {
             $customerDetails->addIpAddressAsString($ipAddress);

@@ -285,6 +285,7 @@ class MultisafepayOfficial extends PaymentModule
     /**
      * @param array $params
      * @return void
+     * @throws SmartyException
      */
     public function hookActionEmailAddAfterContent(array &$params): void
     {
@@ -295,14 +296,28 @@ class MultisafepayOfficial extends PaymentModule
         $paymentLinkText = $this->l('Payment link: ');
         $paymentUrl = $this->paymentUrlEmailHook;
 
-        // Replace HTML payment link
-        $span = '<span class="label" style="font-weight: 700;">' . $paymentLinkText . '</span> ';
-        $link = '<a style="word-break:break-all;" href="' . $paymentUrl . '">' . $paymentUrl . '</a>';
-        $replacement = '{payment}<br />' . $span . $link . '</div>';
+        // Assign variables to Smarty
+        $this->context->smarty->assign([
+            'payment_url' => $paymentUrl,
+            'payment_link_text' => $paymentLinkText
+        ]);
+
+        // HTML template rendering
+        $paymentLinkHtml = $this->context->smarty->fetch(
+            'module:multisafepayofficial/views/templates/hook/payment_link_email_html.tpl'
+        );
+
+        // Plain text template rendering
+        $paymentLinkTxt = $this->context->smarty->fetch(
+            'module:multisafepayofficial/views/templates/hook/payment_link_email_txt.tpl'
+        );
+
+        // Replace HTML
+        $replacement = '{payment}<br />' . $paymentLinkHtml . '</div>';
         $params['template_html'] = str_replace('{payment}</div>', $replacement, $params['template_html']);
 
-        // Replace text payment link
-        $replacementTxt = 'Payment: {payment}' . "\n" . $paymentLinkText . $paymentUrl;
+        // Replace plain text
+        $replacementTxt = 'Payment: {payment}' . "\n" . $paymentLinkTxt;
         $params['template_txt'] = str_replace('Payment: {payment}', $replacementTxt, $params['template_txt']);
     }
 
@@ -437,12 +452,12 @@ class MultisafepayOfficial extends PaymentModule
             return;
         }
 
-        /** @var OrderInvoice $orderInvoice */
-        $orderInvoice = OrderInvoice::getInvoiceByNumber($params['OrderInvoice']->id);
-
-        if (!$orderInvoice) {
+        if (!$params['OrderInvoice']->id) {
             return;
         }
+
+        /** @var OrderInvoice $orderInvoice */
+        $orderInvoice = OrderInvoice::getInvoiceByNumber($params['OrderInvoice']->id);
 
         $orderInvoiceNumber = $orderInvoice->getInvoiceNumberFormatted($order->id_lang, $order->id_shop);
 

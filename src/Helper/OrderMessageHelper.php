@@ -69,7 +69,7 @@ class OrderMessageHelper
         $customerMessage->id_customer_thread = $customerThread->id;
         $customerMessage->id_employee = 0;
         $customerMessage->message = $message;
-        $customerMessage->private = 1;
+        $customerMessage->private = true;
         $customerMessage->add();
     }
 }

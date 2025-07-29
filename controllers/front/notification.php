@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -30,6 +30,11 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+/**
+ * Class MultisafepayOfficialNotificationModuleFrontController
+ *
+ * @property MultisafepayOfficial $module
+ */
 class MultisafepayOfficialNotificationModuleFrontController extends ModuleFrontController
 {
 
@@ -43,6 +48,7 @@ class MultisafepayOfficialNotificationModuleFrontController extends ModuleFrontC
      * Process notification
      *
      * @return void
+     * @throws PrestaShopException
      */
     public function postProcess(): void
     {
@@ -66,7 +72,7 @@ class MultisafepayOfficialNotificationModuleFrontController extends ModuleFrontC
 
         $transaction = $notificationService->getTransactionFromBody(Tools::file_get_contents('php://input'));
 
-        // Orders before version 5.2.0 will not have the cartId saved in var2, therefore if this is empty we get the
+        // Orders before version 5.2.0 will not have the cartId saved in var2, therefore, if this is empty, we get the
         // cart using the transactionid, which in those versions always equals the order reference.
         $cartId = $transaction->getVar2();
         if (empty($cartId)) {
@@ -79,7 +85,7 @@ class MultisafepayOfficialNotificationModuleFrontController extends ModuleFrontC
             $cart = new Cart((int)$cartId);
         }
 
-        // If the order already exists we use a different service to handle the notification
+        // If the order already exists, we use a different service to handle the notification
         if ($cart->orderExists()) {
             $sdkService = new SdkService();
             $paymentOptionService = new PaymentOptionService($this->module);

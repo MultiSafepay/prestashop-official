@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -27,13 +27,15 @@ use Currency;
 use Exception;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\Description;
 use MultiSafepay\Exception\ApiException;
+use MultiSafepay\Exception\InvalidArgumentException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultiSafepay\PrestaShop\Helper\OrderMessageHelper;
 use MultisafepayOfficial;
 use Order;
-use PrestaShopCollection;
+use PrestaShopDatabaseException;
 use PrestaShopException;
+use Psr\Http\Client\ClientExceptionInterface;
 use Tools;
 
 /**
@@ -79,9 +81,11 @@ class RefundService
      * @param array $productList
      *
      * @return bool
-     * @throws \PrestaShopDatabaseException
+     * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws ClientExceptionInterface
+     * @throws ApiException
+     * @throws InvalidArgumentException
      *
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
@@ -106,7 +110,7 @@ class RefundService
             $gatewayCode
         );
 
-        // Do not process refunds for gateways that requires ShoppingCart
+        // Do not process refunds for gateways that require ShoppingCart
         if (!$paymentOption->canProcessRefunds()) {
             $this->handleMessage(
                 $order,
@@ -117,7 +121,8 @@ class RefundService
         }
 
         $refundRequest = $transactionManager->createRefundRequest($transaction);
-        $refundRequest->addDescription(Description::fromText('Refund order'));
+        $addDescription = (new Description)->addDescription('Refund order');
+        $refundRequest->addDescription($addDescription);
         $refundData = $this->getRefundData($order, $productList);
         $refundRequest->addMoney(MoneyHelper::createMoney((float)$refundData['amount'], $refundData['currency']));
 
@@ -163,7 +168,7 @@ class RefundService
      *
      * @return array
      */
-    public function getRefundData(Order $order, $productList = []): array
+    public function getRefundData(Order $order, array $productList = []): array
     {
         $currency           = new Currency($order->id_currency);
         $refund             = [];
@@ -180,7 +185,7 @@ class RefundService
      *
      * @return float
      */
-    public function getProductsRefundAmount($productList = []): float
+    public function getProductsRefundAmount(array $productList = []): float
     {
         $refundAmount = 0;
 
@@ -208,12 +213,12 @@ class RefundService
         $partialRefundShippingCost = Tools::getValue('partialRefundShippingCost');
 
         // If total shipping is being refunded (standard refund), then shipping_amount is equal to 0
-        // and shipping value is 1.
+        // and the shipping value is 1.
         if (isset($cancelProduct['shipping']) && '1' === $cancelProduct['shipping']) {
             return (float)$order->total_shipping;
         }
 
-        // If shipping amount is is being partially refunded, the "shipping" key is not set
+        // If shipping amount is being partially refunded, the "shipping" key is not set
         // and shipping_amount value reflects the total amount to be refunded.
         if (isset($cancelProduct['shipping_amount']) && '0' !== $cancelProduct['shipping_amount']) {
             return (float)$cancelProduct['shipping_amount'];
@@ -248,6 +253,8 @@ class RefundService
      * @param ?array $productList
      *
      * @return bool
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function isAllowedToRefund(Order $order, ?array $productList): bool
     {
@@ -292,7 +299,6 @@ class RefundService
      */
     public function isSplitOrder(string $orderReference): bool
     {
-        /** @var PrestaShopCollection $orderCollection */
         $orderCollection = Order::getByReference($orderReference);
 
         return count($orderCollection->getResults()) > 1;
@@ -302,8 +308,8 @@ class RefundService
      * @param Order $order
      * @param string $message
      *
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     public function handleMessage(Order $order, string $message): void
     {

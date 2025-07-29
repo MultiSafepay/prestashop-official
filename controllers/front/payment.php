@@ -35,6 +35,11 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+/**
+ * Class MultisafepayOfficialPaymentModuleFrontController
+ *
+ * @property MultisafepayOfficial $module
+ */
 class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontController
 {
     /**
@@ -115,7 +120,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
                     null,
                     $cart->id ?? null
                 );
-                Tools::redirectLink($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+                Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
             }
         }
 

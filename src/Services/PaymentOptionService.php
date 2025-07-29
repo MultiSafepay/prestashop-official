@@ -126,7 +126,7 @@ class PaymentOptionService
                 }
 
                 if (!Configuration::get('MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS')) {
-                    $brandsList = $paymentMethod->getBrands() ?? [];
+                    $brandsList = $paymentMethod->getBrands() ?: [];
                     if (!empty($brandsList)) {
                         foreach ($brandsList as $brandedPaymentMethod) {
                             $paymentOptions[] = new BaseBrandedPaymentOption($paymentMethod, $this->module, $brandedPaymentMethod);
@@ -396,7 +396,7 @@ class PaymentOptionService
             }
 
             if (!is_null($sdk)) {
-                $paymentMethods = $sdk->getPaymentMethodManager()->getPaymentMethods(true, $options) ?? [];
+                $paymentMethods = $sdk->getPaymentMethodManager()->getPaymentMethods(true, $options) ?: [];
                 $this->cachePaymentMethods($paymentMethods, $cache, $item);
                 return $paymentMethods;
             }
@@ -424,7 +424,7 @@ class PaymentOptionService
 
         // If the cache fails and no previous error occurred in the SDK, call the API directly
         try {
-            return $sdk->getPaymentMethodManager()->getPaymentMethods(true, $options) ?? [];
+            return $sdk->getPaymentMethodManager()->getPaymentMethods(true, $options) ?: [];
         } catch (ApiException | ClientExceptionInterface $exception) {
             LoggerHelper::logException(
                 'error',

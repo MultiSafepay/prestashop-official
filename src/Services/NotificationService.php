@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -24,9 +24,10 @@ namespace MultiSafepay\PrestaShop\Services;
 
 use Cart;
 use Configuration;
+use Exception;
 use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\Api\Transactions\Transaction;
-use MultiSafepay\Exception\ApiException;
+use MultiSafepay\Exception\InvalidArgumentException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\OrderMessageHelper;
 use MultiSafepay\Util\Notification;
@@ -35,6 +36,7 @@ use Order;
 use OrderDetail;
 use OrderHistory;
 use OrderPayment;
+use PrestaShopDatabaseException;
 use PrestaShopException;
 use Tools;
 use OrderInvoice;
@@ -73,7 +75,7 @@ abstract class NotificationService
      * @param MultisafepayOfficial $module
      * @param SdkService $sdkService
      * @param PaymentOptionService $paymentOptionService
-     *
+     * @param OrderService $orderService
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
     public function __construct(MultisafepayOfficial $module, SdkService $sdkService, PaymentOptionService $paymentOptionService, OrderService $orderService)
@@ -97,6 +99,7 @@ abstract class NotificationService
      *
      * @return TransactionResponse
      * @throws PrestaShopException
+     * @throws InvalidArgumentException
      */
     public function getTransactionFromBody(string $body): TransactionResponse
     {
@@ -115,8 +118,8 @@ abstract class NotificationService
         $firstOrder = $orderCollection->getFirst();
         if (!empty($firstOrder->id)) {
             $order = new Order($firstOrder->id);
-            $orderId = (string)$order->id ?: null;
-            $idCart = $order->id_cart ?: null;
+            $orderId = (string)$order->id;
+            $idCart = $order->id_cart;
         } else {
             $orderId = $idCart = null;
         }
@@ -132,6 +135,7 @@ abstract class NotificationService
             throw new PrestaShopException($message);
         }
 
+        // @codingStandardsIgnoreLine: Notification::verifyNotification method is not recognized by PrestaShop validator
         if (!Notification::verifyNotification($body, $_SERVER['HTTP_AUTH'], $this->sdkService->getApiKey())) {
             $message = 'Notification for transaction ID ' . $transactionId . ' has been received but is not valid';
             LoggerHelper::log(
@@ -146,15 +150,15 @@ abstract class NotificationService
 
         try {
             return new TransactionResponse(json_decode($body, true), $body);
-        } catch (ApiException $apiException) {
+        } catch (Exception $exception) {
             LoggerHelper::logException(
                 'error',
-                $apiException,
+                $exception,
                 '',
                 $orderId,
                 $idCart
             );
-            throw new PrestaShopException($apiException->getMessage());
+            throw new PrestaShopException($exception->getMessage());
         }
     }
 
@@ -164,7 +168,7 @@ abstract class NotificationService
      *
      * @return bool
      * @throws PrestaShopException
-     * @throws \PrestaShopDatabaseException
+     * @throws PrestaShopDatabaseException
      */
     public function shouldStatusBeUpdated(Order $order, TransactionResponse $transaction): bool
     {
@@ -183,7 +187,7 @@ abstract class NotificationService
                 'warning',
                 $message,
                 false,
-                (string)$order->id ?: null,
+                (string)$order->id,
                 $order->id_cart ?: null
             );
             throw new PrestaShopException($message);
@@ -197,7 +201,7 @@ abstract class NotificationService
                 'info',
                 $message,
                 true,
-                (string)$order->id ?: null,
+                (string)$order->id,
                 $order->id_cart ?: null
             );
             return false;
@@ -211,7 +215,7 @@ abstract class NotificationService
                 'info',
                 $message,
                 true,
-                (string)$order->id ?: null,
+                (string)$order->id,
                 $order->id_cart ?: null
             );
             return false;
@@ -224,7 +228,7 @@ abstract class NotificationService
                 'warning',
                 $message,
                 false,
-                (string)$order->id ?: null,
+                (string)$order->id,
                 $order->id_cart ?: null
             );
             OrderMessageHelper::addMessage($order, $message);
@@ -243,7 +247,7 @@ abstract class NotificationService
      * @param TransactionResponse $transaction
      *
      * @throws PrestaShopException
-     * @throws \PrestaShopDatabaseException
+     * @throws PrestaShopDatabaseException
      */
     protected function processNotificationForOrder(Order $order, TransactionResponse $transaction): void
     {
@@ -251,7 +255,7 @@ abstract class NotificationService
             return;
         }
 
-        // If the payment method of the PrestaShop order is not the same than the one received in the notification
+        // If the payment method of the PrestaShop order is different from the one received in the notification
         $paymentMethodName = $this->getPaymentMethodNameFromTransaction($transaction);
         if ($order->payment !== $paymentMethodName) {
             $this->updateOrderPaymentMethod($order, $paymentMethodName);
@@ -296,7 +300,7 @@ abstract class NotificationService
 
         try {
             $payment->save();
-        } catch (PrestaShopException | \PrestaShopDatabaseException $exception) {
+        } catch (PrestaShopException $exception) {
             LoggerHelper::logException(
                 'alert',
                 $exception,
@@ -311,6 +315,8 @@ abstract class NotificationService
      * @param Order $order
      * @param TransactionResponse $transaction
      * @return void
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     protected function updateOrderData(Order $order, TransactionResponse $transaction): void
     {
@@ -321,7 +327,7 @@ abstract class NotificationService
         $history->addWithemail();
 
         if ('completed' === $transaction->getStatus()) {
-            // Check in the order details list if the order contains product without stock
+            // Check in the order details list if the order contains a product without a stock
             if ($this->checkIfOrderContainsProductsWithoutStock($order)) {
                 $this->processOrderStatusChangesForBackorders($order);
             }
@@ -340,6 +346,8 @@ abstract class NotificationService
      *
      * @param Order $order
      * @param TransactionResponse $transaction
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     private function updateOrderPaymentWithPaymentMethodName(Order $order, TransactionResponse $transaction): void
     {
@@ -355,6 +363,7 @@ abstract class NotificationService
 
     /**
      * @param Order $order
+     * @throws PrestaShopException
      */
     protected function processOrderStatusChangesForBackorders(Order $order): void
     {
@@ -362,7 +371,6 @@ abstract class NotificationService
         // a new OrderPayment object will be generated within the method OrderHistory::changeIdOrderState()
         /** @var OrderInvoice[] $invoices */
         $invoices = $order->getInvoicesCollection();
-        /** @var OrderInvoice $invoice */
         foreach ($invoices as $invoice) {
             $invoiceId = (int) $invoice->id;
             $invoiceDate = (string) $invoice->date_add;
@@ -390,11 +398,10 @@ abstract class NotificationService
      * @param Order $order
      * @return bool
      * @throws PrestaShopException
-     * @throws \PrestaShopDatabaseException
+     * @throws PrestaShopDatabaseException
      */
     private function checkIfOrderContainsProductsWithoutStock(Order $order): bool
     {
-        /** @var array $orderDetailList */
         $orderDetailList = $order->getOrderDetailList();
         foreach ($orderDetailList as $orderDetail) {
             $orderDetailObject = new OrderDetail($orderDetail['id_order_detail']);
@@ -416,12 +423,14 @@ abstract class NotificationService
      *
      * @param Order $order
      * @param string $paymentMethodName
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     protected function updateOrderPaymentMethod(Order $order, string $paymentMethodName): void
     {
         // There is a special case for orders initialized with "Credit card" payment method.
-        // Notification will return with the name of the gateway instead of credit card
-        // However there is no need to add a note in these cases.
+        // Notification will return with the name of the gateway instead of credit card;
+        // However, there is no need to add a note in these cases.
         if ($order->payment !== 'Credit card') {
             $message = 'Notification received with a different payment method for Order ID: ' . $order->id . ' and Order Reference: ' . $order->reference . ' on ' . date('d/m/Y H:i:s') . '. Payment method changed from ' . $order->payment . ' to ' . $paymentMethodName . '.';
             OrderMessageHelper::addMessage($order, $message);
@@ -445,7 +454,7 @@ abstract class NotificationService
      * @param TransactionResponse $transaction
      * @return string
      */
-    public function getPaymentMethodNameFromTransaction(TransactionResponse $transaction)
+    public function getPaymentMethodNameFromTransaction(TransactionResponse $transaction): string
     {
         $gatewayCode = $transaction->getPaymentDetails()->getType();
 
@@ -479,12 +488,12 @@ abstract class NotificationService
     {
         try {
             return new TransactionResponse(json_decode($body, true), $body);
-        } catch (ApiException $apiException) {
+        } catch (Exception $exception) {
             LoggerHelper::logException(
                 'error',
-                $apiException
+                $exception
             );
-            throw new PrestaShopException($apiException->getMessage());
+            throw new PrestaShopException($exception->getMessage());
         }
     }
 
@@ -535,9 +544,11 @@ abstract class NotificationService
     }
 
     /**
+     * @param string $status
+     * @param string $transactionType
      * @return bool
      */
-    protected function allowOrderCreation(string $status, string $transactionType)
+    protected function allowOrderCreation(string $status, string $transactionType): bool
     {
         switch ($status) {
             case Transaction::INITIALIZED:
@@ -560,9 +571,9 @@ abstract class NotificationService
      *
      * @return array
      */
-    protected function settingToIntArray($setting): array
+    protected function settingToIntArray(string $setting): array
     {
-        if (is_string($setting) && !empty($setting)) {
+        if (strlen($setting) > 0) {
             return array_map('intval', json_decode($setting));
         }
 

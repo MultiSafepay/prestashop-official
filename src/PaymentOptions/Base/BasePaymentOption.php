@@ -105,9 +105,9 @@ class BasePaymentOption
     protected $description = '';
 
     /**
-     * @var int
+     * @var int|null
      */
-    protected $sortOrderPosition;
+    protected $sortOrderPosition = null;
 
     /**
      * @var bool
@@ -156,12 +156,12 @@ class BasePaymentOption
         $this->gatewayCode = $this->paymentMethod->getId();
         $this->gatewayName = $this->paymentMethod->getName() ?: '';
         $this->description = $this->getDescription();
-        $this->sortOrderPosition = $this->getSortOrderPosition();
+        $this->sortOrderPosition = $this->getSortOrderPosition() ?? 0;
         $this->canProcessRefunds = $this->canProcessRefunds();
         $this->hasConfigurableTokenization = $this->paymentMethod->supportsTokenization();
         $this->hasConfigurablePaymentComponent = $this->paymentMethod->supportsPaymentComponent();
-        $this->maxAmount = $this->paymentMethod->getMaxAmount() ?? 0.0;
-        $this->minAmount = $this->paymentMethod->getMinAmount() ?? 0.0;
+        $this->maxAmount = $this->paymentMethod->getMaxAmount() ?: 0.0;
+        $this->minAmount = $this->paymentMethod->getMinAmount() ?: 0.0;
     }
 
     /**
@@ -369,9 +369,11 @@ class BasePaymentOption
     }
 
     /**
+     * @return int|null
+     *
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
-    public function getSortOrderPosition(): int
+    public function getSortOrderPosition(): ?int
     {
         if (!isset($this->sortOrderPosition)) {
             $this->sortOrderPosition = (int)Configuration::get(
@@ -518,7 +520,7 @@ class BasePaymentOption
             $settings['MULTISAFEPAY_OFFICIAL_TOKENIZATION_' . $this->getUniqueName()] = [
                 'type'       => 'switch',
                 'name'       => $this->module->l('Enable tokenization', self::CLASS_NAME),
-                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_TOKENIZATION_' . $this->getUniqueName()) ?? '0',
+                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_TOKENIZATION_' . $this->getUniqueName()) ?: '0',
                 'helperText' => $this->module->l(
                     'If enabled, payment details entered during checkout can be saved by the customer for future purchases.',
                     self::CLASS_NAME
@@ -532,7 +534,7 @@ class BasePaymentOption
             $settings['MULTISAFEPAY_OFFICIAL_COMPONENT_' . $this->getUniqueName()] = [
                 'type'       => 'switch',
                 'name'       => $this->module->l('Enable payment component', self::CLASS_NAME),
-                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_COMPONENT_' . $this->getUniqueName()) ?? '0',
+                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_COMPONENT_' . $this->getUniqueName()) ?: '0',
                 'helperText' => $this->module->l(
                     'If enabled, embedded form will be used during checkout.',
                     self::CLASS_NAME

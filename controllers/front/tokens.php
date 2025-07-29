@@ -28,6 +28,11 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+/**
+ * Class MultisafepayOfficialTokensModuleFrontController
+ *
+ * @property MultisafepayOfficial $module
+ */
 class MultisafepayOfficialTokensModuleFrontController extends ModuleFrontController
 {
 
