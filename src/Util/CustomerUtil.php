@@ -27,6 +27,10 @@ use MultiSafepay\ValueObject\Customer\Address;
 use MultiSafepay\ValueObject\Customer\EmailAddress;
 use MultiSafepay\ValueObject\Customer\PhoneNumber;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class CustomerUtil
  * @package MultiSafepay\PrestaShop\Util

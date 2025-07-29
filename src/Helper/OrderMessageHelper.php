@@ -29,6 +29,10 @@ use CustomerMessage;
 use Customer;
 use Order;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class OrderMessageHelper
  * @package MultiSafepay\PrestaShop\Helper

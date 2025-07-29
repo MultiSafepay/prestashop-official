@@ -30,6 +30,10 @@ use MultiSafepay\Api\Transactions\OrderRequest\Arguments\SecondChance;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use Order;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class SecondChanceBuilder
  * @package MultiSafepay\PrestaShop\Builder\OrderRequest

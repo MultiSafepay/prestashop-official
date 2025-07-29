@@ -29,6 +29,10 @@ use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultisafepayOfficial;
 use PrestaShopException;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class NotExistingOrderNotificationService
  *

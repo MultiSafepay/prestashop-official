@@ -24,6 +24,10 @@ namespace MultiSafepay\PrestaShop\Helper;
 
 use MultiSafepay\ValueObject\Money;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class MoneyHelper
  *

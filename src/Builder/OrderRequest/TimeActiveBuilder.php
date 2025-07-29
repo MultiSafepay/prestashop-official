@@ -29,6 +29,10 @@ use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use Order;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class TimeActiveBuilder
  * @package MultiSafepay\PrestaShop\Builder\OrderRequest

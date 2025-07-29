@@ -34,6 +34,10 @@ use Tools;
 use OrderState;
 use Context;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class SystemStatus
  * @package MultiSafepay\PrestaShop\Services

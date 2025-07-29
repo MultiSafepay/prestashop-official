@@ -29,6 +29,10 @@ use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultiSafepay\PrestaShop\Helper\TaxHelper;
 use MultisafepayOfficial;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class ShippingItemBuilder
  * @package MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder

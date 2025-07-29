@@ -43,6 +43,10 @@ use PrestaShopDatabaseException;
 use PrestaShopException;
 use Psr\Http\Client\ClientExceptionInterface;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class BasePaymentOption
 {
     /**

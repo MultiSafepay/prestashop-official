@@ -22,6 +22,10 @@
 
 namespace MultiSafepay\PrestaShop\Services;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class IssuerService
  * @package MultiSafepay\PrestaShop\Services

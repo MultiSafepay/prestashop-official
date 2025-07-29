@@ -24,6 +24,10 @@ namespace MultiSafepay\PrestaShop\Helper;
 
 use InvalidArgumentException;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class PathHelper
  *

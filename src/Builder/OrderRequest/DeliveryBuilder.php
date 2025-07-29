@@ -32,6 +32,10 @@ use MultiSafepay\PrestaShop\Util\CustomerUtil;
 use MultiSafepay\PrestaShop\Util\LanguageUtil;
 use Order;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class DeliveryBuilder
  * @package MultiSafepay\PrestaShop\Builder\OrderRequest

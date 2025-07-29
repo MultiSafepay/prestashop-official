@@ -38,6 +38,10 @@ use Context;
 use OrderState;
 use Group;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class SettingsBuilder
  * @package MultiSafepay\PrestaShop\Builder

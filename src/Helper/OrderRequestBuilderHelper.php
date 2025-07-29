@@ -45,6 +45,10 @@ use MultiSafepay\PrestaShop\Util\CurrencyUtil;
 use MultiSafepay\PrestaShop\Util\LanguageUtil;
 use MultisafepayOfficial;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class OrderRequestBuilderFallback
  *

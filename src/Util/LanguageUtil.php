@@ -25,6 +25,10 @@ namespace MultiSafepay\PrestaShop\Util;
 use Language;
 use Tools;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class LanguageUtil
  * @package MultiSafepay\PrestaShop\Util

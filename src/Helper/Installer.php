@@ -32,6 +32,10 @@ use OrderState;
 use Tab;
 use Tools;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class Installer
  */

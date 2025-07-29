@@ -31,6 +31,10 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultisafepayOfficial;
 use Order;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class PaymentOptionsBuilder
  * @package MultiSafepay\PrestaShop\Builder\OrderRequest

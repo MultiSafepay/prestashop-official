@@ -24,6 +24,10 @@ namespace MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder;
 
 use Cart;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class ShoppingCartBuilderInterface
  * @package MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder

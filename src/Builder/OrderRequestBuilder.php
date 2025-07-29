@@ -31,6 +31,10 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Util\CurrencyUtil;
 use Order;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class OrderRequestBuilder
  * @package MultiSafepay\PrestaShop\Builder

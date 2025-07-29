@@ -28,6 +28,10 @@ use MultiSafepay\ValueObject\Customer\Address;
 use MultiSafepay\ValueObject\Customer\AddressParser;
 use State;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class AddressBuilder
  * @package MultiSafepay\PrestaShop\Builder\OrderRequest\CustomerBuilder

@@ -24,6 +24,10 @@ namespace MultiSafepay\PrestaShop\Util;
 
 use Address as PrestaShopAddress;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class AddressUtil
  * @package MultiSafepay\PrestaShop\Util

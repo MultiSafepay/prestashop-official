@@ -31,6 +31,10 @@ use MultiSafepay\ValueObject\Weight;
 use Order;
 use Tools;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class CartItemBuilder
  * @package MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder

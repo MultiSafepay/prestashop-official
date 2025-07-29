@@ -29,6 +29,10 @@ use PrestaShopCollection;
 use Tab;
 use MultisafepayOfficial;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class Uninstaller
  */

@@ -22,6 +22,10 @@
 
 namespace MultiSafepay\PrestaShop\Helper;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class TaxHelper
  * @package MultiSafepay\PrestaShop\Helper

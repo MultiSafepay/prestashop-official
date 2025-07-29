@@ -29,6 +29,10 @@ use Currency;
 use Language;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class DuplicateCartHelper
 {
 

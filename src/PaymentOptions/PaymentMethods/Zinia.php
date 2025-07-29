@@ -25,6 +25,10 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 use Country;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class Zinia extends BasePaymentOption
 {
     public function getGatewaySettings(): array

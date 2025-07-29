@@ -42,6 +42,10 @@ use Tools;
 use OrderInvoice;
 use Cache;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class OrderService
  *

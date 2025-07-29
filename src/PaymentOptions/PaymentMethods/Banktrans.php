@@ -24,6 +24,10 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class Banktrans extends BasePaymentOption
 {
     /**

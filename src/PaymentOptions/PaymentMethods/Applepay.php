@@ -37,6 +37,10 @@ use PrestaShopDatabaseException;
 use PrestaShopException;
 use Tools;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class Applepay extends BasePaymentOption
 {
     /**

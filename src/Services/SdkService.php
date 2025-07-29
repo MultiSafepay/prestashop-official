@@ -31,6 +31,10 @@ use Configuration;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use Tools;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class SdkService
  * @package MultiSafepay\PrestaShop\Services

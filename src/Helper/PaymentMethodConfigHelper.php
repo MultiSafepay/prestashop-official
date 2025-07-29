@@ -26,6 +26,10 @@ use InvalidArgumentException;
 use MultiSafepay\Api\PaymentMethods\PaymentMethod;
 use MultiSafepay\Exception\InvalidDataInitializationException;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Helper class for creating and managing payment method configurations
  */

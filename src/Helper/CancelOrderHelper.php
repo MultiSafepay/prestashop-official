@@ -27,6 +27,10 @@ use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use OrderHistory;
 use PrestaShopCollection;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class CancelOrderHelper
 {
     /**

@@ -24,6 +24,10 @@ namespace MultiSafepay\PrestaShop\Util;
 
 use Currency;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class CurrencyUtil
  * @package MultiSafepay\PrestaShop\Util

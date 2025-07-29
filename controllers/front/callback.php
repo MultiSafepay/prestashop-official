@@ -63,7 +63,7 @@ class MultisafepayOfficialCallbackModuleFrontController extends ModuleFrontContr
 
         $this->context->smarty->assign(
             'spinnerUrl',
-            Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/loader/spinner.gif')
+            Media::getMediaPath(_PS_MODULE_DIR_ . $this->module->name . '/views/img/spinner.gif')
         );
 
         Media::addJsDef(

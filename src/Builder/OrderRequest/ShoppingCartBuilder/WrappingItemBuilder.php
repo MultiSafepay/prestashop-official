@@ -27,6 +27,10 @@ use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultiSafepay\ValueObject\CartItem;
 use MultisafepayOfficial;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class DiscountItemBuilder
  * @package MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder

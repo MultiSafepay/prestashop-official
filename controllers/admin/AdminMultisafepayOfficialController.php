@@ -20,6 +20,10 @@
  *
  */
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class AdminMultisafepayOfficialController extends ModuleAdminController
 {
     /**

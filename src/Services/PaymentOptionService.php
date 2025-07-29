@@ -42,6 +42,10 @@ use SmartyException;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Tools;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class PaymentOptionService
  * @package MultiSafepay\PrestaShop\Services

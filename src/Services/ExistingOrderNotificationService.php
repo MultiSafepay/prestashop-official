@@ -29,6 +29,10 @@ use Order;
 use PrestaShopCollection;
 use PrestaShopException;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class ExistingOrderNotificationService
  *

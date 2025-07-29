@@ -38,6 +38,10 @@ use PrestaShopException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Tools;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class RefundService
  * @package MultiSafepay\PrestaShop\Services

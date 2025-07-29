@@ -30,6 +30,10 @@ use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use Context;
 use Tools;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Class TokenizationService
  * @package MultiSafepay\PrestaShop\Services

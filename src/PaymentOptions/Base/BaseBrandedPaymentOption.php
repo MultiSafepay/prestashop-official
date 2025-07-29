@@ -32,6 +32,10 @@ use MultisafepayOfficial;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class BaseBrandedPaymentOption extends BasePaymentOption
 {
     /**
