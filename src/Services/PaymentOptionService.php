@@ -65,7 +65,7 @@ class PaymentOptionService
      *
      * @var array
      */
-    public const PAYMENTS_WITH_SPECIFIC_FEATURES = ['APPLEPAY', 'BANKTRANS', 'GOOGLEPAY', 'IN3', 'IN3B2B', 'ZINIA'];
+    public const PAYMENTS_WITH_SPECIFIC_FEATURES = ['APPLEPAY', 'BANKTRANS', 'GOOGLEPAY', 'IN3', 'IN3B2B'];
 
     /**
      *  Cache expiration time in seconds
