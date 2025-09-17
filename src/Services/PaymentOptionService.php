@@ -489,12 +489,16 @@ class PaymentOptionService
     /**
      * Sort the payment options by sort order position and name
      *
-     * @param array $paymentOptions
-     * @return array
+     * Uses BasePaymentOption::getSortOrderPosition() for sorting
+     *
+     * @param BasePaymentOption[] $paymentOptions
+     * @return BasePaymentOption[]
      */
     public function sortOrderPaymentOptions(array $paymentOptions): array
     {
         uasort($paymentOptions, static function ($a, $b) {
+            /** @var BasePaymentOption $a */
+            /** @var BasePaymentOption $b */
             return $a->getSortOrderPosition() - $b->getSortOrderPosition() ?: strcasecmp($a->getName(), $b->getName());
         });
         return $paymentOptions;

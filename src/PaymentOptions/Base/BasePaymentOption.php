@@ -64,7 +64,6 @@ class BasePaymentOption
      */
     public const MULTISAFEPAY_COMPONENT_CSS_URL = 'https://pay.multisafepay.com/sdk/components/v2/components.css';
 
-
     /**
      * @var array
      */
@@ -107,11 +106,6 @@ class BasePaymentOption
      * @var string
      */
     protected $description = '';
-
-    /**
-     * @var int|null
-     */
-    protected $sortOrderPosition = null;
 
     /**
      * @var bool
@@ -160,7 +154,6 @@ class BasePaymentOption
         $this->gatewayCode = $this->paymentMethod->getId();
         $this->gatewayName = $this->paymentMethod->getName() ?: '';
         $this->description = $this->getDescription();
-        $this->sortOrderPosition = $this->getSortOrderPosition() ?? 0;
         $this->canProcessRefunds = $this->canProcessRefunds();
         $this->hasConfigurableTokenization = $this->paymentMethod->supportsTokenization();
         $this->hasConfigurablePaymentComponent = $this->paymentMethod->supportsPaymentComponent();
@@ -328,6 +321,8 @@ class BasePaymentOption
 
     /**
      *  Get the input fields for the payment methods in the front end
+     *  Used in views/templates/front/form.tpl
+     *  @noinspection PhpUnused
      *
      * @throws ClientExceptionInterface
      * @throws Exception
@@ -373,19 +368,15 @@ class BasePaymentOption
     }
 
     /**
-     * @return int|null
+     * @used by PaymentOptionService::sortOrderPaymentOptions()
+     *
+     * @return int
      *
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
-    public function getSortOrderPosition(): ?int
+    public function getSortOrderPosition(): int
     {
-        if (!isset($this->sortOrderPosition)) {
-            $this->sortOrderPosition = (int)Configuration::get(
-                'MULTISAFEPAY_OFFICIAL_SORT_ORDER_' . $this->getUniqueName()
-            );
-        }
-
-        return $this->sortOrderPosition;
+        return (int)Configuration::get('MULTISAFEPAY_OFFICIAL_SORT_ORDER_' . $this->getUniqueName());
     }
 
     /**
