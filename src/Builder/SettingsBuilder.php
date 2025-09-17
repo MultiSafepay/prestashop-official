@@ -22,21 +22,23 @@
 
 namespace MultiSafepay\PrestaShop\Builder;
 
+use Configuration;
 use Country;
 use Currency;
 use Exception;
+use Group;
 use HelperForm;
+use MultiSafepay\PrestaShop\Adapter\ContextAdapter;
+use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
+use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\SystemStatusService;
 use MultisafepayOfficial;
-use Configuration;
-use MultiSafepay\PrestaShop\Services\PaymentOptionService;
+use OrderState;
+use RuntimeException;
 use SmartyException;
 use Tab;
 use Tools;
-use Context;
-use OrderState;
-use Group;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -127,6 +129,7 @@ class SettingsBuilder
 
         // Fallback if the new method failed or is not available
         if (empty($adminTab)) {
+            /* @phpstan-ignore-next-line */
             $adminTab = Tab::getIdFromClassName($className) ?: 0;
         }
 
@@ -145,18 +148,17 @@ class SettingsBuilder
         $helper = new HelperForm();
 
         $helper->module                = $this->module;
-        $context                       = Context::getContext();
-        $helper->default_form_language = $context->language->id;
+        $helper->default_form_language = ContextAdapter::getLanguageId($this->module->getModuleContext());
 
         $helper->submit_action = 'submitMultisafepayOfficialModule';
-        $helper->currentIndex  = $context->link->getAdminLink('AdminModules', false)
+        $helper->currentIndex  = ContextAdapter::getLink()->getAdminLink('AdminModules', false)
             .'&configure=' . $this->module->name . '&tab_module=' . $this->module->tab . '&module_name=' . $this->module->name;
         $helper->token         = Tools::getAdminTokenLite('AdminModules');
 
         $helper->tpl_vars = [
             'fields_value' => $this->getConfigFormValues(),
-            'languages'    => $context->controller->getLanguages(),
-            'id_language'  => $context->language->id
+            'languages'    => ContextAdapter::getControllerLanguages($this->module->getModuleContext()),
+            'id_language'  => ContextAdapter::getLanguageId($this->module->getModuleContext())
         ];
 
         $configForm = $this->getConfigForm();
@@ -490,23 +492,39 @@ class SettingsBuilder
      */
     public function getPaymentMethodsHtmlContent(): string
     {
-        $paymentOptionService = new PaymentOptionService($this->module);
-        $groups = Group::getGroups((int)Context::getContext()->language->id);
-        Context::getContext()->smarty->assign(
-            [
-                'payment_options' => $paymentOptionService->getMultiSafepayPaymentOptions(),
-                'no_payments'     => $this->module->l('Please enter your API key to view all supported payment methods.', self::CLASS_NAME),
-                'languages'       => Context::getContext()->controller->getLanguages(),
-                'id_language'     => Context::getContext()->language->id,
-                'countries'       => Country::getCountries((int)Context::getContext()->language->id, true),
-                'currencies'      => Currency::getCurrencies(false, true, true),
-                'customer_groups' => $groups
-            ]
-        );
+        try {
+            $paymentOptionService = new PaymentOptionService($this->module);
+            $languageId = ContextAdapter::getLanguageId($this->module->getModuleContext());
+            $groups = Group::getGroups($languageId);
+            $smarty = ContextAdapter::getSmarty();
 
-        return Context::getContext()->smarty->fetch(
-            'module:multisafepayofficial/views/templates/admin/settings/payment-methods.tpl'
-        );
+            if ($smarty === null) {
+                throw new RuntimeException('Smarty instance is not available');
+            }
+
+            $smarty->assign(
+                [
+                    'payment_options' => $paymentOptionService->getMultiSafepayPaymentOptions(),
+                    'no_payments'     => $this->module->l('Please enter your API key to view all supported payment methods.', self::CLASS_NAME),
+                    'languages'       => ContextAdapter::getControllerLanguages($this->module->getModuleContext()),
+                    'id_language'     => $languageId,
+                    'countries'       => Country::getCountries($languageId, true),
+                    'currencies'      => Currency::getCurrencies(false, true, true),
+                    'customer_groups' => $groups
+                ]
+            );
+
+            return $smarty->fetch(
+                'module:multisafepayofficial/views/templates/admin/settings/payment-methods.tpl'
+            );
+        } catch (Exception $exception) {
+            LoggerHelper::logException(
+                'error',
+                $exception,
+                'Error rendering payment methods HTML content'
+            );
+            return '<div class="alert alert-danger">Error: Unable to render payment methods. Please check the logs for more details.</div>';
+        }
     }
 
     /**
@@ -518,18 +536,33 @@ class SettingsBuilder
      */
     public function getSystemStatusHtmlContent(): string
     {
-        $systemStatusService = new SystemStatusService($this->module);
+        try {
+            $systemStatusService = new SystemStatusService($this->module);
 
-        Context::getContext()->smarty->assign(
-            [
-                'status_report' => $systemStatusService->createSystemStatusReport(),
-                'plain_status_report' => $systemStatusService->createPlainSystemStatusReport()
-            ]
-        );
+            $smarty = ContextAdapter::getSmarty();
 
-        return Context::getContext()->smarty->fetch(
-            'module:multisafepayofficial/views/templates/admin/settings/system-status.tpl'
-        );
+            if ($smarty === null) {
+                throw new RuntimeException('Smarty instance is not available');
+            }
+
+            $smarty->assign(
+                [
+                    'status_report' => $systemStatusService->createSystemStatusReport(),
+                    'plain_status_report' => $systemStatusService->createPlainSystemStatusReport()
+                ]
+            );
+
+            return $smarty->fetch(
+                'module:multisafepayofficial/views/templates/admin/settings/system-status.tpl'
+            );
+        } catch (Exception $exception) {
+            LoggerHelper::logException(
+                'error',
+                $exception,
+                'Error rendering system status HTML content'
+            );
+            return '<div class="alert alert-danger">Error: Unable to render system status. Please check the logs for more details.</div>';
+        }
     }
 
     /**
@@ -540,9 +573,24 @@ class SettingsBuilder
      */
     public function getSupportHtmlContent(): string
     {
-        return Context::getContext()->smarty->fetch(
-            'module:multisafepayofficial/views/templates/admin/settings/support.tpl'
-        );
+        try {
+            $smarty = ContextAdapter::getSmarty();
+
+            if ($smarty === null) {
+                throw new RuntimeException('Smarty instance is not available');
+            }
+
+            return $smarty->fetch(
+                'module:multisafepayofficial/views/templates/admin/settings/support.tpl'
+            );
+        } catch (Exception $exception) {
+            LoggerHelper::logException(
+                'error',
+                $exception,
+                'Error rendering support HTML content'
+            );
+            return '<div class="alert alert-danger">Error: Unable to render support content. Please check the logs for more details.</div>';
+        }
     }
 
     /**
@@ -625,7 +673,7 @@ class SettingsBuilder
      */
     private function getPrestaShopOrderStatusesOptions(): array
     {
-        $prestaShopOrderStatuses = OrderState::getOrderStates(Context::getContext()->language->id);
+        $prestaShopOrderStatuses = OrderState::getOrderStates(ContextAdapter::getLanguageId($this->module->getModuleContext()));
         $prestaShopOrderStatusesOptions = [];
         foreach ($prestaShopOrderStatuses as $prestaShopOrderStatus) {
             $prestaShopOrderStatusesOptions['query'][] = [

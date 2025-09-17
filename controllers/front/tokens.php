@@ -70,7 +70,7 @@ class MultisafepayOfficialTokensModuleFrontController extends ModuleFrontControl
 
         $this->context->smarty->assign([
             'action' => $this->getCurrentURL(),
-            'tokens' => $tokenizationService->getTokensForCustomerAccount(),
+            'tokens' => $tokenizationService->getTokensForCustomerAccount($this->context->customer->id),
         ]);
 
         return $this->setTemplate('module:multisafepayofficial/views/templates/front/tokens.tpl');

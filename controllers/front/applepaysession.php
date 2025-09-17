@@ -22,6 +22,7 @@
 
 use MultiSafepay\Api\Wallets\ApplePay\MerchantSessionRequest;
 use MultiSafepay\Exception\ApiException;
+use MultiSafepay\Exception\InvalidDataInitializationException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -50,7 +51,7 @@ class MultisafepayOfficialApplepaysessionModuleFrontController extends ModuleFro
         // Call the parent init content method
         parent::initContent();
 
-        // Set the content type to json
+        // Set the content type to JSON
         header('Content-Type: application/json');
 
         $appleSessionArguments = $this->getApplePaySessionArguments();
@@ -116,7 +117,8 @@ class MultisafepayOfficialApplepaysessionModuleFrontController extends ModuleFro
      * @param array $appleSessionArguments
      * @return string
      * @throws ClientExceptionInterface
-     * @throws Exception
+     * @throws ApiException
+     * @throws InvalidDataInitializationException
      */
     private function getApplePayMerchantSession(array $appleSessionArguments): string
     {

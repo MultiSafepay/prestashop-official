@@ -59,7 +59,7 @@ class TestTokenizationBuilder implements OrderRequestBuilderInterface
         OrderRequest $orderRequest,
         ?Order $order = null
     ): void {
-        if ($paymentOption->allowTokenization() && !$paymentOption->allowPaymentComponent()) {
+        if ($paymentOption->allowTokenization($customer->id) && !$paymentOption->allowPaymentComponent()) {
             if ($this->shouldSaveToken) {
                 $orderRequest->addRecurringModel('cardOnFile');
             }

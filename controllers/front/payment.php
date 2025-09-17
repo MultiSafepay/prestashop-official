@@ -171,11 +171,11 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
             }
 
             if (isset($orderCollection) && $orderCollection->count() > 0) {
+                // Duplicate cart
+                DuplicateCartHelper::duplicateCart((new Cart($this->context->cart->id)), $this->context);
+
                 // Cancel orders
                 CancelOrderHelper::cancelOrder($orderCollection);
-
-                // Duplicate cart
-                DuplicateCartHelper::duplicateCart((new Cart($this->context->cart->id)));
             }
 
             return $this->setTemplate('module:multisafepayofficial/views/templates/front/error.tpl');

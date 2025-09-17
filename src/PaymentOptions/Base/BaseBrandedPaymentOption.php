@@ -176,8 +176,9 @@ class BaseBrandedPaymentOption extends BasePaymentOption
                     'multisafepayPaymentComponentConfig' . $this->getUniqueName(
                     ) => $orderService->createPaymentComponentOrder(
                         $this->getGatewayCode(),
-                        $this->allowTokenization() ? (string) Context::getContext()->customer->id : null,
-                        $this->allowTokenization() ? 'cardOnFile' : null
+                        $this->allowTokenization($context->customer->id) ? (string)$context->customer->id : null,
+                        $this->allowTokenization($context->customer->id) ? 'cardOnFile' : null,
+                        $context->cart
                     )
                 ]
             );

@@ -139,8 +139,7 @@ abstract class NotificationService
             throw new PrestaShopException($message);
         }
 
-        // @codingStandardsIgnoreLine: Notification::verifyNotification method is not recognized by PrestaShop validator
-        if (!Notification::verifyNotification($body, $_SERVER['HTTP_AUTH'], $this->sdkService->getApiKey())) {
+        if (!(new Notification())->verify($body, $_SERVER['HTTP_AUTH'], $this->sdkService->getApiKey())) {
             $message = 'Notification for transaction ID ' . $transactionId . ' has been received but is not valid';
             LoggerHelper::log(
                 'warning',

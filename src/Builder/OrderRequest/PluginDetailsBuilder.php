@@ -23,12 +23,12 @@
 namespace MultiSafepay\PrestaShop\Builder\OrderRequest;
 
 use Cart;
-use Context;
 use Customer;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PluginDetails;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultisafepayOfficial;
+use MultiSafepay\PrestaShop\Adapter\ContextAdapter;
 use Order;
 
 if (!defined('_PS_VERSION_')) {
@@ -74,9 +74,9 @@ class PluginDetailsBuilder implements OrderRequestBuilderInterface
 
         $pluginDetails
             ->addApplicationName('PrestaShop ')
-            ->addApplicationVersion('PrestaShop: '._PS_VERSION_)
+            ->addApplicationVersion('PrestaShop: ' . _PS_VERSION_)
             ->addPluginVersion($this->module->version)
-            ->addShopRootUrl(Context::getContext()->shop->getBaseURL());
+            ->addShopRootUrl(ContextAdapter::getShop($cart)->getBaseURL());
 
         $orderRequest->addPluginDetails($pluginDetails);
     }

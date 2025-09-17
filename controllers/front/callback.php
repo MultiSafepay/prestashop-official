@@ -20,8 +20,8 @@
  *
  */
 
-
 use MultiSafepay\PrestaShop\Helper\PathHelper;
+use MultiSafepay\PrestaShop\Adapter\ContextAdapter;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -41,6 +41,7 @@ class MultisafepayOfficialCallbackModuleFrontController extends ModuleFrontContr
      * @return void
      *
      * @phpcs:disable Generic.Files.LineLength.TooLong
+     * @throws PrestaShopException
      */
     public function postProcess(): void
     {
@@ -50,12 +51,14 @@ class MultisafepayOfficialCallbackModuleFrontController extends ModuleFrontContr
         if ($cart->orderExists()) {
             $order = Order::getByCartId($cart->id);
 
-            $redirectUrl = Context::getContext()->link->getPageLink(
+            $redirectUrl = ContextAdapter::getLink()->getPageLink(
                 'order-confirmation',
                 null,
-                Context::getContext()->language->id,
-                'id_cart='.$cart->id.'&id_order='.$order->id.'&id_module='.$this->module->id.'&key='.Context::getContext(
-                )->customer->secure_key
+                ContextAdapter::getLanguageId($this->context),
+                'id_cart=' . $cart->id .
+                '&id_order=' . $order->id .
+                '&id_module=' . $this->module->id .
+                '&key=' . ($this->context->customer->id ? $this->context->customer->secure_key : '')
             );
 
             Tools::redirect($redirectUrl);
@@ -80,9 +83,12 @@ class MultisafepayOfficialCallbackModuleFrontController extends ModuleFrontContr
                 'orderHistoryUrl' => $this->context->link->getPageLink(
                     'order-confirmation',
                     null,
-                    Context::getContext()->language->id,
-                    'slowvalidation=1&id_cart='.$cart->id.'&id_order='.null.'&id_module='.$this->module->id.'&key='.Context::getContext(
-                    )->customer->secure_key
+                    ContextAdapter::getLanguageId($this->context),
+                    'slowvalidation=1' .
+                    '&id_cart=' . $cart->id .
+                    '&id_order=' . null .
+                    '&id_module=' . $this->module->id .
+                    '&key=' . ($this->context->customer->id ? $this->context->customer->secure_key : '')
                 )
             ]
         );

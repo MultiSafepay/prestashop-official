@@ -25,12 +25,12 @@ namespace MultiSafepay\PrestaShop\Services;
 use Address;
 use Cart;
 use Configuration;
-use Context;
 use Country;
 use Currency;
 use Exception;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidDataInitializationException;
+use MultiSafepay\PrestaShop\Adapter\ContextAdapter;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultisafepayOfficial;
@@ -38,7 +38,6 @@ use PrestaShopCollection;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use Psr\Http\Client\ClientExceptionInterface;
-use Tools;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -85,8 +84,9 @@ class OrderService
      * Return the arguments required to initialize the payment component.
      *
      * @param string $gatewayCode
-     * @param string|null $customerString
+     * @param string|null $customerId
      * @param string|null $recurringModel
+     * @param Cart|null $cart The cart object to use for order data
      *
      * @return array
      * @throws PrestaShopDatabaseException
@@ -96,23 +96,70 @@ class OrderService
      */
     public function createPaymentComponentOrder(
         string $gatewayCode,
-        ?string $customerString,
-        ?string $recurringModel
+        ?string $customerId,
+        ?string $recurringModel,
+        ?Cart $cart = null
     ): array {
+        // Get cart from context if not provided
+        if ($cart === null) {
+            if ($customerId === null) {
+                throw new Exception(
+                    'Invalid parameters in createPaymentComponentOrder: '
+                    . 'either a Cart object or customerId must be provided to create a payment component order.'
+                );
+            }
+            $cart = ContextAdapter::getCurrentCartByCustomer((int)$customerId);
+        }
+        if (!$cart) {
+            throw new Exception('No active cart found');
+        }
+
+        // Get currency from cart or context
+        if ($cart->id_currency) {
+            $isoCode = Currency::getIsoCodeById($cart->id_currency);
+        } else {
+            $isoCode = ContextAdapter::getCurrency($this->module->getModuleContext())->iso_code;
+        }
+
+        $amount = MoneyHelper::priceToCents($cart->getOrderTotal());
+
+        // Get customer locale from context
+        $locale = ContextAdapter::getLocale($this->module->getModuleContext());
+        if (!$locale) {
+            LoggerHelper::log(
+                'alert',
+                'Locale cannot be found. Reverting to the default one'
+            );
+            $locale = 'en';
+        }
+
+        // Get country from cart address or default
+        $country = 'NL';
+        if ($cart->id_address_invoice) {
+            try {
+                $address = new Address((int)$cart->id_address_invoice);
+                if ($address->id_country) {
+                    $country = Country::getIsoById($address->id_country);
+                }
+            } catch (Exception $exception) {
+                LoggerHelper::logException(
+                    'alert',
+                    $exception,
+                    'Country cannot be found. Reverting to the default one'
+                );
+            }
+        }
+
         $paymentComponentArguments = [
             'debug'     => (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE'),
             'env'       => $this->sdkService->getTestMode() ? 'test' : 'live',
             'apiToken'  => $this->getPaymentComponentApiToken() ?? '',
             'orderData' => [
-                'currency'  => (new Currency(Context::getContext()->cart->id_currency))->iso_code,
-                'amount'    => MoneyHelper::priceToCents(
-                    Context::getContext()->cart->getOrderTotal(true, Cart::BOTH)
-                ),
+                'currency'  => $isoCode,
+                'amount'    => $amount,
                 'customer'  => [
-                    'locale'    => Tools::substr(Context::getContext()->language->getLocale(), 0, 2),
-                    'country'   => (new Country(
-                        (new Address((int)Context::getContext()->cart->id_address_invoice))->id_country
-                    ))->iso_code,
+                    'locale'    => $locale,
+                    'country'   => $country,
                 ],
                 'payment_options' => [
                     'template'  => [
@@ -134,7 +181,7 @@ class OrderService
 
         if ($recurringModel) {
             $paymentComponentArguments['recurring']['model'] = $recurringModel;
-            $paymentComponentArguments['recurring']['tokens'] = $this->getPaymentTokens($customerString, $gatewayCode);
+            $paymentComponentArguments['recurring']['tokens'] = $this->getPaymentTokens($customerId, $gatewayCode);
         }
 
         return $paymentComponentArguments;
@@ -143,15 +190,15 @@ class OrderService
     /**
      * Return an array of payment tokens.
      *
-     * @param string $customerString
+     * @param string $customerId
      * @param string $gatewayCode
      * @return array
      */
-    private function getPaymentTokens(string $customerString, string $gatewayCode): array
+    private function getPaymentTokens(string $customerId, string $gatewayCode): array
     {
         try {
             $tokens = $this->sdkService->getSdk()->getTokenManager()->getListByGatewayCodeAsArray(
-                $customerString,
+                $customerId,
                 $gatewayCode
             );
         } catch (ClientExceptionInterface | ApiException $exception) {
@@ -177,9 +224,7 @@ class OrderService
                 LoggerHelper::logException(
                     'alert',
                     $apiException,
-                    'Error when try to get the Api Token',
-                    null,
-                    Context::getContext()->cart->id ?? null
+                    'Error when try to get the Api Token'
                 );
                 return '';
             }

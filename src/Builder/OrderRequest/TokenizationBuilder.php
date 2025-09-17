@@ -25,6 +25,7 @@ namespace MultiSafepay\PrestaShop\Builder\OrderRequest;
 use Cart;
 use Customer;
 use MultiSafepay\Api\Transactions\OrderRequest;
+use MultiSafepay\Exception\InvalidArgumentException;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use Order;
 use Tools;
@@ -45,6 +46,7 @@ class TokenizationBuilder implements OrderRequestBuilderInterface
      * @param BasePaymentOption $paymentOption
      * @param OrderRequest $orderRequest
      * @param Order|null $order
+     * @throws InvalidArgumentException
      */
     public function build(
         Cart $cart,
@@ -53,7 +55,7 @@ class TokenizationBuilder implements OrderRequestBuilderInterface
         OrderRequest $orderRequest,
         ?Order $order = null
     ): void {
-        if ($paymentOption->allowTokenization() && !$paymentOption->allowPaymentComponent()) {
+        if ($paymentOption->allowTokenization($customer->id) && !$paymentOption->allowPaymentComponent()) {
             if ($this->shouldSaveToken()) {
                 $orderRequest->addRecurringModel('cardOnFile');
             }

@@ -23,10 +23,10 @@
 namespace MultiSafepay\PrestaShop\Builder\OrderRequest;
 
 use Cart;
-use Context;
 use Customer;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PaymentOptions;
+use MultiSafepay\PrestaShop\Adapter\ContextAdapter;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultisafepayOfficial;
 use Order;
@@ -72,19 +72,24 @@ class PaymentOptionsBuilder implements OrderRequestBuilderInterface
     ): void {
         $paymentOptions = new PaymentOptions();
 
-        $redirectUrl = Context::getContext()->link->getModuleLink('multisafepayofficial', 'callback', [], true);
-        $cancelUrl = Context::getContext()->link->getPageLink('order', true, null, ['step' => '3']);
+        $redirectUrl = ContextAdapter::getLink()->getModuleLink('multisafepayofficial', 'callback', [], true);
+        $cancelUrl = ContextAdapter::getLink()->getPageLink('order', true, null, ['step' => '3']);
         $secureKey = $customer->secure_key;
 
         if (isset($order)) {
-            $redirectUrl = Context::getContext()->link->getPageLink(
+            $redirectUrl = ContextAdapter::getLink()->getPageLink(
                 'order-confirmation',
                 null,
-                Context::getContext()->language->id,
-                'id_cart='.$cart->id.'&id_order='.$order->id.'&id_module='.$this->module->id.'&key='.$secureKey
+                $cart->id_lang ?:
+                    $customer->id_lang ?:
+                    ContextAdapter::getLanguageId($this->module->getModuleContext()),
+                'id_cart=' . $cart->id .
+                '&id_order=' . $order->id .
+                '&id_module=' . $this->module->id .
+                '&key=' . $secureKey
             );
 
-            $cancelUrl = Context::getContext()->link->getModuleLink(
+            $cancelUrl = ContextAdapter::getLink()->getModuleLink(
                 'multisafepayofficial',
                 'cancel',
                 ['id_cart' => $cart->id, 'id_reference' => $order->reference, 'key' => $secureKey],
@@ -94,7 +99,7 @@ class PaymentOptionsBuilder implements OrderRequestBuilderInterface
 
         $paymentOptions
             ->addNotificationUrl(
-                Context::getContext()->link->getModuleLink('multisafepayofficial', 'notification', [], true)
+                ContextAdapter::getLink()->getModuleLink('multisafepayofficial', 'notification', [], true)
             )
             ->addCancelUrl(
                 $cancelUrl

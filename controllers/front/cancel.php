@@ -26,6 +26,7 @@ use MultiSafepay\PrestaShop\Helper\CancelOrderHelper;
 use MultiSafepay\PrestaShop\Helper\DuplicateCartHelper;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Services\SdkService;
+use Psr\Http\Client\ClientExceptionInterface;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -34,10 +35,10 @@ if (!defined('_PS_VERSION_')) {
 class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontController
 {
     /**
-     *
-     * @return string|void
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
+     * @throws ClientExceptionInterface
+     * @throws Exception
      */
     public function postProcess()
     {
@@ -58,18 +59,21 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
         $cart = new Cart($cartId);
         $ordersIds = [];
 
-        // If an order was created before payment, then we need to cancel the order and duplicate the cart
+        // If an order was created before payment, then we need to duplicate the cart and cancel the order
         if ($cart->orderExists()) {
+            // Duplicate cart
+            DuplicateCartHelper::duplicateCart($cart, $this->context);
+
             $orderCollection = new PrestaShopCollection('Order');
             $orderCollection->where('id_cart', '=', $cartId);
 
             foreach ($orderCollection->getResults() as $order) {
-                // Prevent to cancel an order with different secure key
+                // Prevent canceling an order with different secure key
                 if (!$this->checkOrderSecureKey($order)) {
                     Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
                 }
 
-                // Prevent to cancel an order if the current order status is not initialized or backorder unpaid
+                // Prevent canceling an order if the current order status is not initialized or backorder unpaid
                 if (!$this->canOrderBeCancelled($order)) {
                     Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
                 }
@@ -78,9 +82,6 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
 
             // Cancel orders
             CancelOrderHelper::cancelOrder($orderCollection);
-
-            // Duplicate cart
-            DuplicateCartHelper::duplicateCart($cart);
         }
 
         try {
@@ -127,7 +128,6 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
 
         return $this->setTemplate('module:multisafepayofficial/views/templates/front/error.tpl');
     }
-
 
     /**
      * Check the secure key of the order with the one received as a query argument

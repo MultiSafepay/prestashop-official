@@ -27,7 +27,7 @@ use MultiSafepay\Api\Tokens\Token;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
-use Context;
+use Psr\Http\Client\ClientExceptionInterface;
 use Tools;
 
 if (!defined('_PS_VERSION_')) {
@@ -68,7 +68,7 @@ class TokenizationService
      * @param string $gatewayCode
      *
      * @return Token[]
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws ClientExceptionInterface
      */
     public function getTokensByCustomerIdAndGatewayCode(string $customerId, string $gatewayCode): array
     {
@@ -86,7 +86,7 @@ class TokenizationService
      * @param string $customerId
      *
      * @return Token[]
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws ClientExceptionInterface
      */
     public function getTokensByCustomerId(string $customerId): array
     {
@@ -104,7 +104,7 @@ class TokenizationService
      * @param string $customerId
      * @param string $tokenId
      * @return bool
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws ClientExceptionInterface
      */
     public function deleteToken(string $customerId, string $tokenId): bool
     {
@@ -117,7 +117,7 @@ class TokenizationService
                 $exception,
                 'There was an error when deleting a token',
                 null,
-                Context::getContext()->cart->id ?? null
+                null
             );
             return false;
         }
@@ -128,7 +128,7 @@ class TokenizationService
      * @param BasePaymentOption $paymentOption
      *
      * @return array
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws ClientExceptionInterface
      */
     public function createTokenizationCheckoutFields(string $customerId, BasePaymentOption $paymentOption): array
     {
@@ -176,14 +176,15 @@ class TokenizationService
     }
 
     /**
+     * @param int $customerId Customer ID from controller context
      * @return array
-     * @throws \Psr\Http\Client\ClientExceptionInterface
+     * @throws ClientExceptionInterface
      */
-    public function getTokensForCustomerAccount(): array
+    public function getTokensForCustomerAccount(int $customerId): array
     {
         $paymentOptionService = new PaymentOptionService($this->module);
 
-        $tokens = $this->getTokensByCustomerId((string)Context::getContext()->customer->id);
+        $tokens = $this->getTokensByCustomerId((string)$customerId);
 
         $customerTokens = [];
         foreach ($tokens as $token) {

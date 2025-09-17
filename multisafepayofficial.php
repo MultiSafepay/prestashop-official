@@ -41,6 +41,7 @@ use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\RefundService;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use Psr\Http\Client\ClientExceptionInterface;
+use MultiSafepay\PrestaShop\Adapter\ContextAdapter;
 
 class MultisafepayOfficial extends PaymentModule
 {
@@ -280,6 +281,7 @@ class MultisafepayOfficial extends PaymentModule
             [
                 'action'        => $this->context->link->getModuleLink($this->name, 'payment', [], true),
                 'paymentOption' => $paymentOption,
+                'customerId'    => $this->context->customer->id ?? 0,
             ]
         );
         return $this->context->smarty->fetch('module:multisafepayofficial/views/templates/front/form.tpl');
@@ -351,8 +353,11 @@ class MultisafepayOfficial extends PaymentModule
     {
         $cart = $params['cart'];
         $isAdminArea = defined('_PS_ADMIN_DIR_');
-        $isLoggedInAdminArea = !empty(Context::getContext()->employee) &&
-            Context::getContext()->employee->isLoggedBack();
+        $isLoggedInAdminArea = false;
+        if ($isAdminArea) {
+            $employee = ContextAdapter::getEmployee($this->context);
+            $isLoggedInAdminArea = !empty($employee) && $employee->isLoggedBack();
+        }
         $isNotGuest = (string)$cart->id_guest === '0';
 
         if (empty($cart) || !$isAdminArea || !$isLoggedInAdminArea || !$isNotGuest) {
@@ -596,5 +601,15 @@ class MultisafepayOfficial extends PaymentModule
     public function isUsingNewTranslationSystem(): bool
     {
         return false;
+    }
+
+    /**
+     * Get the module's context for use in services and builders.
+     *
+     * @return Context
+     */
+    public function getModuleContext(): Context
+    {
+        return $this->context;
     }
 }

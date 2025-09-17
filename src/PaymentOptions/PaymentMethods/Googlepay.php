@@ -138,9 +138,7 @@ class Googlepay extends BasePaymentOption
             LoggerHelper::logException(
                 'alert',
                 $exception,
-                'Error when try to get the merchant account ID',
-                null,
-                Context::getContext()->cart->id ?? null
+                'Error when try to get the merchant account ID'
             );
         }
 

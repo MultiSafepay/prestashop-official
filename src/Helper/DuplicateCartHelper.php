@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -24,10 +24,10 @@ namespace MultiSafepay\PrestaShop\Helper;
 
 use Cart;
 use Context;
-use Customer;
 use Currency;
+use Customer;
+use Exception;
 use Language;
-use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -38,22 +38,29 @@ class DuplicateCartHelper
 
     /**
      * Duplicates the cart object.
-     * Commonly used after cancel an order.
+     * Typically used after canceling an order to restore the cart for the customer.
      *
      * @param Cart $cart
+     * @param Context $context The context to update with the duplicated cart
      * @return void
+     * @throws Exception
      */
-    public static function duplicateCart(Cart $cart): void
+    public static function duplicateCart(Cart $cart, Context $context): void
     {
-        $duplicatedCart                 = $cart->duplicate();
-        Context::getContext()->cart     = $duplicatedCart['cart'];
-        Context::getContext()->customer = new Customer((int) $cart->id_customer);
-        Context::getContext()->currency = new Currency((int) $cart->id_currency);
-        Context::getContext()->language = new Language((int) $cart->id_lang);
-        Context::getContext()->cookie->__set('id_cart', $duplicatedCart['cart']->id);
+        $duplicatedCart = $cart->duplicate();
+
+        // Update the context with the duplicated cart data
+        if (isset($duplicatedCart['cart'])) {
+            $context->cart = $duplicatedCart['cart'];
+            $context->customer = new Customer((int) $cart->id_customer);
+            $context->currency = new Currency((int) $cart->id_currency);
+            $context->language = new Language((int) $cart->id_lang);
+            $context->cookie->__set('id_cart', $duplicatedCart['cart']->id);
+        }
+
         LoggerHelper::log(
             'info',
-            'Cart has been duplicated',
+            'Cart has ' . (!isset($duplicatedCart['cart']) ? 'not ' : '') . 'been duplicated',
             true,
             null,
             $cart->id ?? null

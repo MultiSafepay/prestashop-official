@@ -22,7 +22,6 @@
 
 namespace MultiSafepay\PrestaShop\Services;
 
-use Context;
 use MultiSafepay\Exception\InvalidApiKeyException;
 use MultiSafepay\Sdk;
 use Buzz\Client\Curl;
@@ -135,10 +134,7 @@ class SdkService
         } catch (InvalidApiKeyException $invalidApiKeyException) {
             LoggerHelper::logException(
                 'error',
-                $invalidApiKeyException,
-                '',
-                null,
-                Context::getContext()->cart->id ?? null
+                $invalidApiKeyException
             );
         }
     }

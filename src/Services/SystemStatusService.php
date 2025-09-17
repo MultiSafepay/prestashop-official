@@ -24,15 +24,17 @@ namespace MultiSafepay\PrestaShop\Services;
 
 use Configuration;
 use Exception;
+use MultiSafepay\PrestaShop\Adapter\ContextAdapter;
 use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\Util\Version;
 use MultisafepayOfficial;
+use OrderState;
+use PrestaShopDatabaseException;
+use PrestaShopException;
 use PrestaShop\PrestaShop\Adapter\Requirement\CheckMissingOrUpdatedFiles;
 use Tools;
-use OrderState;
-use Context;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -66,9 +68,10 @@ class SystemStatusService
     }
 
     /**
-     * Return a array with the system status report information.
+     * Return an array with the system status report information.
      *
      * @return array
+     * @throws Exception
      */
     public function createSystemStatusReport(): array
     {
@@ -345,7 +348,7 @@ class SystemStatusService
             'title'    => 'Order Statuses Definitions',
         ];
 
-        $orderStatuses = OrderState::getOrderStates(Context::getContext()->language->id);
+        $orderStatuses = OrderState::getOrderStates(ContextAdapter::getLanguageId($this->module->getModuleContext()));
 
         foreach ($orderStatuses as $orderState) {
             $output = '';
@@ -368,12 +371,12 @@ class SystemStatusService
      * Return in plain text all the information to be displayed in a textarea read only section.
      *
      * @return string
+     * @throws Exception
      */
     public function createPlainSystemStatusReport()
     {
         $statusReport             = $this->createSystemStatusReport();
-        $plainTextStatusReport  = '';
-        $plainTextStatusReport .= '=================================' . PHP_EOL;
+        $plainTextStatusReport = '=================================' . PHP_EOL;
         $plainTextStatusReport .= PHP_EOL;
         foreach ($statusReport as $statusReportSection) {
             $plainTextStatusReport .= $statusReportSection['title'] . PHP_EOL;
@@ -519,8 +522,8 @@ class SystemStatusService
      * Extract the details of the order statuses assigned to each MultiSafepay transaction status.
      *
      * @return array
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     private function extractModuleOrderStatusSettings(): array
     {
@@ -539,7 +542,7 @@ class SystemStatusService
         foreach ($transactionStatuses as $transactionStatus) {
             $orderStatusId = $notificationService->getOrderStatusId($transactionStatus);
             /** @var OrderState $orderState */
-            $orderState = new OrderState((int)$orderStatusId, Context::getContext()->language->id);
+            $orderState = new OrderState((int)$orderStatusId, ContextAdapter::getLanguageId($this->module->getModuleContext()));
             $output[$transactionStatus]['label'] = Tools::ucfirst(Tools::str_replace_once('_', ' ', $transactionStatus));
             $output[$transactionStatus]['value'] = $orderState->name;
         }

@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -19,6 +19,8 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+
+use MultiSafepay\PrestaShop\Adapter\ContextAdapter;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -37,7 +39,6 @@ class MultisafepayOfficialProcessorderModuleFrontController extends ModuleFrontC
      * Process notification
      *
      * @return void
-     * @throws JsonException
      */
     public function postProcess(): void
     {
@@ -51,12 +52,14 @@ class MultisafepayOfficialProcessorderModuleFrontController extends ModuleFrontC
 
         $orderId = Order::getIdByCartId($cart->id);
 
-        $redirectUrl = Context::getContext()->link->getPageLink(
+        $redirectUrl = ContextAdapter::getLink()->getPageLink(
             'order-confirmation',
             null,
-            Context::getContext()->language->id,
-            'id_cart='.$cart->id.'&id_order='.$orderId.'&id_module='.$this->module->id.'&key='.Context::getContext(
-            )->customer->secure_key
+            ContextAdapter::getLanguageId($this->context),
+            'id_cart=' . $cart->id .
+            '&id_order=' . $orderId .
+            '&id_module=' . $this->module->id .
+            '&key=' . ($this->context->customer->id ? $this->context->customer->secure_key : '')
         );
 
         exit(json_encode(['redirectUrl' => $redirectUrl]));

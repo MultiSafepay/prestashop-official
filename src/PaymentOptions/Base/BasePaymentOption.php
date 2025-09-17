@@ -28,6 +28,7 @@ use Configuration;
 use Context;
 use Country;
 use Currency;
+use Customer;
 use Exception;
 use Group;
 use Language;
@@ -35,6 +36,7 @@ use Media;
 use MultiSafepay\Api\PaymentMethods\PaymentMethod;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
+use MultiSafepay\PrestaShop\Adapter\ContextAdapter;
 use MultiSafepay\PrestaShop\Helper\PathHelper;
 use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\PrestaShop\Services\SdkService;
@@ -43,6 +45,7 @@ use MultisafepayOfficial;
 use PrestaShopDatabaseException;
 use PrestaShopException;
 use Psr\Http\Client\ClientExceptionInterface;
+use Validate;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -247,7 +250,7 @@ class BasePaymentOption
      */
     public function getAction(): string
     {
-        return Context::getContext()->link->getModuleLink('multisafepayofficial', 'payment', [], true);
+        return ContextAdapter::getLink()->getModuleLink('multisafepayofficial', 'payment', [], true);
     }
 
     /**
@@ -363,25 +366,26 @@ class BasePaymentOption
      *  Used in views/templates/front/form.tpl
      *  @noinspection PhpUnused
      *
+     * @param int|null $customerId Customer ID from controller context
      * @throws ClientExceptionInterface
      * @throws Exception
      */
-    public function getInputFields(): array
+    public function getInputFields(?int $customerId = null): array
     {
         $inputFields = [];
 
-        if ($this->allowTokenization() && !$this->allowPaymentComponent()) {
+        if ($customerId && $this->allowTokenization($customerId) && !$this->allowPaymentComponent()) {
             $tokenizationService = new TokenizationService($this->module, new SdkService());
             $inputFields         = array_merge(
                 $inputFields,
                 $tokenizationService->createTokenizationCheckoutFields(
-                    (string)Context::getContext()->customer->id,
+                    (string)$customerId,
                     $this
                 )
             );
         }
 
-        if ($this->allowTokenization() && !$this->allowPaymentComponent()) {
+        if ($customerId && $this->allowTokenization($customerId) && !$this->allowPaymentComponent()) {
             $tokenizationService = new TokenizationService($this->module, new SdkService());
             $inputFields         = array_merge(
                 $inputFields,
@@ -419,6 +423,8 @@ class BasePaymentOption
     }
 
     /**
+     * Return an array with gateway settings required for configuration in admin area
+     *
      * @return array
      *
      * @phpcs:disable Generic.Files.LineLength.TooLong
@@ -471,7 +477,10 @@ class BasePaymentOption
                     Configuration::get('MULTISAFEPAY_OFFICIAL_COUNTRIES_' . $this->getUniqueName())
                 ),
                 'options'    => $this->mapArrayForSettings(
-                    Country::getCountries(Context::getContext()->language->id, true),
+                    Country::getCountries(
+                        ContextAdapter::getLanguageId($this->module->getModuleContext()),
+                        true
+                    ),
                     'id_country'
                 ),
                 'helperText' => $this->module->l('Leave blank to support all countries', self::CLASS_NAME),
@@ -496,7 +505,9 @@ class BasePaymentOption
                     Configuration::get('MULTISAFEPAY_OFFICIAL_CUSTOMER_GROUPS_' . $this->getUniqueName())
                 ),
                 'options'    => $this->mapArrayForSettings(
-                    Group::getGroups(Context::getContext()->language->id),
+                    Group::getGroups(
+                        ContextAdapter::getLanguageId($this->module->getModuleContext())
+                    ),
                     'id_group'
                 ),
                 'helperText' => $this->module->l('Leave blank to support all customer groups', self::CLASS_NAME),
@@ -511,7 +522,7 @@ class BasePaymentOption
                 ),
                 'options'    => $this->mapArrayForSettings(
                     Carrier::getCarriers(
-                        Context::getContext()->language->id,
+                        ContextAdapter::getLanguageId($this->module->getModuleContext()),
                         false,
                         false,
                         false,
@@ -633,13 +644,16 @@ class BasePaymentOption
     }
 
     /**
+     * @param int|null $customerId
      * @return bool
      */
-    public function allowTokenization(): bool
+    public function allowTokenization(?int $customerId = null): bool
     {
-        $customer = Context::getContext()->customer;
-        if ($this->hasConfigurableTokenization && ($customer !== null) && empty($customer->is_guest)) {
-            return (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_TOKENIZATION_' . $this->getUniqueName());
+        if ($this->hasConfigurableTokenization && (int)$customerId > 0) {
+            $customer = new Customer($customerId);
+            if (Validate::isLoadedObject($customer) && !$customer->isGuest()) {
+                return (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_TOKENIZATION_' . $this->getUniqueName());
+            }
         }
 
         return false;
@@ -685,8 +699,9 @@ class BasePaymentOption
                     'multisafepayPaymentComponentConfig' . $this->getGatewayCode(
                     ) => $orderService->createPaymentComponentOrder(
                         $this->getGatewayCode(),
-                        $this->allowTokenization() ? (string) Context::getContext()->customer->id : null,
-                        $this->allowTokenization() ? 'cardOnFile' : null
+                        $this->allowTokenization($context->customer->id) ? (string)$context->customer->id : null,
+                        $this->allowTokenization($context->customer->id) ? 'cardOnFile' : null,
+                        $context->cart
                     )
                 ]
             );
