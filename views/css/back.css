@@ -205,3 +205,218 @@
 #content.bootstrap a[href]:not(.breadcrumb a,.dropdown-menu a,table a,[class*=btn],[class*=dropdown],[class*=list-group-item],[class*=kpi-container],[class*=nav-link]) {
     text-decoration: none !important;
 }
+
+/* Multi-Language Title Fields Styles */
+.multisafepay-title-group .input-group {
+    width: 100%;
+}
+
+.multisafepay-permanent-help {
+    margin-top: 8px !important;
+    margin-bottom: 10px !important;
+    position: relative !important;
+    z-index: 10 !important;
+    display: block !important;
+    visibility: visible !important;
+}
+
+.multisafepay-language-toggle {
+    border-left: 1px solid #e9ecef;
+    white-space: nowrap;
+    min-width: 180px;
+    padding: 6px 12px;
+    font-size: 13px;
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: #ffffff !important; /* Default state: collapsed/white background */
+    color: #666666 !important;
+}
+
+.multisafepay-language-toggle:hover {
+    background-color: #f8f9fa !important;
+}
+
+.multisafepay-language-toggle:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: #ffffff !important;
+}
+
+.multisafepay-language-toggle:active {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* State: Collapsed (white background) */
+.multisafepay-language-toggle.collapsed {
+    background-color: #ffffff !important;
+    color: #666666 !important;
+}
+
+.multisafepay-language-toggle.collapsed:hover {
+    background-color: #f8f9fa !important;
+    color: #666666 !important;
+}
+
+.multisafepay-language-toggle.collapsed:focus {
+    background-color: #ffffff !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: #666666 !important;
+}
+
+.multisafepay-language-toggle.collapsed:active {
+    background-color: #ffffff !important;
+    color: #666666 !important;
+}
+
+/* State: Expanded (gray background) */
+.multisafepay-language-toggle.expanded {
+    background-color: #fafbfc !important;
+    color: #666666 !important;
+}
+
+.multisafepay-language-toggle.expanded:focus {
+    background-color: #fafbfc !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: #666666 !important;
+}
+
+.multisafepay-language-toggle.expanded:active {
+    background-color: #fafbfc !important;
+    color: #666666 !important;
+}
+
+/* Override hover state for expanded button */
+.multisafepay-language-toggle.expanded:hover {
+    background-color: #f8f9fa !important;
+    color: #666666 !important;
+}
+
+/* Override any Bootstrap button styles */
+.btn.multisafepay-language-toggle.collapsed {
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+.btn.multisafepay-language-toggle.expanded {
+    background-color: #e9ecef !important;
+    background-image: none !important;
+}
+
+.multisafepay-language-toggle .button-text {
+    margin: 0 5px;
+    font-weight: normal;
+    color: #555555 !important;
+}
+
+.multisafepay-language-toggle .toggle-icon {
+    margin-left: 5px;
+    font-size: 16px;
+    vertical-align: middle;
+    color: #666666 !important;
+}
+
+.multisafepay-additional-languages {
+    border-left: 4px solid #eae9e9;
+    padding-left: 0 !important;
+    background-color: #f8f9fa;
+    border-radius: 0 4px 4px 0;
+    margin-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+.multisafepay-inline-language-field {
+    padding: 8px 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.multisafepay-inline-language-field .control-label {
+    font-size: 14px !important;
+    color: #363a41 !important;
+    margin-bottom: 0 !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    text-align: left !important;
+    font-weight: 500 !important;
+    line-height: 1.42857143 !important;
+    width: 150px !important;
+    flex: 0 0 150px !important;
+    white-space: nowrap !important;
+}
+
+.multisafepay-inline-language-field .col-lg-3 {
+    width: 90px !important;
+    padding: 0 8px 0 15px !important;
+    margin: 0 !important;
+    flex: 0 0 90px !important;
+}
+
+.multisafepay-inline-language-field .col-lg-9 {
+    padding: 0 8px 0 0 !important;
+    margin: 0 !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+    .multisafepay-inline-language-field .control-label {
+        width: 120px !important;
+        flex: 0 0 120px !important;
+        font-size: 13px !important;
+    }
+
+    .multisafepay-inline-language-field .col-lg-3 {
+        width: 110px !important;
+        flex: 0 0 110px !important;
+        padding: 0 5px 0 10px !important;
+    }
+
+    .multisafepay-inline-language-field .col-lg-9 {
+        padding: 0 5px 0 0 !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .multisafepay-inline-language-field {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .multisafepay-inline-language-field .control-label {
+        width: 100% !important;
+        flex: none !important;
+        margin-bottom: 5px !important;
+        padding: 5px 8px !important;
+    }
+
+    .multisafepay-inline-language-field .col-lg-3 {
+        width: 100% !important;
+        flex: none !important;
+        padding: 0 !important;
+    }
+
+    .multisafepay-inline-language-field .col-lg-9 {
+        width: 100% !important;
+        flex: none !important;
+        padding: 0 !important;
+    }
+}
+
+.multisafepay-inline-language-field .form-control {
+    margin-left: 0 !important;
+}
+
+.multisafepay-inline-language-field .form-control {
+    font-size: 13px;
+}
+
+.multisafepay-inline-language-field .help-block {
+    font-size: 11px;
+    margin-top: 3px;
+}

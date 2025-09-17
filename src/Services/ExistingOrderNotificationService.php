@@ -68,7 +68,7 @@ class ExistingOrderNotificationService extends NotificationService
 
         /** @var Order $order */
         foreach ($orderCollection->getResults() as $order) {
-            $this->processNotificationForOrder($order, $transaction);
+            $this->processNotificationForOrder($order, $cart, $transaction);
         }
     }
 }

@@ -35,6 +35,7 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BaseBrandedPaymentOption;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultisafepayOfficial;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use PrestaShopException;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -211,29 +212,31 @@ class PaymentOptionService
     }
 
     /**
-     *  Filter the duplicated brand names to add just their names only when necessary
+     * Filter duplicated branded names by gateway code
      *
      * @param BasePaymentOption $paymentMethod
      * @param array $duplicatedBrandedNames
+     * @param int|null $langId
      *
      * @return string
      */
-    private function filterDuplicatedBrandedNames(BasePaymentOption $paymentMethod, array $duplicatedBrandedNames): string
+    private function filterDuplicatedBrandedNames(BasePaymentOption $paymentMethod, array $duplicatedBrandedNames, ?int $langId = null): string
     {
         $isDuplicated = in_array($paymentMethod->gatewayCode, $duplicatedBrandedNames, true);
-        return $isDuplicated ? $paymentMethod->getFrontEndName() : $this->getFilteredFrontEndName($paymentMethod);
+        return $isDuplicated ? $paymentMethod->getFrontEndName($langId) : $this->getFilteredFrontEndName($paymentMethod, $langId);
     }
 
     /**
      * Get the filtered checkout name without the parent name if any
      *
      * @param BasePaymentOption $paymentMethod
+     * @param int $langId
      *
      * @return string
      */
-    private function getFilteredFrontEndName(BasePaymentOption $paymentMethod): string
+    private function getFilteredFrontEndName(BasePaymentOption $paymentMethod, int $langId): string
     {
-        $frontName = $paymentMethod->getFrontEndName();
+        $frontName = $paymentMethod->getFrontEndName($langId);
         $parentName = $paymentMethod->parentName;
         if (!empty($parentName) && (strpos($frontName, $parentName) !== false)) {
             return $paymentMethod->getBrandName();
@@ -245,12 +248,14 @@ class PaymentOptionService
     /**
      * Return an array of MultiSafepay PaymentOptions
      *
-     * @param   Cart  $cart
+     * @param Cart $cart
+     * @param int|null $langId
      *
      * @return array
-     * @throws SmartyException|Exception
+     * @throws SmartyException
+     * @throws Exception
      */
-    public function getFilteredMultiSafepayPaymentOptions(Cart $cart): array
+    public function getFilteredMultiSafepayPaymentOptions(Cart $cart, ?int $langId = null): array
     {
         $paymentOptions = [];
         /** @var BasePaymentOption[] $paymentMethods */
@@ -266,7 +271,7 @@ class PaymentOptionService
             $option = new PaymentOption();
             $option->setForm($this->module->getMultiSafepayPaymentOptionForm($paymentMethod));
             $option->setModuleName($paymentMethod->getGatewayCode());
-            $option->setCallToActionText($this->filterDuplicatedBrandedNames($paymentMethod, $duplicatedBrandedNames));
+            $option->setCallToActionText($this->filterDuplicatedBrandedNames($paymentMethod, $duplicatedBrandedNames, $langId));
             $option->setAction($paymentMethod->getAction());
             if (!empty($paymentMethod->getLogo())) {
                 $option->setLogo($paymentMethod->getLogo());
@@ -365,6 +370,7 @@ class PaymentOptionService
      *
      * @return array
      * @throws InvalidDataInitializationException
+     * @throws PrestaShopException
      */
     private function fetchPaymentMethods(): array
     {

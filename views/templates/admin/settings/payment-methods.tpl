@@ -63,21 +63,59 @@
                                         </div>
                                     {/if}
                                     {if $option['type'] == 'text'}
-                                        <div class="form-group">
-                                            <label class="control-label col-lg-3">
-                                                {$option['name']|escape:'html':'UTF-8'}
-                                            </label>
-                                            <div class="col-lg-9">
-                                                <input type="text" name="{$optionId|escape:'html':'UTF-8'}" placeholder="{$option['name']|escape:'html':'UTF-8'}" id="{$optionId|escape:'html':'UTF-8'}" value="{$option['value']|escape:'html':'UTF-8'}" class="{if isset($option['class'])}{$option['class']|escape:'html':'UTF-8'}{/if}">
-                                                {if isset($option['helperText'])}
-                                                    <p class="help-block">{$option['helperText']|escape:'html':'UTF-8'}</p>
-                                                {/if}
+                                        {if isset($option['isTitleField']) && $option['isTitleField'] && $option['isBaseTitle']}
+                                            {* This is a base title field - show with expand/contract functionality *}
+                                            <div class="form-group multisafepay-title-group" data-base-name="{$option['baseFieldName']|escape:'html':'UTF-8'}">
+                                                <label class="control-label col-lg-3" for="{$optionId|escape:'html':'UTF-8'}">
+                                                    {$option['name']|escape:'html':'UTF-8'}
+                                                </label>
+                                                <div class="col-lg-9">
+                                                    <div class="input-group">
+                                                        <input type="text" name="{$optionId|escape:'html':'UTF-8'}" placeholder="{$option['name']|escape:'html':'UTF-8'}" id="{$optionId|escape:'html':'UTF-8'}" value="{$option['value']|escape:'html':'UTF-8'}" class="form-control {if isset($option['class'])}{$option['class']|escape:'html':'UTF-8'}{/if}">
+                                                        <span class="input-group-btn">
+                                                            <button class="btn btn-default multisafepay-language-toggle" type="button" data-base-name="{$option['baseFieldName']|escape:'html':'UTF-8'}">
+                                                                <span class="button-text">Expand/Contract Languages</span>
+                                                                <i class="material-icons toggle-icon">&#xE313;</i>
+                                                            </button>
+                                                        </span>
+                                                    </div>
+                                                    {* Container for additional language fields (hidden by default) *}
+                                                    <div class="multisafepay-additional-languages" data-base-name="{$option['baseFieldName']|escape:'html':'UTF-8'}" style="display:none; margin-top:10px;">
+                                                        {* Additional language fields will be dynamically added here *}
+                                                    </div>
+                                                    {if isset($option['helperText'])}
+                                                        <p class="help-block">{$option['helperText']|escape:'html':'UTF-8'}</p>
+                                                    {/if}
+                                                </div>
                                             </div>
-                                        </div>
+                                        {elseif isset($option['isTitleField']) && $option['isTitleField'] && $option['isLanguageSpecificTitle']}
+                                            {* This is a language-specific title field - hide it initially *}
+                                            <div class="form-group multisafepay-additional-language-field" data-base-name="{$option['baseFieldName']|escape:'html':'UTF-8'}" data-language="{$option['languageCode']|escape:'html':'UTF-8'}" style="display:none;">
+                                                <label class="control-label col-lg-3" for="{$optionId|escape:'html':'UTF-8'}">
+                                                    {$option['name']|escape:'html':'UTF-8'}
+                                                </label>
+                                                <div class="col-lg-9">
+                                                    <input type="text" name="{$optionId|escape:'html':'UTF-8'}" placeholder="{$option['name']|escape:'html':'UTF-8'}" id="{$optionId|escape:'html':'UTF-8'}" value="{$option['value']|escape:'html':'UTF-8'}" class="form-control {if isset($option['class'])}{$option['class']|escape:'html':'UTF-8'}{/if}">
+                                                </div>
+                                            </div>
+                                        {else}
+                                            {* Regular text field *}
+                                            <div class="form-group">
+                                                <label class="control-label col-lg-3" for="{$optionId|escape:'html':'UTF-8'}">
+                                                    {$option['name']|escape:'html':'UTF-8'}
+                                                </label>
+                                                <div class="col-lg-9">
+                                                    <input type="text" name="{$optionId|escape:'html':'UTF-8'}" placeholder="{$option['name']|escape:'html':'UTF-8'}" id="{$optionId|escape:'html':'UTF-8'}" value="{$option['value']|escape:'html':'UTF-8'}" class="form-control {if isset($option['class'])}{$option['class']|escape:'html':'UTF-8'}{/if}">
+                                                    {if isset($option['helperText'])}
+                                                        <p class="help-block">{$option['helperText']|escape:'html':'UTF-8'}</p>
+                                                    {/if}
+                                                </div>
+                                            </div>
+                                        {/if}
                                     {/if}
                                     {if $option['type'] == 'multi-select'}
                                         <div class="form-group">
-                                            <label class="control-label col-lg-3">
+                                            <label class="control-label col-lg-3" for="{$optionId|escape:'html':'UTF-8'}[]">
                                                 {$option['name']|escape:'html':'UTF-8'}
                                             </label>
                                             <div class="col-lg-9">

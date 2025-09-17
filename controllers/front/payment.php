@@ -103,7 +103,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
                     $cart,
                     (int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED'),
                     0,
-                    $selectedPaymentOption->getFrontEndName(),
+                    $selectedPaymentOption->getFrontEndName($this->context->language->id ?: null),
                     $this->context->customer->secure_key
                 );
 

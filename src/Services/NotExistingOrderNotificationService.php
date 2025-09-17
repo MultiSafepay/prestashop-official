@@ -73,7 +73,7 @@ class NotExistingOrderNotificationService extends NotificationService
                     $cart,
                     (int)$this->getOrderStatusId($transaction->getStatus()),
                     $transaction->getAmount() / 100,
-                    $this->getPaymentMethodNameFromTransaction($transaction),
+                    $this->getPaymentMethodNameFromTransaction($transaction, $cart->id_lang ?: null),
                     (new Customer($cart->id_customer))->secure_key,
                     ['transaction_id' => $transaction->getTransactionId()]
                 );

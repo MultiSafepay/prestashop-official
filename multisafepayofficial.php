@@ -260,7 +260,10 @@ class MultisafepayOfficial extends PaymentModule
         }
 
         $paymentOptionService = new PaymentOptionService($this);
-        return $paymentOptionService->getFilteredMultiSafepayPaymentOptions($params['cart']);
+        return $paymentOptionService->getFilteredMultiSafepayPaymentOptions(
+            $params['cart'],
+            $params['cart']->id_lang ?: null
+        );
     }
 
     /**

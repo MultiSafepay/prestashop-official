@@ -248,19 +248,20 @@ abstract class NotificationService
 
     /**
      * @param Order $order
+     * @param Cart $cart
      * @param TransactionResponse $transaction
      *
-     * @throws PrestaShopException
      * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
-    protected function processNotificationForOrder(Order $order, TransactionResponse $transaction): void
+    protected function processNotificationForOrder(Order $order, Cart $cart, TransactionResponse $transaction): void
     {
         if (! $this->shouldStatusBeUpdated($order, $transaction)) {
             return;
         }
 
         // If the payment method of the PrestaShop order is different from the one received in the notification
-        $paymentMethodName = $this->getPaymentMethodNameFromTransaction($transaction);
+        $paymentMethodName = $this->getPaymentMethodNameFromTransaction($transaction, $order->id_lang ?: $cart->id_lang ?: null);
         if ($order->payment !== $paymentMethodName) {
             $this->updateOrderPaymentMethod($order, $paymentMethodName);
         }
@@ -456,9 +457,10 @@ abstract class NotificationService
      * Return the payment method name using the transaction information
      *
      * @param TransactionResponse $transaction
+     * @param int|null $langId
      * @return string
      */
-    public function getPaymentMethodNameFromTransaction(TransactionResponse $transaction): string
+    public function getPaymentMethodNameFromTransaction(TransactionResponse $transaction, ?int $langId = null): string
     {
         $gatewayCode = $transaction->getPaymentDetails()->getType();
 
@@ -471,15 +473,15 @@ abstract class NotificationService
         // When an order is being fully paid using a gift card
         if (strpos($gatewayCode, 'Coupon::') !== false) {
             $data = $transaction->getPaymentDetails()->getData();
-            return $this->paymentOptionService->getMultiSafepayPaymentOption($data['coupon_brand'])->getFrontEndName();
+            return $this->paymentOptionService->getMultiSafepayPaymentOption($data['coupon_brand'])->getFrontEndName($langId);
         // When an order is being paid using multiple gift cards
         } elseif (strpos($gatewayCode, 'Coupon') !== false) {
             $data = $transaction->getPaymentDetails()->getData();
             $gatewayCodes = explode(';', $data['coupon_brand']);
-            return $this->paymentOptionService->getMultiSafepayPaymentOption($gatewayCodes[0])->getFrontEndName();
+            return $this->paymentOptionService->getMultiSafepayPaymentOption($gatewayCodes[0])->getFrontEndName($langId);
         }
 
-        return $this->paymentOptionService->getMultiSafepayPaymentOption($gatewayCode)->getFrontEndName();
+        return $this->paymentOptionService->getMultiSafepayPaymentOption($gatewayCode)->getFrontEndName($langId);
     }
 
     /**

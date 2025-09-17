@@ -30,6 +30,7 @@ use Country;
 use Currency;
 use Exception;
 use Group;
+use Language;
 use Media;
 use MultiSafepay\Api\PaymentMethods\PaymentMethod;
 use MultiSafepay\Api\Transactions\OrderRequest;
@@ -309,9 +310,47 @@ class BasePaymentOption
         return $amount / 100;
     }
 
-    public function getFrontEndName(): string
+    /**
+     * Get the frontend display name for the payment method
+     *
+     * @param int|null $langId Language ID. If null, uses current context language
+     * @return string
+     */
+    public function getFrontEndName(?int $langId = null): string
     {
-        return Configuration::get('MULTISAFEPAY_OFFICIAL_TITLE_' . $this->getUniqueName()) ?: $this->getName();
+        // If no language ID provided, use default language
+        if (is_null($langId)) {
+            $langId = (int)Configuration::get('PS_LANG_DEFAULT');
+        }
+
+        // Get the ISO code for the language
+        $langIsoCode = Language::getIsoById($langId);
+        $baseConfigKey = 'MULTISAFEPAY_OFFICIAL_TITLE_' . $this->getUniqueName();
+
+        // Step 1: Try language-specific title first
+        if ($langIsoCode) {
+            $langCode = strtoupper(trim($langIsoCode));
+
+            // Validate language code format (2-letter ISO code)
+            if (!empty($langCode) && strlen($langCode) === 2 && ctype_alpha($langCode)) {
+                $langConfigKey = $baseConfigKey . '_' . $langCode;
+                $languageSpecificTitle = Configuration::get($langConfigKey);
+
+                // Check if value exists and is not null/empty
+                if (!empty($languageSpecificTitle)) {
+                    return $languageSpecificTitle;
+                }
+            }
+        }
+
+        // Step 2: Try base title
+        $baseTitle = Configuration::get($baseConfigKey);
+        if (!empty($baseTitle)) {
+            return $baseTitle;
+        }
+
+        // Step 3: Final fallback to default name
+        return $this->getName();
     }
 
     public function getLogo(): string
@@ -394,14 +433,12 @@ class BasePaymentOption
                 'default' => '0',
                 'order'   => 10,
             ],
-            'MULTISAFEPAY_OFFICIAL_TITLE_' . $this->getUniqueName()           => [
-                'type'       => 'text',
-                'name'       => $this->module->l('Title', self::CLASS_NAME),
-                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_TITLE_' . $this->getUniqueName()),
-                'helperText' => $this->module->l('The title will be shown to the customer at the checkout page. When using translations, please leave this field empty.', self::CLASS_NAME),
-                'default'    => '',
-                'order'      => 20,
-            ],
+        ];
+
+        // Add multi-language title settings (includes base title)
+        $settings = array_merge($settings, $this->getMultiLanguageTitleSettings());
+
+        $settings = array_merge($settings, [
             'MULTISAFEPAY_OFFICIAL_DESCRIPTION_' . $this->getUniqueName()     => [
                 'type'       => 'text',
                 'name'       => $this->module->l('Description', self::CLASS_NAME),
@@ -495,7 +532,7 @@ class BasePaymentOption
                 'order'   => 90,
                 'class'   => 'sort-order',
             ]
-        ];
+        ]);
 
         if ($this->hasConfigurableDirect) {
             $settings['MULTISAFEPAY_OFFICIAL_DIRECT_' . $this->getUniqueName()] = [
@@ -705,5 +742,96 @@ class BasePaymentOption
         }
 
         return '';
+    }
+
+    /**
+     * Generate multi-language title configuration settings including base title
+     *
+     * @return array
+     */
+    private function getMultiLanguageTitleSettings(): array
+    {
+        $settings = [];
+        $languages = Language::getLanguages();
+
+        // Filter out any non-array elements
+        $languages = array_filter($languages, function ($language) {
+            return is_array($language) &&
+                isset($language['iso_code']) &&
+                isset($language['name']) &&
+                isset($language['id_lang']);
+        });
+        $languageCount = count($languages);
+
+        $baseText = $this->module->l('The title will be shown to the customer at the checkout page. When using translations, please leave this field empty.', self::CLASS_NAME);
+        $additionalText = '';
+        // Determine helper text based on available languages
+        if ($languageCount > 1) {
+            $additionalText = sprintf(
+                $this->module->l(' You can also customize titles for the %d configured languages.', self::CLASS_NAME),
+                $languageCount
+            );
+        }
+        $titleHelperText = $baseText . $additionalText;
+        $baseFieldName = 'MULTISAFEPAY_OFFICIAL_TITLE_' . $this->getUniqueName();
+
+        // Add base title first
+        $settings[$baseFieldName] = [
+            'type'       => 'text',
+            'name'       => $this->module->l('Title', self::CLASS_NAME),
+            'value'      => Configuration::get($baseFieldName),
+            'helperText' => $titleHelperText,
+            'default'    => '',
+            'order'      => 20,
+            // Metadata for template logic
+            'isTitleField' => true,
+            'isBaseTitle' => true,
+            'isLanguageSpecificTitle' => false,
+            'baseFieldName' => $baseFieldName,
+            'languageCode' => '',
+        ];
+
+        foreach ($languages as $language) {
+            $langCode = strtoupper(trim($language['iso_code']));
+
+            // Validate language code format (2-letter ISO code) - extra safety
+            if (empty($langCode) || strlen($langCode) !== 2 || !ctype_alpha($langCode)) {
+                continue; // Skip invalid language codes
+            }
+
+            $configKey = $baseFieldName . '_' . $langCode;
+
+            // Use language name as it comes from PrestaShop, but clean parentheses content
+            $languageName = trim($language['name']);
+
+            // Remove everything between parentheses, including them
+            $openParen = strpos($languageName, '(');
+            if ($openParen !== false) {
+                $languageName = trim(substr($languageName, 0, $openParen));
+            }
+
+            // Fallback to language code if name is empty
+            if (empty($languageName)) {
+                $languageName = $langCode;
+            }
+
+            // Add language titles later
+            $setting = [
+                'type'       => 'text',
+                'name'       => $this->module->l('Title', self::CLASS_NAME) . ' (' . $languageName . ')',
+                'value'      => Configuration::get($configKey),
+                'default'    => '',
+                'order'      => 20 + (int)$language['id_lang'],
+                // Metadata for template logic
+                'isTitleField' => true,
+                'isBaseTitle' => false,
+                'isLanguageSpecificTitle' => true,
+                'baseFieldName' => $baseFieldName,
+                'languageCode' => $langCode,
+            ];
+            $settings[$configKey] = $setting;
+        }
+
+        return $settings;
     }
 }

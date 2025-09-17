@@ -80,6 +80,25 @@
             '#MULTISAFEPAY_OFFICIAL_DIRECT_APPLEPAY_on',
             '.apple-pay-direct-name'
         );
+
+        // Initialize multi-language titles functionality
+        initMultiLanguageTitles();
+
+        // Ensure permanent help texts remain visible
+        $('.multisafepay-permanent-help').show().css({
+            'display': 'block',
+            'visibility': 'visible'
+        });
+
+        // Handle form submission to ensure all fields are included
+        $('form').on('submit', function() {
+            $('.multisafepay-inline-language-field').each(function() {
+                var $field = $(this);
+                $field.find('input, select, textarea').each(function() {
+                    $(this).prop('disabled', false);
+                });
+            });
+        });
     });
 })(jQuery);
 
@@ -124,3 +143,103 @@ function initDragula()
         });
     });
 };
+
+/**
+ * Initialize Multi-Language Title Fields functionality
+ * Handles expand/contract behavior for title fields with multiple languages
+ */
+function initMultiLanguageTitles() {
+    // Move additional language fields into their containers
+    $('.multisafepay-additional-language-field').each(function() {
+        const $field = $(this);
+        const baseName = $field.data('base-name');
+        const selector = '.multisafepay-additional-languages[data-base-name="' + baseName + '"]';
+        const $container = $(selector);
+
+        if ($container.length > 0) {
+            // Clone the field and modify its structure for inline display
+            const $clonedField = $field.clone();
+            $clonedField.removeClass('multisafepay-additional-language-field');
+            $clonedField.addClass('multisafepay-inline-language-field');
+            $clonedField.css('display', 'block');
+            $clonedField.css('margin-bottom', '8px');
+
+            // Modify the structure to be more compact
+            const $label = $clonedField.find('.control-label');
+            const $inputContainer = $clonedField.find('.col-lg-9');
+            const $input = $clonedField.find('input');
+
+            $clonedField.removeClass('form-group');
+            $clonedField.addClass('row');
+            // Keep the same proportions as the main field: col-lg-3 and col-lg-9
+            $label.removeClass('col-lg-3').addClass('col-lg-3');
+            $inputContainer.removeClass('col-lg-9').addClass('col-lg-9');
+
+            // Fix accessibility: Associate label with input
+            const inputId = $input.attr('id');
+            if (inputId && !$label.attr('for')) {
+                $label.attr('for', inputId);
+            }
+
+            // Remove help text from cloned field (we only want it in the main field)
+            $clonedField.find('.help-block').remove();
+
+            // Extract language name from label and show only the language
+            const labelText = $label.text().trim();
+            const match = labelText.match(/\(([^)]+)\)$/);
+            if (match && match[1]) {
+                // If we found a language in parentheses, use only that
+                $label.text(match[1]);
+            }
+
+            $container.append($clonedField);
+
+            // Remove the original field
+            $field.remove();
+        }
+    });
+
+    // Get all language toggle buttons once to avoid duplicate selector
+    const $languageToggleButtons = $('.multisafepay-language-toggle');
+
+    // Initialize all buttons as collapsed (white background)
+    $languageToggleButtons.addClass('collapsed');
+
+    // Hide toggle buttons if there are no additional languages
+    $languageToggleButtons.each(function() {
+        const $button = $(this);
+        const baseName = $button.data('base-name');
+        const selector = '.multisafepay-additional-languages[data-base-name="' + baseName + '"]';
+        const $container = $(selector);
+
+        // Ensure $container is a valid jQuery object before calling methods
+        if ($container.children().length === 0) {
+            $button.hide();
+        }
+    });
+
+    // Handle toggle button clicks
+    $languageToggleButtons.on('click', function(e) {
+        e.preventDefault();
+        const $button = $(this);
+        const baseName = $button.data('base-name');
+        const selector = '.multisafepay-additional-languages[data-base-name="' + baseName + '"]';
+        const $container = $(selector);
+        const $icon = $button.find('.toggle-icon');
+
+        // Ensure $container is a valid jQuery object before calling methods
+        if ($container.is(':visible')) {
+            // Collapse
+            $container.slideUp(300);
+            $icon.html('&#xE313;'); // keyboard_arrow_down
+            $button.attr('title', 'Expand Other Languages');
+            $button.removeClass('expanded').addClass('collapsed');
+        } else {
+            // Expand
+            $container.slideDown(300);
+            $icon.html('&#xE316;'); // keyboard_arrow_up
+            $button.attr('title', 'Contract Other Languages');
+            $button.removeClass('collapsed').addClass('expanded');
+        }
+    });
+}
