@@ -73,6 +73,11 @@ class ShippingItemBuilder implements ShoppingCartBuilderInterface
     }
 
     /**
+     * Build a shipping tax rate calculated from PrestaShop's values.
+     *
+     * Calculates the shipping tax rate by comparing total shipping with tax vs without tax.
+     * Uses epsilon comparison (0.0001) for float comparisons to ensure mathematical precision.
+     *
      * @param Cart $cart
      * @param array $cartSummary
      * @param string $currencyIsoCode
@@ -82,23 +87,36 @@ class ShippingItemBuilder implements ShoppingCartBuilderInterface
      */
     public function build(Cart $cart, array $cartSummary, string $currencyIsoCode): array
     {
-        $shippingItem = new ShippingItem();
+        // Extract shipping costs from PrestaShop's cart summary
+        $totalShippingTaxExc = (float)($cartSummary['total_shipping_tax_exc'] ?? 0.0);
+        $totalShippingTaxInc = (float)($cartSummary['total_shipping'] ?? 0.0);
 
-        $totalShippingTax = $cartSummary['total_shipping'] - $cartSummary['total_shipping_tax_exc'];
-        $shippingTaxRate  = $cartSummary['total_shipping'] > 0 ?
-            ($totalShippingTax * 100) / ($cartSummary['total_shipping'] - $totalShippingTax) : 0;
+        // Calculate tax rate, protecting against division by zero
+        // Note: Free shipping (€0) is valid and should create an item with 0% tax
+        if ($totalShippingTaxExc <= TaxHelper::EPSILON) {
+            $taxRate = 0.0;
+        } else {
+            // Calculate the tax amount by subtracting base price from final price
+            $totalShippingTax = $totalShippingTaxInc - $totalShippingTaxExc;
+            // Calculate tax rate as a percentage
+            $taxRate = ($totalShippingTax * 100) / $totalShippingTaxExc;
+        }
+        $taxRate = round($taxRate, 2);
 
+        // Apply special rounding for Billink payment gateway if needed
         if ($this->currentGatewayCode === TaxHelper::GATEWAY_CODE_BILLINK) {
-            $shippingTaxRate = TaxHelper::roundTaxRateForBillink($shippingTaxRate);
+            $taxRate = TaxHelper::roundTaxRateForBillink($taxRate);
         }
 
+        // Build the shipping item with calculated values
+        $shippingItem = new ShippingItem();
         $shippingItem
             ->addName(($cartSummary['carrier']->name ?? $this->module->l('Shipping', self::CLASS_NAME)))
             ->addQuantity(1)
             ->addUnitPrice(
-                MoneyHelper::createMoney((float)$cartSummary['total_shipping_tax_exc'], $currencyIsoCode)
+                MoneyHelper::createMoney($totalShippingTaxExc, $currencyIsoCode)
             )
-            ->addTaxRate($shippingTaxRate);
+            ->addTaxRate($taxRate);
 
         return [$shippingItem];
     }

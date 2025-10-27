@@ -23,7 +23,9 @@
 namespace MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder;
 
 use Cart;
+use MultiSafepay\Exception\InvalidArgumentException;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
+use MultiSafepay\PrestaShop\Helper\TaxHelper;
 use MultiSafepay\ValueObject\CartItem;
 use MultisafepayOfficial;
 
@@ -32,7 +34,7 @@ if (!defined('_PS_VERSION_')) {
 }
 
 /**
- * Class DiscountItemBuilder
+ * Class WrappingItemBuilder
  * @package MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder
  */
 class WrappingItemBuilder implements ShoppingCartBuilderInterface
@@ -45,7 +47,12 @@ class WrappingItemBuilder implements ShoppingCartBuilderInterface
     private $module;
 
     /**
-     * DiscountItemBuilder constructor.
+     * @var string|null
+     */
+    private $currentGatewayCode = null;
+
+    /**
+     * WrappingItemBuilder constructor.
      *
      * @param MultisafepayOfficial $module
      */
@@ -55,28 +62,70 @@ class WrappingItemBuilder implements ShoppingCartBuilderInterface
     }
 
     /**
+     * Set the current gateway code for this request
+     *
+     * @param string $gatewayCode
+     * @return void
+     */
+    public function setCurrentGatewayCode(string $gatewayCode): void
+    {
+        $this->currentGatewayCode = $gatewayCode;
+    }
+
+    /**
+     * Build a gift wrapping cart item with tax rate calculated from PrestaShop's values.
+     *
+     * PrestaShop can apply taxes to gift wrapping based on PS_GIFT_WRAPPING_TAX_RULES_GROUP configuration.
+     * The cart summary provides both total_wrapping (with tax) and total_wrapping_tax_exc (without tax).
+     *
+     * Calculates the tax rate by comparing the wrapping cost with tax vs without tax.
+     * Uses epsilon comparison (0.0001) for float comparisons to ensure mathematical precision
+     * and avoid floating point precision issues when detecting zero taxes.
+     *
      * @param Cart $cart
      * @param array $cartSummary
      * @param string $currencyIsoCode
      *
      * @return array|CartItem[]
+     * @throws InvalidArgumentException
      */
     public function build(Cart $cart, array $cartSummary, string $currencyIsoCode): array
     {
-        $totalWrapping = $cartSummary['total_wrapping'] ?? 0;
-        if ($totalWrapping <= 0) {
+        // Extract wrapping amounts calculated by PrestaShop
+        $totalWrappingTaxExc = (float)($cartSummary['total_wrapping_tax_exc'] ?? 0.0);
+        $totalWrappingTaxInc = (float)($cartSummary['total_wrapping'] ?? 0.0);
+
+        // Only skip if BOTH values are zero/negligible (no wrapping at all)
+        // If only one is zero, it could be valid wrapping with 0% VAT
+        if ($totalWrappingTaxExc <= TaxHelper::EPSILON &&
+            $totalWrappingTaxInc <= TaxHelper::EPSILON) {
             return [];
         }
 
-        $cartItem = new CartItem();
-        $cartItem
+        // Protect against division by zero when calculating tax rate
+        if ($totalWrappingTaxExc <= TaxHelper::EPSILON) {
+            $taxRate = 0.0;
+        } else {
+            // Calculate the tax amount by subtracting both prices
+            $totalWrappingTax = $totalWrappingTaxInc - $totalWrappingTaxExc;
+            // Calculate tax rate as a percentage
+            $taxRate = ($totalWrappingTax * 100) / $totalWrappingTaxExc;
+        }
+        $taxRate = round($taxRate, 2);
+
+        // Apply special rounding for Billink payment gateway if needed
+        if ($this->currentGatewayCode === TaxHelper::GATEWAY_CODE_BILLINK) {
+            $taxRate = TaxHelper::roundTaxRateForBillink($taxRate);
+        }
+
+        $cartItem = (new CartItem())
             ->addName($this->module->l('Wrapping', self::CLASS_NAME))
             ->addQuantity(1)
             ->addMerchantItemId('Wrapping')
             ->addUnitPrice(
-                MoneyHelper::createMoney($totalWrapping, $currencyIsoCode)
+                MoneyHelper::createMoney($totalWrappingTaxExc, $currencyIsoCode)
             )
-            ->addTaxRate(0);
+            ->addTaxRate($taxRate);
 
         return [$cartItem];
     }

@@ -23,7 +23,9 @@
 namespace MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder;
 
 use Cart;
+use MultiSafepay\Exception\InvalidArgumentException;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
+use MultiSafepay\PrestaShop\Helper\TaxHelper;
 use MultiSafepay\ValueObject\CartItem;
 use MultisafepayOfficial;
 
@@ -45,6 +47,11 @@ class DiscountItemBuilder implements ShoppingCartBuilderInterface
     private $module;
 
     /**
+     * @var string|null
+     */
+    private $currentGatewayCode = null;
+
+    /**
      * DiscountItemBuilder constructor.
      *
      * @param MultisafepayOfficial $module
@@ -55,28 +62,70 @@ class DiscountItemBuilder implements ShoppingCartBuilderInterface
     }
 
     /**
+     * Set the current gateway code for this request
+     *
+     * @param string $gatewayCode
+     * @return void
+     */
+    public function setCurrentGatewayCode(string $gatewayCode): void
+    {
+        $this->currentGatewayCode = $gatewayCode;
+    }
+
+    /**
+     * Build a discount cart item with tax rate calculated from PrestaShop's values.
+     *
+     * This method creates a discount item using PrestaShop's discount amounts and calculates
+     * the tax rate by comparing the total discount with tax vs without tax.
+     *
+     * The tax rate is derived using the formula:
+     * taxRate = ((totalDiscountWithTax - totalDiscountWithoutTax) / totalDiscountWithoutTax) * 100
+     *
+     * The calculated tax rate is rounded to 2 decimals for compatibility with payment gateways
+     * that expect standard tax rates (e.g., 21.00%, 10.00%, 4.00%).
+     *
      * @param Cart $cart
      * @param array $cartSummary
      * @param string $currencyIsoCode
      *
-     * @return array|CartItem[]
+     * @return array|CartItem[] Array containing the discount CartItem, or empty array if no discount
+     * @throws InvalidArgumentException
      */
     public function build(Cart $cart, array $cartSummary, string $currencyIsoCode): array
     {
-        $totalDiscount = $cartSummary['total_discounts'] ?? 0;
-        if ($totalDiscount <= 0) {
+        // Extract discount amounts calculated by PrestaShop
+        $totalDiscountTaxExc = (float)($cartSummary['total_discounts_tax_exc'] ?? 0.0);
+        $totalDiscountTaxInc = (float)($cartSummary['total_discounts'] ?? 0.0);
+
+        // Only skip if BOTH values are zero/negligible (no discount at all)
+        // If only one is zero, it could be a valid discount on tax-exempt products
+        if ($totalDiscountTaxExc <= TaxHelper::EPSILON &&
+            $totalDiscountTaxInc <= TaxHelper::EPSILON) {
             return [];
         }
 
-        $cartItem = new CartItem();
-        $cartItem
+        // Protect against division by zero when calculating tax rate
+        if ($totalDiscountTaxExc <= TaxHelper::EPSILON) {
+            $taxRate = 0.0;
+        } else {
+            // Calculate the tax amount by subtracting both prices
+            $totalDiscountTax = $totalDiscountTaxInc - $totalDiscountTaxExc;
+            // Calculate tax rate as a percentage
+            $taxRate = ($totalDiscountTax * 100) / $totalDiscountTaxExc;
+        }
+        $taxRate = round($taxRate, 2);
+
+        // Apply special rounding for Billink payment gateway if needed
+        if ($this->currentGatewayCode === TaxHelper::GATEWAY_CODE_BILLINK) {
+            $taxRate = TaxHelper::roundTaxRateForBillink($taxRate);
+        }
+
+        $cartItem = (new CartItem())
             ->addName($this->module->l('Discount', self::CLASS_NAME))
             ->addQuantity(1)
             ->addMerchantItemId('Discount')
-            ->addUnitPrice(
-                MoneyHelper::createMoney(-$totalDiscount, $currencyIsoCode)
-            )
-            ->addTaxRate(0);
+            ->addUnitPrice(MoneyHelper::createMoney(-$totalDiscountTaxExc, $currencyIsoCode))
+            ->addTaxRate($taxRate);
 
         return [$cartItem];
     }

@@ -24,6 +24,7 @@ namespace MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder;
 
 use Cart;
 use Configuration;
+use MultiSafepay\Exception\InvalidArgumentException;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultiSafepay\PrestaShop\Helper\TaxHelper;
 use MultiSafepay\ValueObject\CartItem;
@@ -41,7 +42,7 @@ if (!defined('_PS_VERSION_')) {
  */
 class CartItemBuilder implements ShoppingCartBuilderInterface
 {
-    public const PRESTASHOP_ROUNDING_PRECISION = 2;
+    public const PRESTASHOP_ROUNDING_PRECISION = 10;
 
     /**
      * @var string|null
@@ -65,6 +66,7 @@ class CartItemBuilder implements ShoppingCartBuilderInterface
      * @param string $currencyIsoCode
      *
      * @return array|CartItem[]
+     * @throws InvalidArgumentException
      */
     public function build(Cart $cart, array $cartSummary, string $currencyIsoCode): array
     {
@@ -91,6 +93,7 @@ class CartItemBuilder implements ShoppingCartBuilderInterface
      * @param string $weightUnit
      *
      * @return CartItem
+     * @throws InvalidArgumentException
      */
     private function createCartItemFromProduct(
         array $product,
@@ -125,19 +128,35 @@ class CartItemBuilder implements ShoppingCartBuilderInterface
     }
 
     /**
-     * @param array $product
-     * @return float
+     * Calculate the tax rate for a product, ensuring consistency with PrestaShop's calculations.
+     *
+     * Uses the same epsilon comparison approach as calculatePriceForProduct() to safely
+     * detect when a product has no taxes applied, avoiding floating point precision issues.
+     *
+     * Prefers total_wt over price_wt to handle group discounts and specific prices correctly,
+     * matching the same data source used for price calculations.
+     *
+     * @param array $product Product data array from Cart::getProductsWithSeparatedGifts()
+     * @return float Tax rate as percentage
      */
     private function calculateProductTaxRate(array $product): float
     {
-        // Case in which the product has a product rate set, but the product in the order does not contain taxes
-        $priceWithTaxes = $product['price_wt'] ? $product['price_wt'] : $product['price_with_reduction'];
-        if ($priceWithTaxes === $product['price']) {
-            return 0;
+        // Use the exact price calculated by PrestaShop; otherwise, fallback to our previous way
+        $priceWithTax = !empty($product['total_wt']) && (float)$product['quantity'] > 0.0
+            ? (float)$product['total_wt'] / (float)$product['quantity']
+            : (float)($product['price_wt'] ?: $product['price_with_reduction']);
+
+        $priceWithoutTax = (float)$product['price'];
+
+        // Use epsilon comparison for float precision safety
+        // If prices are equal (within epsilon), there are no taxes
+        if (abs($priceWithTax - $priceWithoutTax) < TaxHelper::EPSILON) {
+            return 0.0;
         }
 
-        $taxRate = (float)$product['rate'];
+        $taxRate = round($product['rate'], 2);
 
+        // Apply special rounding for Billink payment gateway if needed
         if ($this->currentGatewayCode === TaxHelper::GATEWAY_CODE_BILLINK) {
             $taxRate = TaxHelper::roundTaxRateForBillink($taxRate);
         }
@@ -146,10 +165,21 @@ class CartItemBuilder implements ShoppingCartBuilderInterface
     }
 
     /**
-     * @param array $product
-     * @param int $orderRoundType
+     * Calculate the price for a product without taxes, ensuring consistency with PrestaShop's calculations.
      *
-     * @return float
+     * PrestaShop applies users group discounts at the cart level, not at the individual product level.
+     * The 'total_wt' field contains the final price already calculated by PrestaShop with all discounts applied.
+     *
+     * By dividing 'total_wt' by 'quantity', we get the exact unit price that PrestaShop is using.
+     * This ensures we use exactly the same figure as PrestaShop, eliminating cent differences.
+     *
+     * Handles all rounding configurations: PS_ROUND_TYPE and PS_PRICE_ROUND_MODE via Tools::ps_round(),
+     * and group discounts, specific prices, cart rules - all included in total_wt
+     *
+     * @param array $product Product data array from Cart::getProductsWithSeparatedGifts()
+     * @param int $orderRoundType PrestaShop's rounding type configuration (PS_ROUND_TYPE)
+     *
+     * @return float Price without taxes, ready for MultiSafepay API
      */
     private function calculatePriceForProduct(array $product, int $orderRoundType): float
     {
@@ -157,26 +187,35 @@ class CartItemBuilder implements ShoppingCartBuilderInterface
          * If the product is a gift product, the price should be 0
          */
         if ($this->productIsGift($product)) {
-            return 0;
+            return 0.0;
         }
+
+        // Use the exact price calculated by PrestaShop; otherwise, fallback to our previous way
+        $priceWithTax = !empty($product['total_wt']) && (float)$product['quantity'] > 0.0
+            ? (float)$product['total_wt'] / (float)$product['quantity']
+            : (float)($product['price_wt'] ?: $product['price_with_reduction']);
 
         $taxRate = (float)$product['rate'];
-        $price   = $product['price_wt'] ?: $product['price_with_reduction'];
 
-        // Case in which the product have a product rate set, but the product in the order do not contain taxes
-        if ($price === $product['price']) {
-            return Tools::ps_round($price, self::PRESTASHOP_ROUNDING_PRECISION);
+        // Case where there are no taxes or the price is already without taxes
+        // Using epsilon comparison for float precision safety as comparing floats
+        // with === can fail due to floating point precision issues.
+        if (abs($taxRate) < TaxHelper::EPSILON || abs($priceWithTax - (float)$product['price']) < TaxHelper::EPSILON) {
+            return Tools::ps_round($priceWithTax, self::PRESTASHOP_ROUNDING_PRECISION);
         }
+
+        // Calculate price without taxes using the same method as PrestaShop
+        $priceWithoutTax = $priceWithTax / (1 + ($taxRate / 100));
 
         /**
          * If rounding mode is set to round per item, we have to round the price of each item before
-         * adding it to the shopping cart to prevent 1 cent differences
+         * adding it to the shopping cart to prevent 1 cent differences.
          */
         if (Order::ROUND_ITEM === $orderRoundType) {
-            $price = Tools::ps_round($price, self::PRESTASHOP_ROUNDING_PRECISION);
+            $priceWithoutTax = Tools::ps_round($priceWithoutTax, self::PRESTASHOP_ROUNDING_PRECISION);
         }
 
-        return $price * 100 / (100 + $taxRate);
+        return $priceWithoutTax;
     }
 
     /**
@@ -189,6 +228,7 @@ class CartItemBuilder implements ShoppingCartBuilderInterface
      * @param Weight|null $weight
      *
      * @return CartItem
+     * @throws InvalidArgumentException
      */
     private function createCartItem(
         string $name,
@@ -199,8 +239,7 @@ class CartItemBuilder implements ShoppingCartBuilderInterface
         float $taxrate,
         ?Weight $weight = null
     ): CartItem {
-        $cartItem = new CartItem();
-        $cartItem
+        $cartItem = (new CartItem())
             ->addName($name)
             ->addQuantity($quantity)
             ->addMerchantItemId($merchantItemId)

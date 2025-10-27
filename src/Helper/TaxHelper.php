@@ -35,6 +35,11 @@ class TaxHelper
     public const GATEWAY_CODE_BILLINK = 'BILLINK';
 
     /**
+     * Epsilon value for float comparison to avoid floating point precision issues
+     */
+    public const EPSILON = 0.0001;
+
+    /**
      * Round tax rate for BILLINK gateway to prevent rounding issues
      *
      * @param float $taxRate
