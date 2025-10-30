@@ -544,8 +544,19 @@ class ContextAdapter
         try {
             $idLang = self::getLanguageId($context);
             if ($idLang) {
-                $localeResult = Language::getLocaleById($idLang);
-                $locale = $localeResult ? Tools::substr($localeResult, 0, 2) : null;
+                // Use Language object's locale property for backward compatibility
+                $language = new Language($idLang);
+
+                // Validate that language object was loaded successfully
+                if (!$language->id || (int)$language->id !== $idLang || empty($language->locale)) {
+                    LoggerHelper::log(
+                        'error',
+                        'Language object not loaded properly or locale is empty for ID: ' . $idLang
+                    );
+                    return null;
+                }
+
+                $locale = Tools::substr($language->locale, 0, 2);
                 LoggerHelper::log(
                     'info',
                     'Successfully retrieved locale: ' . ($locale ?: 'null') . ' for language ID: ' . $idLang

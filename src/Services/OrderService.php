@@ -35,7 +35,6 @@ use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultisafepayOfficial;
 use PrestaShopCollection;
-use PrestaShopDatabaseException;
 use PrestaShopException;
 use Psr\Http\Client\ClientExceptionInterface;
 
@@ -89,8 +88,6 @@ class OrderService
      * @param Cart|null $cart The cart object to use for order data
      *
      * @return array
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
      * @throws Exception
      * @throws ClientExceptionInterface
      */
@@ -114,12 +111,14 @@ class OrderService
             throw new Exception('No active cart found');
         }
 
-        // Get currency from cart or context
-        if ($cart->id_currency) {
-            $isoCode = Currency::getIsoCodeById($cart->id_currency);
-        } else {
-            $isoCode = ContextAdapter::getCurrency($this->module->getModuleContext())->iso_code;
+        // Get currency from cart or context (fallback to context if cart currency is invalid/empty)
+        // Note: Variable assignment and conditional check are required for PHPStan type inference
+        $isoCode = null;
+        $currencyId = (int)$cart->id_currency;
+        if ($currencyId > 0) {
+            $isoCode = (new Currency($currencyId))->iso_code;
         }
+        $isoCode = $isoCode ?? ContextAdapter::getCurrency($this->module->getModuleContext())->iso_code;
 
         $amount = MoneyHelper::priceToCents($cart->getOrderTotal());
 
