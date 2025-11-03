@@ -6,6 +6,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 6.1.0
+Release date: Nov 3rd, 2025
+
+### Added
++ PRES-481: Add translations to customize each payment method title
+
+### Changed
++ PRES-469: Refactor the plugin to comply with the PrestaShop Validator Tool
+
+### Fixed
++ PRES-485: Fix Payment Components is broken on version 1.7.6.X
++ PRES-484: Fix cents differences rounding between PrestaShop cart total and MultiSafepay total
++ PRES-478: Fix branded credit cards appear at the top of payment method
+
+### Removed
++ DAVAMS-920: Remove Zinia payment method
+
+***
+
 ## 6.0.1
 Release date: Jul 24th, 2025
 
