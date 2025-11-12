@@ -101,10 +101,12 @@ class MultisafepayOfficialNotificationModuleFrontController extends ModuleFrontC
         try {
             $notificationService->processNotification($transaction, $cart);
         } catch (PrestaShopException $prestaShopException) {
+            http_response_code(500);
             header('Content-Type: text/plain');
             echo $prestaShopException->getMessage();
+            die();
         }
 
-        echo ' OK';
+        echo 'OK';
     }
 }

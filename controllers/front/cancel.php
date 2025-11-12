@@ -52,7 +52,7 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
                 null,
                 $cartId ?: null
             );
-            header('HTTP/1.0 400 Bad request');
+            http_response_code(400);
             die();
         }
 
