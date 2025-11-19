@@ -21,8 +21,10 @@
  */
 
 use MultiSafepay\Api\Transactions\Transaction;
+use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\PrestaShop\Helper\CancelOrderHelper;
+use MultiSafepay\PrestaShop\Helper\ConfigHelper;
 use MultiSafepay\PrestaShop\Helper\DuplicateCartHelper;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Services\SdkService;
@@ -57,7 +59,27 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
         }
 
         $cart = new Cart($cartId);
-        $ordersIds = [];
+        $transaction = null;
+
+        // Check payment status in MultiSafepay before attempting to cancel
+        try {
+            $sdkService         = new SdkService();
+            $transactionManager = $sdkService->getSdk()->getTransactionManager();
+            $transaction = $transactionManager->get(Tools::getValue('id_reference'));
+
+            // Validate transaction status - will redirect if not cancellable
+            $this->validateTransactionStatusForCancellation($transaction, $cartId);
+        } catch (ApiException $apiException) {
+            // If we cannot verify the payment status in MultiSafepay, do not cancel for safety
+            LoggerHelper::logException(
+                'error',
+                $apiException,
+                'Cannot verify payment status in MultiSafepay. Cancellation aborted for safety',
+                null,
+                $cart->id ?? null
+            );
+            Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+        }
 
         // If an order was created before payment, then we need to duplicate the cart and cancel the order
         if ($cart->orderExists()) {
@@ -75,54 +97,48 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
 
                 // Prevent canceling an order if the current order status is not initialized or backorder unpaid
                 if (!$this->canOrderBeCancelled($order)) {
+                    LoggerHelper::log(
+                        'warning',
+                        'Order ' . $order->id . ' cannot be cancelled. Current state: ' . $order->current_state,
+                        true,
+                        (string)$order->id,
+                        $cartId
+                    );
                     Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
                 }
-                $ordersIds[] = $order->id ?? null;
             }
 
-            // Cancel orders
+            // Cancel order
             CancelOrderHelper::cancelOrder($orderCollection);
         }
 
-        try {
-            $sdkService         = new SdkService();
-            $transactionManager = $sdkService->getSdk()->getTransactionManager();
+        // Show appropriate error message based on transaction status
+        $errorMessage = $this->module->l('Your transaction was declined, please try again', 'cancel');
 
-            $transaction = $transactionManager->get(Tools::getValue('id_reference'));
-
-            if ($transaction->getStatus() !== Transaction::DECLINED) {
-                // Redirect to checkout page
-                Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+        // Customize message based on transaction status if available
+        if ($transaction !== null) {
+            $status = $transaction->getStatus();
+            switch ($status) {
+                case Transaction::CANCELLED:
+                    $errorMessage = $this->module->l('Your transaction was cancelled', 'cancel');
+                    break;
+                case Transaction::EXPIRED:
+                    $errorMessage = $this->module->l('Your transaction has expired, please try again', 'cancel');
+                    break;
+                case Transaction::VOID:
+                    $errorMessage = $this->module->l('Your transaction was voided', 'cancel');
+                    break;
+                case Transaction::DECLINED:
+                default:
+                    $errorMessage = $this->module->l('Your transaction was declined, please try again', 'cancel');
+                    break;
             }
-        } catch (ApiException $apiException) {
-            $tempOrderId = implode(',', array_filter($ordersIds, static function ($value) {
-                return !empty($value);
-            }));
-            $orderId = !empty($tempOrderId) ? $tempOrderId : null;
-
-            LoggerHelper::logException(
-                'error',
-                $apiException,
-                '',
-                $orderId,
-                $cart->id ?? null
-            );
-
-            $this->context->smarty->assign(
-                [
-                    'layout'         => 'full-width-template',
-                    'error_message'  => $this->module->l('There was a problem getting the status of
-                                                        the transaction, please try again', 'cancel')
-                ]
-            );
-
-            return $this->setTemplate('module:multisafepayofficial/views/templates/front/error.tpl');
         }
 
         $this->context->smarty->assign(
             [
                 'layout'         => 'full-width-template',
-                'error_message'  => $this->module->l('Your transaction was declined, please try again', 'cancel')
+                'error_message'  => $errorMessage
             ]
         );
 
@@ -144,17 +160,113 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
     }
 
     /**
+     * Validate if transaction status allows cancellation
+     * Redirects to appropriate page if cancellation is not allowed
+     *
+     * @param TransactionResponse $transaction
+     * @param int $cartId
+     * @return void
+     */
+    private function validateTransactionStatusForCancellation(TransactionResponse $transaction, int $cartId): void
+    {
+        $transactionStatus = $transaction->getStatus();
+
+        // If the payment is already completed, uncleared, or shipped in MultiSafepay, do not cancel
+        $protectedStatuses = [
+            Transaction::COMPLETED,
+            Transaction::UNCLEARED,
+            Transaction::SHIPPED
+        ];
+
+        if (in_array($transactionStatus, $protectedStatuses)) {
+            LoggerHelper::log(
+                'warning',
+                'Cancellation attempt blocked for cart ' . $cartId .
+                '. Payment already ' . $transactionStatus . ' in MultiSafepay',
+                true,
+                null,
+                $cartId
+            );
+            // Redirect to order confirmation if payment was successful
+            Tools::redirect($this->context->link->getPageLink('order-confirmation', true));
+        }
+
+        // Only allow cancellation if the status is explicitly cancellable
+        $cancellableStatuses = [
+            Transaction::DECLINED,
+            Transaction::CANCELLED,
+            Transaction::EXPIRED,
+            Transaction::VOID
+        ];
+
+        if (!in_array($transactionStatus, $cancellableStatuses)) {
+            LoggerHelper::log(
+                'info',
+                'Cancellation redirected for cart ' . $cartId .
+                '. Transaction status is ' . $transactionStatus,
+                true,
+                null,
+                $cartId
+            );
+            Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
+        }
+    }
+
+    /**
      * Check if the current order status is initialized or backorder unpaid
+     * Also checks against final order statuses configured by the merchant
      *
      * @param Order $order
      * @return bool
      */
     private function canOrderBeCancelled(Order $order): bool
     {
-        if ((int)$order->current_state === (int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED') ||
-            (int)$order->current_state === (int)Configuration::get('PS_OS_OUTOFSTOCK_UNPAID')) {
-            return true;
+        $currentState = (int)$order->current_state;
+
+        // Get final order status IDs configured by merchant using the same method as NotificationService
+        $finalOrderStatusSetting = Configuration::get('MULTISAFEPAY_OFFICIAL_FINAL_ORDER_STATUS');
+        $finalStatuses = ConfigHelper::settingToIntArray($finalOrderStatusSetting);
+
+        // Do not cancel if order is in a final state (completed, shipped, etc.)
+        if (in_array($currentState, $finalStatuses, true)) {
+            LoggerHelper::log(
+                'warning',
+                'Order cannot be cancelled. State ' . $currentState .
+                ' is in final order statuses: ' . $finalOrderStatusSetting,
+                true,
+                (string)$order->id,
+                $order->id_cart ?? null
+            );
+            return false;
         }
-        return false;
+
+        // Also check default PrestaShop paid statuses
+        $paidStatuses = [
+            (int)Configuration::get('PS_OS_PAYMENT'),        // Payment accepted
+            (int)Configuration::get('PS_OS_WS_PAYMENT'),     // Remote payment accepted
+            (int)Configuration::get('PS_OS_DELIVERED'),      // Delivered
+            (int)Configuration::get('PS_OS_SHIPPING'),       // Shipped
+            (int)Configuration::get('PS_OS_PREPARATION'),    // Preparation in progress
+        ];
+
+        // Do not cancel if order is already paid or in processing
+        if (in_array($currentState, $paidStatuses)) {
+            LoggerHelper::log(
+                'warning',
+                'Order cannot be cancelled. State ' . $currentState . ' indicates payment was accepted',
+                true,
+                (string)$order->id,
+                $order->id_cart ?? null
+            );
+            return false;
+        }
+
+        // Only allow cancellation if order is in initialized or backorder unpaid status
+        $cancellableStatuses = [
+            (int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED'),
+            (int)Configuration::get('PS_OS_OUTOFSTOCK_UNPAID')
+        ];
+
+        return in_array($currentState, $cancellableStatuses);
     }
 }

@@ -28,6 +28,7 @@ use Exception;
 use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\Api\Transactions\Transaction;
 use MultiSafepay\Exception\InvalidArgumentException;
+use MultiSafepay\PrestaShop\Helper\ConfigHelper;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\OrderMessageHelper;
 use MultiSafepay\Util\Notification;
@@ -543,7 +544,7 @@ abstract class NotificationService
      */
     private function isFinalStatus(int $orderStatus): bool
     {
-        $finalOrderStatuses = $this->settingToIntArray(Configuration::get('MULTISAFEPAY_OFFICIAL_FINAL_ORDER_STATUS'));
+        $finalOrderStatuses = ConfigHelper::settingToIntArray(Configuration::get('MULTISAFEPAY_OFFICIAL_FINAL_ORDER_STATUS'));
 
         return (in_array($orderStatus, $finalOrderStatuses, true));
     }
@@ -569,19 +570,5 @@ abstract class NotificationService
         }
 
         return false;
-    }
-
-    /**
-     * @param string $setting
-     *
-     * @return array
-     */
-    protected function settingToIntArray(string $setting): array
-    {
-        if (strlen($setting) > 0) {
-            return array_map('intval', json_decode($setting));
-        }
-
-        return [];
     }
 }
