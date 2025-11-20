@@ -514,6 +514,18 @@ class SystemStatusService
         if (! empty($settings['MULTISAFEPAY_OFFICIAL_GROUPS_' . $paymentOptionGatewayCode]['value'])) {
             $output .= 'Groups: ' . implode(', ', $settings['MULTISAFEPAY_OFFICIAL_GROUPS_' . $paymentOptionGatewayCode]['value']) . '. ';
         }
+        if (isset($settings['MULTISAFEPAY_OFFICIAL_DIRECT_' . $paymentOptionGatewayCode])) {
+            $directValue = $settings['MULTISAFEPAY_OFFICIAL_DIRECT_' . $paymentOptionGatewayCode]['value'];
+            $output .= 'Direct: ' . ($directValue ? 'Enabled' : 'Disabled') . '. ';
+        }
+        if (isset($settings['MULTISAFEPAY_OFFICIAL_COMPONENT_' . $paymentOptionGatewayCode])) {
+            $componentValue = $settings['MULTISAFEPAY_OFFICIAL_COMPONENT_' . $paymentOptionGatewayCode]['value'];
+            $output .= 'Payment Component: ' . ($componentValue ? 'Enabled' : 'Disabled') . '. ';
+        }
+        if (isset($settings['MULTISAFEPAY_OFFICIAL_TOKENIZATION_' . $paymentOptionGatewayCode])) {
+            $tokenizationValue = $settings['MULTISAFEPAY_OFFICIAL_TOKENIZATION_' . $paymentOptionGatewayCode]['value'];
+            $output .= 'Tokenization: ' . ($tokenizationValue ? 'Enabled' : 'Disabled') . '. ';
+        }
 
         return $output ? $output : 'Default settings';
     }
