@@ -298,6 +298,10 @@ class MultisafepayOfficial extends PaymentModule
             return;
         }
 
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DISABLE_BACKOFFICE_ORDER_PAYMENT_LINK')) {
+            return;
+        }
+
         $paymentLinkText = $this->l('Payment link: ');
         $paymentUrl = $this->paymentUrlEmailHook;
 
