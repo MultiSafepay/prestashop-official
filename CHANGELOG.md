@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 6.1.1
+Release date: Dec 2nd, 2025
+
+### Added
++ PRES-489: Add HTTP 500 response for exceptions raised by PrestaShop during the notification process
++ PRES-496: Add setting field to condition if the Payment Link will be sent by email
+
+### Fixed
++ PRES-494: Fix the issue where the system status does not register the payment method settings
++ PRES-493: Fix the error that occurs when creating an order in the back office with an order status that requires invoice generation
++ PRES-490: Fix race condition preventing order cancellation when notification and cancel URL processes simultaneously
+
+***
+
 ## 6.1.0
 Release date: Nov 3rd, 2025
 
