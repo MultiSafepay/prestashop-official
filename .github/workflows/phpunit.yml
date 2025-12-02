@@ -15,8 +15,10 @@ jobs:
         include:
           - php-version: '7.3'
             prestashop-version: '1.7.8.11'
+          - php-version: '8.1'
+            prestashop-version: '8.2.3'
           - php-version: '8.4'
-            prestashop-version: '9.0.1'
+            prestashop-version: '9.0.0'
     permissions:
       contents: read
     steps:
@@ -49,8 +51,8 @@ jobs:
           # Set PHP version based on matrix
           sed -i "s/PHP_VERSION=.*/PHP_VERSION=${{ matrix.php-version }}/" .env
 
-          # Set PrestaShop version based on matrix with special case for 9.0.1
-          if [ "${{ matrix.prestashop-version }}" = "9.0.1" ]; then
+          # Set PrestaShop version based on matrix with special case for 9.0.0
+          if [ "${{ matrix.prestashop-version }}" = "9.0.0" ]; then
             sed -i "s/PRESTASHOP_VERSION=.*/PRESTASHOP_VERSION=9.0.x/" .env
           else
             sed -i "s/PRESTASHOP_VERSION=.*/PRESTASHOP_VERSION=${{ matrix.prestashop-version }}/" .env
@@ -92,19 +94,19 @@ jobs:
           COMPOSE_INTERACTIVE_NO_CLI: 1
 
       - name: Run PHPUnit PrestaShop 1.7.8.x and 8.2.x (without coverage)
-        if: matrix.prestashop-version == '1.7.8.11'
-        run: docker compose exec -e XDEBUG_MODE=coverage -T --workdir /var/www/html/modules/multisafepayofficial app vendor/bin/phpunit --testsuite prestashop-unit-tests
+        if: matrix.prestashop-version == '1.7.8.11' || matrix.prestashop-version == '8.2.3'
+        run: docker compose exec -T --workdir /var/www/html/modules/multisafepayofficial app vendor/bin/phpunit --testsuite prestashop-unit-tests
         working-directory: docker-prestashop
 
       - name: Run PHPUnit on PS 9.0 (with coverage)
-        if: matrix.prestashop-version == '9.0.1'
+        if: matrix.prestashop-version == '9.0.0'
         run: |
           docker compose exec -e XDEBUG_MODE=coverage -T --workdir /var/www/html/modules/multisafepayofficial app vendor/bin/phpunit --testsuite prestashop-unit-tests --coverage-clover=coverage.xml
           docker compose cp app:/var/www/html/modules/multisafepayofficial/coverage.xml ./coverage.xml
         working-directory: docker-prestashop
 
       - name: Send coverage.xml from PS 9.0.x to codecov
-        if: matrix.prestashop-version == '9.0.1'
+        if: matrix.prestashop-version == '9.0.0'
         uses: codecov/codecov-action@v5
         with:
           directory: docker-prestashop
