@@ -164,14 +164,19 @@ class GooglePayDirect {
             // Create a wrapper div to avoid the PrestaShop automated disabling
             const wrapperDiv = document.createElement('div');
 
-            // Add the click event to the wrapper to avoid the propagation,
-            // so the button can be clicked without activate the redirect mode
+            // Validates Terms of Service BEFORE the click reaches the button.
+            // This intercepts the event early to prevent Google Pay from processing if TOS is not checked.
             wrapperDiv.addEventListener('click', (event) => {
                 if (!this.validateTosAndPreventEvent(event, 'wrapper')) {
                     return false;
                 }
-                event.stopPropagation();
             }, true);
+
+            // Stops the event from propagating UP to parent elements.
+            // This prevents One Page Checkout (OPC) from intercepting the click and triggering redirect mode.
+            wrapperDiv.addEventListener('click', (event) => {
+                event.stopPropagation();
+            }, false);
 
             // Add the OPC classes to the button
             if (this.isLegacyOPC) {
@@ -180,6 +185,15 @@ class GooglePayDirect {
                 button.firstChild.classList.add('btn', 'btn-primary', 'btn-lg', 'pull-right');
             } else if (this.isLatestOPC) {
                 buttonContainer.style.textAlign = 'right';
+
+                // Override OPC styles for Google Pay button
+                const gpayButton = button.querySelector('button');
+                if (gpayButton) {
+                    gpayButton.style.setProperty('min-height', 'auto', 'important');
+                    gpayButton.style.setProperty('max-height', 'none', 'important');
+                    gpayButton.style.setProperty('background-color', '#000', 'important');
+                    gpayButton.style.setProperty('height', '40px', 'important');
+                }
             }
             // Append the button to the wrapper
             wrapperDiv.appendChild(button);

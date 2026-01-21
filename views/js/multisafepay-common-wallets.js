@@ -369,10 +369,20 @@ class GoogleApplePayDirectHandler {
 
                     if (!paymentId.includes('container')) {
                         const targetElement = parentElement ? parentElement : element;
+
+                        const radioInput = element.tagName === 'INPUT' ? element : document.getElementById(paymentId);
+                        const isChecked = radioInput && radioInput.checked;
+
                         if (inputGooglePayMatch && googlePayScriptExists) {
                             targetElement.addEventListener('click', () => this.handleGooglePayClick(placeOrderId, containerId));
+                            if (isChecked) {
+                                this.handleGooglePayClick(placeOrderId, containerId);
+                            }
                         } else if (inputApplePayMatch && applePayScriptExists) {
                             targetElement.addEventListener('click', () => this.handleApplePayClick(placeOrderId, containerId));
+                            if (isChecked) {
+                                this.handleApplePayClick(placeOrderId, containerId);
+                            }
                         } else {
                             targetElement.addEventListener('click', () => this.handleOtherPaymentClick(placeOrderId));
                         }
