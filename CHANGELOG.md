@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 6.1.2
+Release date: Jan 23rd, 2026
+
+### Fixed
++ PRES-499: Fix Apple Pay and Google Pay direct buttons when using One Page Checkout PS: The Definitive Checkout
+
+***
+
 ## 6.1.1
 Release date: Dec 2nd, 2025
 
