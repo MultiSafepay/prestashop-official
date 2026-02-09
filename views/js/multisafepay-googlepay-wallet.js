@@ -145,6 +145,10 @@ class GooglePayDirect {
         }
 
         let buttonContainer = document.getElementById(this.containerId);
+        if (!buttonContainer) {
+            debugDirect('Button container not found', this.debug);
+            return;
+        }
 
         // Features of the button
         const button = paymentsClient.createButton({
@@ -181,10 +185,17 @@ class GooglePayDirect {
             // Add the OPC classes to the button
             if (this.isLegacyOPC) {
                 // Add the specific container for the button
-                buttonContainer = document.querySelector('#' + this.containerId + ' > div');
+                const legacyContainer = document.querySelector('#' + this.containerId + ' > div');
+                if (legacyContainer) {
+                    buttonContainer = legacyContainer;
+                } else {
+                    debugDirect('Legacy One Page Checkout button container not found', this.debug);
+                }
                 button.firstChild.classList.add('btn', 'btn-primary', 'btn-lg', 'pull-right');
             } else if (this.isLatestOPC) {
-                buttonContainer.style.textAlign = 'right';
+                if (buttonContainer) {
+                    buttonContainer.style.textAlign = 'right';
+                }
 
                 // Override OPC styles for Google Pay button
                 const gpayButton = button.querySelector('button');
@@ -200,14 +211,15 @@ class GooglePayDirect {
             // Append the wrapper to the container
             buttonContainer.appendChild(wrapperDiv);
         } else {
-            buttonContainer = buttonContainer.parentElement;
+            const parentContainer = buttonContainer.parentElement;
+            if (!parentContainer) {
+                debugDirect('Button container not found', this.debug);
+                return;
+            }
+            buttonContainer = parentContainer;
             // Append the button to the "parent" container,
             // so we can avoid the automated disabling from PrestaShop
             buttonContainer.appendChild(button);
-        }
-
-        if (!buttonContainer) {
-            debugDirect('Button container not found', this.debug);
         }
     }
 

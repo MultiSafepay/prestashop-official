@@ -407,10 +407,13 @@ abstract class NotificationService
      */
     private function checkIfOrderContainsProductsWithoutStock(Order $order): bool
     {
+        $backorderStatusIsNotSupported = version_compare(_PS_VERSION_, '8.1.0', '<');
+        $backorderStatusEnabled = $backorderStatusIsNotSupported || Configuration::get('PS_ENABLE_BACKORDER_STATUS');
+
         $orderDetailList = $order->getOrderDetailList();
         foreach ($orderDetailList as $orderDetail) {
             $orderDetailObject = new OrderDetail($orderDetail['id_order_detail']);
-            if (Configuration::get('PS_STOCK_MANAGEMENT') &&
+            if (Configuration::get('PS_STOCK_MANAGEMENT') && $backorderStatusEnabled &&
                 (
                     ($orderDetailObject->getStockState() || $orderDetailObject->product_quantity_in_stock <= 0) ||
                     ($orderDetailObject->product_quantity > $orderDetailObject->product_quantity_in_stock)

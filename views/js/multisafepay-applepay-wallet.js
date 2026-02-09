@@ -90,6 +90,10 @@ class ApplePayDirect {
         cleanUpDirectButtons();
 
         let buttonContainer = document.getElementById(this.containerId);
+        if (!buttonContainer) {
+            debugDirect('Button container not found', this.debug);
+            return;
+        }
 
         // Features of the button
         const button = document.createElement('button');
@@ -111,10 +115,18 @@ class ApplePayDirect {
             // Add the OPC classes to the button
             button.className += ' btn btn-primary btn-lg pull-right';
             if (this.isLegacyOPC) {
-                buttonContainer = document.querySelector('#' + this.containerId + ' > div');
+                const legacyContainer = document.querySelector('#' + this.containerId + ' > div');
+                if (legacyContainer) {
+                    buttonContainer = legacyContainer;
+                } else {
+                    debugDirect('Legacy One Page Checkout button container not found', this.debug, 'warn');
+                }
             } else {
-                buttonContainer.style.textAlign = 'right';
+                if (buttonContainer) {
+                    buttonContainer.style.textAlign = 'right';
+                }
             }
+
             // Append the button to the wrapper
             wrapperDiv.appendChild(button);
             // Append the wrapper to the container
@@ -124,11 +136,11 @@ class ApplePayDirect {
             // Append the button to the "parent" container,
             // so we can avoid the automated disabling from PrestaShop
             buttonContainer = buttonContainer.parentElement;
+            if (!buttonContainer) {
+                debugDirect('Button container not found', this.debug);
+                return;
+            }
             buttonContainer.appendChild(button);
-        }
-
-        if (!buttonContainer) {
-            debugDirect('Button container not found', this.debug);
         }
     }
 

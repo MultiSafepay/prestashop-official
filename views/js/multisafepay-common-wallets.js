@@ -66,12 +66,46 @@ function cleanUpDirectButtons()
 function isTosChecked()
 {
     const conditionsToApprove = document.getElementById('conditions-to-approve');
-    if (conditionsToApprove) {
-        if (!conditionsToApprove.checkValidity()) {
-            conditionsToApprove.reportValidity();
+
+    // If the checkout doesn't render Terms of Service (optional in some OPC setups),
+    // we must not block Google Pay / Apple Pay.
+    if (!conditionsToApprove) {
+        return true;
+    }
+
+    // Prefer explicit checkbox validation so we can ignore hidden/disabled fields.
+    const requiredCheckboxes = Array.from(
+        conditionsToApprove.querySelectorAll('input[type="checkbox"][required]')
+    ).filter((checkbox) => {
+        // getClientRects().length === 0 usually means "not visible" (display:none or detached)
+        return !checkbox.disabled && checkbox.getClientRects().length > 0;
+    });
+
+    // No required (visible) checkbox means there's nothing to approve.
+    if (requiredCheckboxes.length === 0) {
+        return true;
+    }
+
+    for (const checkbox of requiredCheckboxes) {
+        if (!checkbox.checked) {
+            checkbox.focus();
+            if (typeof checkbox.reportValidity === 'function') {
+                checkbox.reportValidity();
+            }
             return false;
         }
     }
+
+    // If it's a <form>, keep HTML5 validation for any other constraints that might exist.
+    if (typeof conditionsToApprove.checkValidity === 'function') {
+        if (!conditionsToApprove.checkValidity()) {
+            if (typeof conditionsToApprove.reportValidity === 'function') {
+                conditionsToApprove.reportValidity();
+            }
+            return false;
+        }
+    }
+
     return true;
 }
 
