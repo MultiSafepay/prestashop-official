@@ -26,11 +26,13 @@ use Configuration;
 use Currency;
 use Exception;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\Description;
+use MultiSafepay\Api\Transactions\RefundRequest;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidArgumentException;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
 use MultiSafepay\PrestaShop\Helper\OrderMessageHelper;
+use MultiSafepay\ValueObject\CartItem;
 use MultisafepayOfficial;
 use Order;
 use PrestaShopDatabaseException;
@@ -114,7 +116,7 @@ class RefundService
             $gatewayCode
         );
 
-        // Do not process refunds for gateways that require ShoppingCart
+        // Do not process gateways that do not support refunds
         if (!$paymentOption->canProcessRefunds()) {
             $this->handleMessage(
                 $order,
@@ -124,11 +126,7 @@ class RefundService
             return false;
         }
 
-        $refundRequest = $transactionManager->createRefundRequest($transaction);
-        $addDescription = (new Description)->addDescription('Refund order');
-        $refundRequest->addDescription($addDescription);
-        $refundData = $this->getRefundData($order, $productList);
-        $refundRequest->addMoney(MoneyHelper::createMoney((float)$refundData['amount'], $refundData['currency']));
+        $refundRequest = $this->createRefundRequest($transactionManager, $transaction, $order, $productList);
 
         try {
             $transactionManager->refund($transaction, $refundRequest);
@@ -150,6 +148,7 @@ class RefundService
             return false;
         }
 
+        $refundData = $this->getRefundData($order, $productList);
         $amount = $refundData['amount'];
         $currency = $refundData['currency'];
         $message = 'A refund of ' . $amount . ' ' . $currency . ' has been processed';
@@ -164,6 +163,43 @@ class RefundService
         );
 
         return true;
+    }
+
+    /**
+     * Creates a refund request with the necessary data
+     *
+     * @param mixed $transactionManager
+     * @param mixed $transaction
+     * @param Order $order
+     * @param array $productList
+     *
+     * @return RefundRequest
+     * @throws InvalidArgumentException
+     */
+    public function createRefundRequest($transactionManager, $transaction, Order $order, array $productList): RefundRequest
+    {
+        // If the shopping cart is disabled, or if the transaction does not require a shopping cart, we can create a
+        // simple refund request with just the amount and description. Otherwise, we need to create a refund request
+        // with the shopping cart data.
+        if (Configuration::get('MULTISAFEPAY_OFFICIAL_DISABLE_SHOPPING_CART') || !$transaction->requiresShoppingCart()) {
+            $refundRequest = new RefundRequest();
+            $addDescription = (new Description)->addDescription('Refund order');
+            $refundRequest->addDescription($addDescription);
+            $refundData = $this->getRefundData($order, $productList);
+            $refundRequest->addMoney(MoneyHelper::createMoney((float)$refundData['amount'], $refundData['currency']));
+        } else {
+            $refundRequest = $transactionManager->createRefundRequest($transaction);
+            $refundData = $this->getRefundData($order, $productList);
+            $refundItem = new CartItem();
+            $refundItem->addName('Refund')
+                ->addQuantity(1)
+                ->addUnitPrice(MoneyHelper::createMoney((float)$refundData['amount'], $refundData['currency'])->negative())
+                ->addMerchantItemId('refund_id_' . $order->id . '_' . time())
+                ->addTaxRate(0);
+            $refundRequest->getCheckoutData()->addItem($refundItem);
+        }
+
+        return $refundRequest;
     }
 
     /**

@@ -80,13 +80,6 @@ class BasePaymentOption
     ];
 
     /**
-     * @var array
-     */
-    public const CANNOT_PROCESS_REFUNDS_PAYMENT_METHODS = [
-        'AFTERPAY', 'EINVOICE', 'IN3', 'IN3B2B', 'KLARNA', 'PAYAFTER'
-    ];
-
-    /**
      * @var string
      */
     public $gatewayCode = '';
@@ -230,11 +223,11 @@ class BasePaymentOption
      */
     public function canProcessRefunds(): bool
     {
-        if (in_array($this->gatewayCode, self::CANNOT_PROCESS_REFUNDS_GIFTCARDS, true) ||
-            in_array($this->gatewayCode, self::CANNOT_PROCESS_REFUNDS_PAYMENT_METHODS, true)) {
+        if (in_array($this->gatewayCode, self::CANNOT_PROCESS_REFUNDS_GIFTCARDS, true)) {
             return false;
         }
-        return !$this->paymentMethod->isShoppingCartRequired() && $this->paymentMethod->getType() !== 'COUPON';
+
+        return $this->paymentMethod->getType() !== 'COUPON';
     }
 
     /**
