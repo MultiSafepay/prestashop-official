@@ -394,7 +394,7 @@ class SettingsBuilder
                     [
                         'tab'         => 'general_settings',
                         'type'        => 'text',
-                        'desc'        => $this->module->l("A text which will be shown with the order in MultiSafepay Control. If the customer's bank supports it this description will also be shown on the customer's bank statement. You can include the order number using {order_reference}", self::CLASS_NAME),
+                        'desc'        => $this->module->l("A text which will be shown with the order in MultiSafepay Control. If the customer's bank supports it this description will also be shown on the customer's bank statement. You can include the order reference using {order_reference}. If \"Create order before payment\" is enabled, {order_reference} contains the PrestaShop order reference. If this setting is disabled, {order_reference} contains the shopping cart ID.", self::CLASS_NAME),
                         'name'        => 'MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION',
                         'label'       => $this->module->l('Order description', self::CLASS_NAME),
                         'placeholder' => $this->module->l('Payment for order: {order_reference}', self::CLASS_NAME),
