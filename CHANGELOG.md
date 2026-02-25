@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 6.2.0
+Release date: Feb 25th, 2026
+
+### Added
++ PRES-506: Add clarification of {order_reference} based on the order creation setting
++ PRES-503: Add BNPL refund support
+
+### Fixed
++ PRES-501: Fixing checkValidity() issue in One Page Checkout PS
+
+***
+
 ## 6.1.2
 Release date: Jan 23rd, 2026
 
