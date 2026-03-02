@@ -36,27 +36,63 @@ class AddressUtilTest extends BaseMultiSafepayTest
     protected $addressUtil;
 
     /**
+     * @var PrestaShopAddress
+     */
+    protected $testAddress;
+
+    /**
      * @throws Exception
      */
     public function setUp(): void
     {
         parent::setUp();
         $this->addressUtil = new AddressUtil();
+
+        // Create a real Address object with test data
+        $this->testAddress = new PrestaShopAddress();
+        $this->testAddress->id_customer = 1;
+        $this->testAddress->id_country = 1;
+        $this->testAddress->firstname = 'John';
+        $this->testAddress->lastname = 'Doe';
+        $this->testAddress->address1 = 'Kraanspoor 39';
+        $this->testAddress->address2 = '';
+        $this->testAddress->postcode = '1033 SC';
+        $this->testAddress->city = 'Amsterdam';
+        $this->testAddress->phone = '0612345678';
+        $this->testAddress->company = 'MultiSafepay';
+        $this->testAddress->alias = 'Test Address'; // Required field
+        // Save to get a real ID
+        $this->testAddress->add();
     }
 
     /**
-    * @covers \MultiSafepay\PrestaShop\Util\AddressUtil::getAddress
-    */
+     * @covers \MultiSafepay\PrestaShop\Util\AddressUtil::getAddress
+     */
     public function testGetAddress(): void
     {
-        // Use a real address ID or create a test address in setUp
-        $testAddressId = 1; // Use an existing ID or create a test address
+        // Use the test address ID we created
+        $testAddressId = (int)$this->testAddress->id;
 
-        // Call the actual method directly without mocking
+        // Call the actual method
         $result = $this->addressUtil->getAddress($testAddressId);
 
         // Verify the result
         $this->assertInstanceOf(PrestaShopAddress::class, $result);
-        $this->assertEquals($testAddressId, $result->id);
+        $this->assertEquals($testAddressId, (int)$result->id);
+        $this->assertEquals('John', $result->firstname);
+        $this->assertEquals('Doe', $result->lastname);
+        $this->assertEquals('Amsterdam', $result->city);
+    }
+
+    /**
+     * Clean up after tests
+     */
+    public function tearDown(): void
+    {
+        // Clean up the test address
+        if (isset($this->testAddress) && $this->testAddress->id) {
+            $this->testAddress->delete();
+        }
+        parent::tearDown();
     }
 }

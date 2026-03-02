@@ -92,9 +92,9 @@ class SecondChanceBuilderTest extends TestCase
         try {
             $secondChanceBuilder->build($mockCart, $mockCustomer, $mockPaymentOption, $mockOrderRequest, null);
             $this->assertTrue(true);
-        } catch (Exception $e) {
+        } catch (Exception $exception) {
             // Expected due to missing PrestaShop context in tests
-            $this->assertInstanceOf(Exception::class, $e);
+            $this->assertInstanceOf(Exception::class, $exception);
         }
     }
 

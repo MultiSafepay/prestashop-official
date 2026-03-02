@@ -29,6 +29,8 @@ use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultisafepayOfficial;
 use OrderState;
+use PrestaShopDatabaseException;
+use PrestaShopException;
 use Tab;
 use Tools;
 
@@ -86,6 +88,31 @@ class Installer
             $tab->name[$language['id_lang']] = 'MultiSafepay';
         }
         $tab->add();
+
+        // Install hidden tab for capture controller
+        $this->installCaptureTab();
+    }
+
+    /**
+     * Install the hidden capture controller tab
+     *
+     * This tab is hidden from the menu but allows the controller to be accessed
+     * via the admin link for manual capture functionality.
+     *
+     * @return void
+     */
+    private function installCaptureTab(): void
+    {
+        $captureTab             = new Tab();
+        $captureTab->class_name = 'AdminMultisafepayOfficialCapture';
+        $captureTab->id_parent  = -1; // Hidden tab (not visible in menu)
+        $captureTab->module     = 'multisafepayofficial';
+        $captureTab->active     = true;
+        $languages              = Language::getLanguages(true);
+        foreach ($languages as $language) {
+            $captureTab->name[$language['id_lang']] = 'MultiSafepay Capture';
+        }
+        $captureTab->add();
     }
 
     /**
@@ -119,19 +146,26 @@ class Installer
     /**
      * Register the MultiSafepay Order statuses
      *
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     private function registerMultiSafepayOrderStatuses(): void
     {
+        $multisafepayStatusPrefix = 'MULTISAFEPAY_OFFICIAL_OS_';
         $multisafepayOrderStatuses = $this->getMultiSafepayOrderStatuses();
         foreach ($multisafepayOrderStatuses as $multisafepayOrderStatusKey => $multisafepayOrderStatusValues) {
-            if (!Configuration::get('MULTISAFEPAY_OFFICIAL_OS_' . Tools::strtoupper($multisafepayOrderStatusKey))) {
+            if (!Configuration::get($multisafepayStatusPrefix . Tools::strtoupper($multisafepayOrderStatusKey))) {
                 $orderState = $this->createOrderStatus($multisafepayOrderStatusValues);
                 Configuration::updateGlobalValue(
-                    'MULTISAFEPAY_OFFICIAL_OS_' . Tools::strtoupper($multisafepayOrderStatusKey),
-                    (int) $orderState->id
+                    $multisafepayStatusPrefix . Tools::strtoupper($multisafepayOrderStatusKey),
+                    (int)$orderState->id
                 );
+            }
+            if ($multisafepayOrderStatusKey === 'authorized') {
+                Configuration::updateGlobalValue($multisafepayStatusPrefix . 'AUTHORIZED_STATUS_CREATED', '1');
+            }
+            if ($multisafepayOrderStatusKey === 'partial_captured') {
+                Configuration::updateGlobalValue($multisafepayStatusPrefix . 'PARTIAL_CAPTURED_STATUS_CREATED', '1');
             }
         }
     }
@@ -141,12 +175,12 @@ class Installer
      *
      * @param array $multisafepayOrderStatusValues
      * @return OrderState
-     * @throws \PrestaShopDatabaseException
-     * @throws \PrestaShopException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
      */
     private function createOrderStatus(array $multisafepayOrderStatusValues): OrderState
     {
-        $orderState              = new OrderState();
+        $orderState = new OrderState();
         foreach (Language::getLanguages() as $language) {
             $orderState->name[$language['id_lang']] = 'MultiSafepay ' . $multisafepayOrderStatusValues['name'];
         }
@@ -172,6 +206,33 @@ class Installer
     public function getMultiSafepayOrderStatuses(): array
     {
         return [
+            'authorized' => [
+                'name'      => 'authorized',
+                'send_mail' => false,
+                'color'     => '#207F4B',
+                'invoice'   => false,
+                'template'  => '',
+                'paid'      => false,
+                'logable'   => false
+            ],
+            'partial_captured' => [
+                'name'      => 'partially captured',
+                'send_mail' => false,
+                'color'     => '#A700D3',
+                'invoice'   => false,
+                'template'  => '',
+                'paid'      => false,
+                'logable'   => false
+            ],
+            'chargeback' => [
+                'name'      => 'chargeback',
+                'send_mail' => true,
+                'color'     => '#EC2E15',
+                'invoice'   => false,
+                'template'  => '',
+                'paid'      => false,
+                'logable'   => false
+            ],
             'initialized' => [
                 'name'      => 'initialized',
                 'send_mail' => false,
@@ -181,28 +242,19 @@ class Installer
                 'paid'      => false,
                 'logable'   => false
             ],
-            'uncleared' => [
-                'name'      => 'uncleared',
-                'send_mail' => false,
-                'color'     => '#ec2e15',
-                'invoice'   => false,
-                'template'  => '',
-                'paid'      => false,
-                'logable'   => false
-            ],
             'partial_refunded' => [
                 'name'      => 'partial refunded',
                 'send_mail' => true,
-                'color'     => '#ec2e15',
+                'color'     => '#EC2E15',
                 'invoice'   => false,
                 'template'  => 'refund',
                 'paid'      => false,
                 'logable'   => false
             ],
-            'chargeback' => [
-                'name'      => 'chargeback',
-                'send_mail' => true,
-                'color'     => '#ec2e15',
+            'uncleared' => [
+                'name'      => 'uncleared',
+                'send_mail' => false,
+                'color'     => '#EC2E15',
                 'invoice'   => false,
                 'template'  => '',
                 'paid'      => false,

@@ -284,7 +284,7 @@ class OrderService
                 'Order has been validated.',
                 false,
                 $orderId,
-                $cart->id ?? null
+                $cart->id ?: null
             );
         }
     }

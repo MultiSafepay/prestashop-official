@@ -330,7 +330,7 @@ class SystemStatusService
         $paymentOptionService = new PaymentOptionService($this->module);
 
         /** @var BasePaymentOption $paymentOption */
-        foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
+        foreach ($paymentOptionService->getActivePaymentOptions() as $paymentOption) {
             $paymentOptionsSettings['settings'][Tools::strtolower($paymentOption->getGatewayCode())]['label'] = $paymentOption->getName();
             $paymentOptionsSettings['settings'][Tools::strtolower($paymentOption->getGatewayCode())]['value'] = $this->extractPaymentOptionSetting($paymentOption->getGatewaySettings(), $paymentOption->getGatewayCode());
         }
@@ -526,6 +526,10 @@ class SystemStatusService
             $tokenizationValue = $settings['MULTISAFEPAY_OFFICIAL_TOKENIZATION_' . $paymentOptionGatewayCode]['value'];
             $output .= 'Tokenization: ' . ($tokenizationValue ? 'Enabled' : 'Disabled') . '. ';
         }
+        if (isset($settings['MULTISAFEPAY_OFFICIAL_MANUAL_CAPTURE_' . $paymentOptionGatewayCode])) {
+            $manualCaptureValue = $settings['MULTISAFEPAY_OFFICIAL_MANUAL_CAPTURE_' . $paymentOptionGatewayCode]['value'];
+            $output .= 'Manual Capture: ' . ($manualCaptureValue ? 'Enabled' : 'Disabled') . '. ';
+        }
 
         return $output ? $output : 'Default settings';
     }
@@ -554,7 +558,7 @@ class SystemStatusService
         foreach ($transactionStatuses as $transactionStatus) {
             $orderStatusId = $notificationService->getOrderStatusId($transactionStatus);
             /** @var OrderState $orderState */
-            $orderState = new OrderState((int)$orderStatusId, ContextAdapter::getLanguageId($this->module->getModuleContext()));
+            $orderState = new OrderState($orderStatusId, ContextAdapter::getLanguageId($this->module->getModuleContext()));
             $output[$transactionStatus]['label'] = Tools::ucfirst(Tools::str_replace_once('_', ' ', $transactionStatus));
             $output[$transactionStatus]['value'] = $orderState->name;
         }

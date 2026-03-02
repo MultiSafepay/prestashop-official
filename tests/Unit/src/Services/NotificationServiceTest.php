@@ -23,8 +23,12 @@
 
 namespace MultiSafepay\Tests\Services;
 
+use Configuration;
 use Exception;
+use MultiSafepay\Api\Transactions\CaptureRequest;
 use MultiSafepay\Api\Transactions\TransactionResponse;
+use MultiSafepay\Api\Transactions\TransactionResponse\PaymentDetails;
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\NotExistingOrderNotificationService;
 use MultiSafepay\PrestaShop\Services\NotificationService;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
@@ -32,8 +36,14 @@ use MultiSafepay\PrestaShop\Services\OrderService;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
 use MultisafepayOfficial;
+use Order;
+use OrderState;
+use PrestaShopDatabaseException;
 use PrestaShopException;
+use ReflectionClass;
+use ReflectionException;
 use TypeError;
+use Validate;
 
 class NotificationServiceTest extends BaseMultiSafepayTest
 {
@@ -43,7 +53,12 @@ class NotificationServiceTest extends BaseMultiSafepayTest
     /** @var NotificationService */
     protected $notificationService;
 
+    /** @var PaymentOptionService */
+    protected $paymentOptionService;
+
     /**
+     * Set up test dependencies and a representative notification payload.
+     *
      * @throws Exception
      */
     public function setUp(): void
@@ -60,10 +75,21 @@ class NotificationServiceTest extends BaseMultiSafepayTest
         /** @var OrderService $mockOrderService */
         $mockOrderService = $this->createMock(OrderService::class);
 
+        $paymentOptionMock = $this->getMockBuilder(BasePaymentOption::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getFrontEndName'])
+            ->getMock();
+        $paymentOptionMock->method('getFrontEndName')->willReturn('MultiSafepay');
+
+        $mockPaymentOptionService->method('getMultiSafepayPaymentOption')->willReturn($paymentOptionMock);
+        $this->paymentOptionService = $mockPaymentOptionService;
+
         $this->notificationService = new NotExistingOrderNotificationService($mockMultisafepay, $mockSdk, $mockPaymentOptionService, $mockOrderService);
     }
 
     /**
+     * Test getTransactionFromPostNotification returns a TransactionResponse for valid JSON payloads.
+     *
      * @throws PrestaShopException
      */
     public function testGetTransactionFromPostNotification(): void
@@ -73,6 +99,8 @@ class NotificationServiceTest extends BaseMultiSafepayTest
     }
 
     /**
+     * Test getTransactionFromPostNotification throws TypeError for an empty notification body.
+     *
      * @throws PrestaShopException
      */
     public function testFailToGetTransactionFromEmptyBodyPostNotification(): void
@@ -81,9 +109,315 @@ class NotificationServiceTest extends BaseMultiSafepayTest
         $this->notificationService->getTransactionFromPostNotification('');
     }
 
+    /**
+     * Test getOrderStatusId returns an integer state identifier for known transaction statuses.
+     *
+     * @return void
+     */
     public function testGetOrderStatusId(): void
     {
         $orderStatusId = $this->notificationService->getOrderStatusId('completed');
-        self::assertIsString($orderStatusId);
+        self::assertIsInt($orderStatusId);
+    }
+
+    /**
+     * Test shouldStatusBeUpdated returns false when the order is already in partial status
+     * and callback does not contain unprocessed capture events.
+     *
+     * @throws PrestaShopException
+     */
+    public function testShouldStatusBeUpdatedReturnsFalseForPartialCaptureWithoutNewEvents(): void
+    {
+        $partialCapturedStatusId = (int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED');
+
+        $orderMock = $this->createMock(Order::class);
+        $orderMock->id = 123;
+        $orderMock->id_cart = 456;
+        $orderMock->module = 'multisafepayofficial';
+        $orderMock->current_state = $partialCapturedStatusId;
+
+        $transactionMock = $this->createManualCapturePartialTransactionMock([]);
+
+        $result = $this->notificationService->shouldStatusBeUpdated($orderMock, $transactionMock);
+
+        self::assertFalse($result);
+    }
+
+    /**
+     * Test shouldStatusBeUpdated returns true when the current order state differs
+     * from the target partially captured state.
+     *
+     * @throws PrestaShopException
+     */
+    public function testShouldStatusBeUpdatedReturnsTrueForPartialCaptureWhenCurrentStateDiffers(): void
+    {
+        $partialCapturedStatusId = (int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED');
+
+        $orderMock = $this->createMock(Order::class);
+        $orderMock->id = 123;
+        $orderMock->id_cart = 456;
+        $orderMock->module = 'multisafepayofficial';
+        $orderMock->current_state = $partialCapturedStatusId + 1;
+
+        $transactionMock = $this->createManualCapturePartialTransactionMock([]);
+
+        $result = $this->notificationService->shouldStatusBeUpdated($orderMock, $transactionMock);
+
+        self::assertTrue($result);
+    }
+
+    /**
+     * Test shouldStatusBeUpdated returns true when the callback contains capture events
+     * that have not been processed into order history yet.
+     *
+     * @throws PrestaShopException
+     */
+    public function testShouldStatusBeUpdatedReturnsTrueForPartialCaptureWithUnprocessedEvents(): void
+    {
+        $originalPartialCapturedStatus = Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED');
+        $invalidPartialCapturedStatusId = $this->resolveNonExistingOrderStateId();
+        Configuration::updateValue('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED', $invalidPartialCapturedStatusId);
+
+        $orderMock = $this->createMock(Order::class);
+        $orderMock->id = 123;
+        $orderMock->id_cart = 456;
+        $orderMock->module = 'multisafepayofficial';
+        $orderMock->current_state = $invalidPartialCapturedStatusId;
+
+        $transactionMock = $this->createManualCapturePartialTransactionMock(
+            [
+                [
+                    'type' => 'capture',
+                    'amount' => 500,
+                ],
+            ]
+        );
+
+        try {
+            $result = $this->notificationService->shouldStatusBeUpdated($orderMock, $transactionMock);
+        } finally {
+            Configuration::updateValue('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED', $originalPartialCapturedStatus);
+        }
+
+        self::assertTrue($result);
+    }
+
+    /**
+     * Test shouldStatusBeUpdated returns the same decision regardless of debug mode.
+     *
+     * @throws PrestaShopException
+     */
+    public function testShouldStatusBeUpdatedReturnsSameResultWithDebugModeEnabledOrDisabled(): void
+    {
+        $partialCapturedStatusId = (int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED');
+
+        $orderMock = $this->createMock(Order::class);
+        $orderMock->id = 123;
+        $orderMock->id_cart = 456;
+        $orderMock->module = 'multisafepayofficial';
+        $orderMock->current_state = $partialCapturedStatusId + 1;
+
+        $transactionMock = $this->createManualCapturePartialTransactionMock([]);
+
+        $originalDebugMode = Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE');
+
+        try {
+            Configuration::updateValue('MULTISAFEPAY_OFFICIAL_DEBUG_MODE', 0);
+            $resultWithDebugDisabled = $this->notificationService->shouldStatusBeUpdated($orderMock, $transactionMock);
+
+            Configuration::updateValue('MULTISAFEPAY_OFFICIAL_DEBUG_MODE', 1);
+            $resultWithDebugEnabled = $this->notificationService->shouldStatusBeUpdated($orderMock, $transactionMock);
+        } finally {
+            Configuration::updateValue('MULTISAFEPAY_OFFICIAL_DEBUG_MODE', $originalDebugMode);
+        }
+
+        self::assertSame($resultWithDebugDisabled, $resultWithDebugEnabled);
+    }
+
+    /**
+     * Test isValidOrderStateId returns false for non-positive and non-existing order state IDs.
+     *
+     * @return void
+     * @throws ReflectionException
+     */
+    public function testIsValidOrderStateIdReturnsFalseForInvalidValues(): void
+    {
+        $this->assertFalse($this->invokePrivateMethod('isValidOrderStateId', [0]));
+        $this->assertFalse($this->invokePrivateMethod('isValidOrderStateId', [-1]));
+        $this->assertFalse($this->invokePrivateMethod('isValidOrderStateId', [987654321]));
+    }
+
+    /**
+     * Test normalizeManualCapturePaymentRows exits early when transaction ID is empty after trim.
+     * @throws ReflectionException
+     */
+    public function testNormalizeManualCapturePaymentRowsSkipsWhenTransactionIdIsEmptyAfterTrim(): void
+    {
+        $orderMock = $this->createMock(Order::class);
+        $orderMock->id = 123;
+        $orderMock->id_cart = 456;
+        $orderMock->id_lang = 1;
+        $orderMock->expects($this->never())->method('getOrderPaymentCollection');
+
+        $paymentDetailsMock = $this->createMock(PaymentDetails::class);
+        $paymentDetailsMock->method('getType')->willReturn('IDEAL');
+
+        $transactionMock = $this->createMock(TransactionResponse::class);
+        $transactionMock->method('getPaymentDetails')->willReturn($paymentDetailsMock);
+        $transactionMock->method('getTransactionId')->willReturn('   ');
+
+        $this->invokePrivateMethod('normalizeManualCapturePaymentRows', [$orderMock, $transactionMock]);
+    }
+
+    /**
+     * Test partial capture flow does not throw when payment-row registration fails
+     * and continues gracefully when partial captured state configuration is invalid.
+     *
+     * @throws PrestaShopException
+     */
+    public function testExistingOrderProcessManualCaptureNotificationContinuesWhenPartialPaymentRegistrationFails(): void
+    {
+        $originalPartialCapturedStatus = Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED');
+        Configuration::updateValue('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED', 0);
+
+        $orderMock = $this->createMock(Order::class);
+        $orderMock->id = 123;
+        $orderMock->id_cart = 456;
+        $orderMock->id_currency = 1;
+
+        $paymentDetailsMock = $this->createMock(PaymentDetails::class);
+        $paymentDetailsMock->method('getCapture')->willReturn(CaptureRequest::CAPTURE_MANUAL_TYPE);
+        $paymentDetailsMock->method('getType')->willReturn('IDEAL');
+
+        $transactionMock = $this->createMock(TransactionResponse::class);
+        $transactionMock->method('getStatus')->willReturn('completed');
+        $transactionMock->method('getFinancialStatus')->willReturn('initialized');
+        $transactionMock->method('getAmount')->willReturn(1912);
+        $transactionMock->method('getPaymentDetails')->willReturn($paymentDetailsMock);
+        $transactionMock->method('getData')->willReturn([
+            'payment_details' => [
+                'capture_remain' => '1412',
+            ],
+            'related_transactions' => [
+                [
+                    'type' => 'capture',
+                    'amount' => 500,
+                ],
+            ],
+        ]);
+
+        $transactionIdCallCount = 0;
+        $transactionMock->method('getTransactionId')->willReturnCallback(static function () use (&$transactionIdCallCount) {
+            $transactionIdCallCount++;
+
+            if ($transactionIdCallCount === 1) {
+                return 'MSP-OK-123';
+            }
+
+            throw new Exception('Simulated payment-row registration failure');
+        });
+
+        try {
+            $this->notificationService->existingOrderProcessManualCaptureNotification($orderMock, $transactionMock);
+        } finally {
+            Configuration::updateValue('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED', $originalPartialCapturedStatus);
+        }
+
+        $this->assertGreaterThanOrEqual(
+            2,
+            $transactionIdCallCount,
+            'The simulated payment-row registration failure path must be exercised.'
+        );
+        $this->assertEquals(
+            $originalPartialCapturedStatus,
+            Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED'),
+            'The original partial-captured status configuration must be restored after the test.'
+        );
+    }
+
+    /**
+     * Test sync gating in the completed manual-capture flow prevents rewriting existing partial rows.
+     *
+     * @return void
+     * @throws ReflectionException
+     */
+    public function testShouldSyncSingleStepManualCapturePaymentGating(): void
+    {
+        $this->assertFalse(
+            $this->invokePrivateMethod('shouldSyncSingleStepManualCapturePayment', [2, false]),
+            'Existing partial payments must not be fully synced/rewritten.'
+        );
+
+        $this->assertFalse(
+            $this->invokePrivateMethod('shouldSyncSingleStepManualCapturePayment', [0, true]),
+            'When state change already created a payment row, full sync must be skipped.'
+        );
+
+        $this->assertTrue(
+            $this->invokePrivateMethod('shouldSyncSingleStepManualCapturePayment', [0, false]),
+            'Single-step flow without existing rows should still sync once.'
+        );
+    }
+
+    /**
+     * Invoke a private NotificationService method using reflection.
+     *
+     * @param string $methodName
+     * @param array $arguments
+     * @return mixed
+     * @throws ReflectionException
+     */
+    private function invokePrivateMethod(string $methodName, array $arguments = [])
+    {
+        $reflection = new ReflectionClass(get_class($this->notificationService));
+        $method = $reflection->getMethod($methodName);
+        $method->setAccessible(true);
+
+        return $method->invokeArgs($this->notificationService, $arguments);
+    }
+
+    /**
+     * Resolve an order-state ID that does not exist in the current test database.
+     *
+     * @return int
+     * @throws PrestaShopException
+     * @throws PrestaShopDatabaseException
+     */
+    private function resolveNonExistingOrderStateId(): int
+    {
+        $candidateId = max((int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED'), 1000000);
+
+        while (Validate::isLoadedObject(new OrderState($candidateId))) {
+            $candidateId++;
+        }
+
+        return $candidateId;
+    }
+
+    /**
+     * Create a manual-capture transaction mock configured for partial-capture scenarios.
+     *
+     * @param array   $relatedTransactions Related callback transactions payload.
+     *
+     * @return TransactionResponse
+     */
+    private function createManualCapturePartialTransactionMock(array $relatedTransactions): TransactionResponse
+    {
+        $paymentDetailsMock = $this->createMock(PaymentDetails::class);
+        $paymentDetailsMock->method('getCapture')->willReturn(CaptureRequest::CAPTURE_MANUAL_TYPE);
+
+        $transactionMock = $this->createMock(TransactionResponse::class);
+        $transactionMock->method('getStatus')->willReturn('completed');
+        $transactionMock->method('getFinancialStatus')->willReturn('initialized');
+        $transactionMock->method('getAmount')->willReturn(1912);
+        $transactionMock->method('getPaymentDetails')->willReturn($paymentDetailsMock);
+        $transactionMock->method('getData')->willReturn([
+            'payment_details' => [
+                'capture_remain' => '1412',
+            ],
+            'related_transactions' => $relatedTransactions,
+        ]);
+
+        return $transactionMock;
     }
 }

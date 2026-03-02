@@ -24,6 +24,7 @@ namespace MultiSafepay\PrestaShop\Builder;
 
 use Cart;
 use Customer;
+use MultiSafepay\Api\Transactions\CaptureRequest;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\PrestaShop\Builder\OrderRequest\OrderRequestBuilderInterface;
 use MultiSafepay\PrestaShop\Helper\MoneyHelper;
@@ -83,6 +84,10 @@ class OrderRequestBuilder
             ->addGatewayCode($paymentOption->getGatewayCode())
             ->addType($paymentOption->getTransactionType())
             ->addData(['var2' => $cart->id]);
+
+        if ($paymentOption->shouldUseManualCapture()) {
+            $orderRequest->addData(['capture' => CaptureRequest::CAPTURE_MANUAL_TYPE]);
+        }
 
         foreach ($this->orderRequestBuilders as $orderRequestBuilder) {
             $orderRequestBuilder->build($cart, $customer, $paymentOption, $orderRequest, $order);

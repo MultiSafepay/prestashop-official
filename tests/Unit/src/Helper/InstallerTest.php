@@ -88,7 +88,7 @@ class InstallerTest extends BaseMultiSafepayTest
     public function testGetAllOrderStatuses(): void
     {
         $orderStatuses = $this->installer->getMultiSafepayOrderStatuses();
-        $this->assertCount(4, $orderStatuses);
+        $this->assertCount(6, $orderStatuses);
     }
 
     /**
@@ -99,6 +99,23 @@ class InstallerTest extends BaseMultiSafepayTest
         $orderStatuses = $this->installer->getMultiSafepayOrderStatuses();
         $this->assertEquals('uncleared', $orderStatuses['uncleared']['name']);
         $this->assertFalse($orderStatuses['uncleared']['send_mail']);
-        $this->assertEquals('#ec2e15', $orderStatuses['uncleared']['color']);
+        $this->assertEquals('#EC2E15', $orderStatuses['uncleared']['color']);
+    }
+
+    /**
+     * @covers \MultiSafepay\PrestaShop\Helper\Installer::getMultiSafepayOrderStatuses
+     *
+     * @return void
+     */
+    public function testPartialCapturedStatusProperties(): void
+    {
+        $orderStatuses = $this->installer->getMultiSafepayOrderStatuses();
+        $this->assertArrayHasKey('partial_captured', $orderStatuses);
+        $this->assertEquals('partially captured', $orderStatuses['partial_captured']['name']);
+        $this->assertFalse($orderStatuses['partial_captured']['send_mail']);
+        $this->assertEquals('#A700D3', $orderStatuses['partial_captured']['color']);
+        $this->assertFalse($orderStatuses['partial_captured']['invoice']);
+        $this->assertFalse($orderStatuses['partial_captured']['paid']);
+        $this->assertFalse($orderStatuses['partial_captured']['logable']);
     }
 }

@@ -77,7 +77,7 @@ class TokenizationService
         // The API will raise an error if there are no tokens for a customer, therefore we return an empty array
         try {
             return $tokenManager->getListByGatewayCode($customerId, $gatewayCode);
-        } catch (ApiException $exception) {
+        } catch (ApiException $apiException) {
             return [];
         }
     }
@@ -95,7 +95,7 @@ class TokenizationService
         // The API will raise an error if there are no tokens for a customer, therefore we return an empty array
         try {
             return $tokenManager->getList($customerId);
-        } catch (ApiException $exception) {
+        } catch (ApiException $apiException) {
             return [];
         }
     }
@@ -111,13 +111,11 @@ class TokenizationService
         $tokenManager = $this->sdkService->getSdk()->getTokenManager();
         try {
             return $tokenManager->delete($tokenId, $customerId);
-        } catch (ApiException $exception) {
+        } catch (ApiException $apiException) {
             LoggerHelper::logException(
                 'error',
-                $exception,
-                'There was an error when deleting a token',
-                null,
-                null
+                $apiException,
+                'There was an error when deleting a token'
             );
             return false;
         }

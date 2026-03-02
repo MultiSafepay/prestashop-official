@@ -25,6 +25,7 @@ use MultiSafepay\PrestaShop\Services\ExistingOrderNotificationService;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use MultiSafepay\PrestaShop\Services\OrderService;
+use MultiSafepay\Exception\InvalidArgumentException;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -49,6 +50,7 @@ class MultisafepayOfficialNotificationModuleFrontController extends ModuleFrontC
      *
      * @return void
      * @throws PrestaShopException
+     * @throws InvalidArgumentException
      */
     public function postProcess(): void
     {

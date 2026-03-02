@@ -76,7 +76,7 @@ class MultisafepayOfficialCancelModuleFrontController extends ModuleFrontControl
                 $apiException,
                 'Cannot verify payment status in MultiSafepay. Cancellation aborted for safety',
                 null,
-                $cart->id ?? null
+                $cart->id ?: null
             );
             Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
         }

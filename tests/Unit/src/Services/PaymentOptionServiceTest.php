@@ -85,7 +85,22 @@ class PaymentOptionServiceTest extends BaseMultiSafepayTest
      */
     public function testGetActivePaymentOptionsWhenAllAreInactive()
     {
-        $activePaymentOption = $this->paymentOptionService->getActivePaymentOptions();
+        // Create a mock payment option that is inactive
+        $mockPaymentOption = $this->createMock(BasePaymentOption::class);
+        $mockPaymentOption->method('isActive')->willReturn(false);
+
+        // Create a mock of PaymentOptionService
+        $paymentOptionService = $this->getMockBuilder(PaymentOptionService::class)
+            ->setConstructorArgs([$this->moduleMock])
+            ->onlyMethods(['getMultiSafepayPaymentOptions'])
+            ->getMock();
+
+        // Return our mocked inactive payment option
+        $paymentOptionService->method('getMultiSafepayPaymentOptions')
+            ->willReturn([$mockPaymentOption]);
+
+        // Test getActivePaymentOptions
+        $activePaymentOption = $paymentOptionService->getActivePaymentOptions();
         $this->assertEmpty($activePaymentOption);
     }
 

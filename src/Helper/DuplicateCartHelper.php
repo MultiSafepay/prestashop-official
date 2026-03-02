@@ -63,7 +63,7 @@ class DuplicateCartHelper
             'Cart has ' . (!isset($duplicatedCart['cart']) ? 'not ' : '') . 'been duplicated',
             true,
             null,
-            $cart->id ?? null
+            $cart->id ?: null
         );
     }
 }

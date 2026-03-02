@@ -1,0 +1,31 @@
+.well.hidden-print {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  /* Collapse &nbsp; text nodes between buttons */
+  font-size: 0;
+}
+
+.well.hidden-print > a,
+.well.hidden-print > span {
+  font-size: 13px;
+}
+
+/* Default: keep existing actions after our first two */
+.well.hidden-print > a,
+.well.hidden-print > span {
+  order: 100;
+}
+
+/* Keep Print order near the start (right after Capture) */
+.well.hidden-print a[href^="javascript:window.print"] {
+  order: 10;
+}
+
+/* Capture should be immediately to the left of Print order */
+#wrapper #multisafepay-capture-action-btn,
+#multisafepay-capture-action-btn {
+  order: 9;
+}

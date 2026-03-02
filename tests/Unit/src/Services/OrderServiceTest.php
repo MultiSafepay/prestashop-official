@@ -42,7 +42,7 @@ class OrderServiceTest extends BaseMultiSafepayTest
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->mockModule = $this->createMockMultisafepayOfficial();
         $this->mockSdkService = $this->createMockSdkServiceWithManagers();
         $mockFactory = $this->createMockFactory();
@@ -82,7 +82,7 @@ class OrderServiceTest extends BaseMultiSafepayTest
         try {
             $result = $this->orderService->createPaymentComponentOrder('IDEAL', null, null);
             self::assertIsArray($result);
-        } catch (Exception $e) {
+        } catch (Exception $exception) {
             // If the method throws an exception due to missing dependencies,
             // we just verify the service exists and can be instantiated
             self::assertInstanceOf(OrderService::class, $this->orderService);

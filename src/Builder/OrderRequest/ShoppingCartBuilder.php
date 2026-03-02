@@ -27,6 +27,7 @@ use Configuration;
 use Customer;
 use MultiSafepay\Api\Transactions\OrderRequest;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\ShoppingCart;
+use MultiSafepay\Exception\InvalidArgumentException;
 use MultiSafepay\PrestaShop\Builder\OrderRequest\ShoppingCartBuilder\ShoppingCartBuilderInterface;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
@@ -71,6 +72,7 @@ class ShoppingCartBuilder implements OrderRequestBuilderInterface
      * @param BasePaymentOption $paymentOption
      * @param OrderRequest $orderRequest
      * @param Order|null $order
+     * @throws InvalidArgumentException
      */
     public function build(
         Cart $cart,
@@ -88,8 +90,8 @@ class ShoppingCartBuilder implements OrderRequestBuilderInterface
             'info',
             'Cart Summary contains: ' . json_encode($cartSummary),
             true,
-            $order ? (string)$order->id : null,
-            $cart->id ?? null
+            $order ? ((string)$order->id ?: null) : null,
+            $cart->id ?: null
         );
 
         $cartItems = [];

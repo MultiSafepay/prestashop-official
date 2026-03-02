@@ -65,7 +65,7 @@ class MultisafepayOfficialApplepaysessionModuleFrontController extends ModuleFro
                 $exception,
                 $errorMessage,
                 null,
-                $this->context->cart->id ?? null
+                $this->context->cart->id ?: null
             );
             echo json_encode(['message' => $errorMessage]);
         }
@@ -89,7 +89,7 @@ class MultisafepayOfficialApplepaysessionModuleFrontController extends ModuleFro
                 'Error when trying to get the ApplePay session. Validation URL empty',
                 false,
                 null,
-                $this->context->cart->id ?? null
+                $this->context->cart->id ?: null
             );
             exit;
         }
@@ -100,7 +100,7 @@ class MultisafepayOfficialApplepaysessionModuleFrontController extends ModuleFro
                 'Error when trying to get the ApplePay session. Origin domain empty',
                 false,
                 null,
-                $this->context->cart->id ?? null
+                $this->context->cart->id ?: null
             );
             exit;
         }

@@ -125,6 +125,11 @@ class BasePaymentOption
     protected $hasConfigurablePaymentComponent = false;
 
     /**
+     * @var bool
+     */
+    protected $canUseManualCapture = false;
+
+    /**
      * @var MultisafepayOfficial
      */
     public $module;
@@ -144,6 +149,11 @@ class BasePaymentOption
      */
     private $minAmount;
 
+    /**
+     * @var bool
+     */
+    protected $shouldUseManualCapture = false;
+
     public function __construct(PaymentMethod $paymentMethod, MultisafepayOfficial $module)
     {
         $this->paymentMethod = $paymentMethod;
@@ -152,6 +162,8 @@ class BasePaymentOption
         $this->gatewayName = $this->paymentMethod->getName() ?: '';
         $this->description = $this->getDescription();
         $this->canProcessRefunds = $this->canProcessRefunds();
+        $this->canUseManualCapture = $this->canUseManualCapture();
+        $this->shouldUseManualCapture = $this->shouldUseManualCapture();
         $this->hasConfigurableTokenization = $this->paymentMethod->supportsTokenization();
         $this->hasConfigurablePaymentComponent = $this->paymentMethod->supportsPaymentComponent();
         $this->maxAmount = $this->paymentMethod->getMaxAmount() ?: 0.0;
@@ -228,6 +240,27 @@ class BasePaymentOption
         }
 
         return $this->paymentMethod->getType() !== 'COUPON';
+    }
+
+    /**
+     * @return bool
+     */
+    public function canUseManualCapture(): bool
+    {
+        return $this->paymentMethod->supportsManualCapture();
+    }
+
+    /**
+     * @return bool
+     */
+    public function shouldUseManualCapture(): bool
+    {
+        if ($this->canUseManualCapture() &&
+            Configuration::get('MULTISAFEPAY_OFFICIAL_MANUAL_CAPTURE_' . $this->getUniqueName())
+        ) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -314,7 +347,7 @@ class BasePaymentOption
      */
     public function getFrontEndName(?int $langId = null): string
     {
-        // If no language ID provided, use default language
+        // If no language ID provided, use the default language
         if (is_null($langId)) {
             $langId = (int)Configuration::get('PS_LANG_DEFAULT');
         }
@@ -323,16 +356,16 @@ class BasePaymentOption
         $langIsoCode = Language::getIsoById($langId);
         $baseConfigKey = 'MULTISAFEPAY_OFFICIAL_TITLE_' . $this->getUniqueName();
 
-        // Step 1: Try language-specific title first
+        // Step 1: Try the language-specific title first
         if ($langIsoCode) {
             $langCode = strtoupper(trim($langIsoCode));
 
-            // Validate language code format (2-letter ISO code)
+            // Validate the language code format (2-letter ISO code)
             if (!empty($langCode) && strlen($langCode) === 2 && ctype_alpha($langCode)) {
                 $langConfigKey = $baseConfigKey . '_' . $langCode;
                 $languageSpecificTitle = Configuration::get($langConfigKey);
 
-                // Check if value exists and is not null/empty
+                // Check if the value exists and is not null/empty
                 if (!empty($languageSpecificTitle)) {
                     return $languageSpecificTitle;
                 }
@@ -357,7 +390,7 @@ class BasePaymentOption
     /**
      *  Get the input fields for the payment methods in the front end
      *  Used in views/templates/front/form.tpl
-     *  @noinspection PhpUnused
+     * @noinspection PhpUnused
      *
      * @param int|null $customerId Customer ID from controller context
      * @throws ClientExceptionInterface
@@ -416,7 +449,7 @@ class BasePaymentOption
     }
 
     /**
-     * Return an array with gateway settings required for configuration in admin area
+     * Return an array with gateway settings required for configuration in the admin area
      *
      * @return array
      *
@@ -580,6 +613,21 @@ class BasePaymentOption
             ];
         }
 
+        if ($this->canUseManualCapture) {
+            $settings['MULTISAFEPAY_OFFICIAL_MANUAL_CAPTURE_' . $this->getUniqueName()] = [
+                'type'       => 'switch',
+                'name'       => $this->module->l('Enable manual capture', self::CLASS_NAME),
+                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_MANUAL_CAPTURE_' . $this->getUniqueName()) ?? '0',
+                'helperText' => $this->module->l(
+                    'Manual Capture is a MultiSafepay solution that reduces your risk by letting you capture card payments either partially or in full when you ship the order.
+                    Documentation: https://docs.multisafepay.com/docs/manual-capture/',
+                    self::CLASS_NAME
+                ),
+                'default'    => '0',
+                'order'      => 16,
+            ];
+        }
+
         if (!empty($this->getPaymentOptionSettingsFields())) {
             $settings = array_merge($this->getPaymentOptionSettingsFields(), $settings);
         }
@@ -668,9 +716,8 @@ class BasePaymentOption
      * @param Context $context
      *
      * @return void
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
      * @throws Exception
+     * @throws ClientExceptionInterface
      *
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
@@ -783,7 +830,7 @@ class BasePaymentOption
         $titleHelperText = $baseText . $additionalText;
         $baseFieldName = 'MULTISAFEPAY_OFFICIAL_TITLE_' . $this->getUniqueName();
 
-        // Add base title first
+        // Add the base title first
         $settings[$baseFieldName] = [
             'type'       => 'text',
             'name'       => $this->module->l('Title', self::CLASS_NAME),
@@ -802,7 +849,7 @@ class BasePaymentOption
         foreach ($languages as $language) {
             $langCode = strtoupper(trim($language['iso_code']));
 
-            // Validate language code format (2-letter ISO code) - extra safety
+            // Validate the language code format (2-letter ISO code) - extra safety
             if (empty($langCode) || strlen($langCode) !== 2 || !ctype_alpha($langCode)) {
                 continue; // Skip invalid language codes
             }
@@ -818,7 +865,7 @@ class BasePaymentOption
                 $languageName = trim(substr($languageName, 0, $openParen));
             }
 
-            // Fallback to language code if name is empty
+            // Fallback to language code if the name is empty
             if (empty($languageName)) {
                 $languageName = $langCode;
             }

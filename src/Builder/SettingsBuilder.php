@@ -80,30 +80,32 @@ class SettingsBuilder
     public static function getConfigFieldsAndDefaultValues(): array
     {
         return [
-            'MULTISAFEPAY_OFFICIAL_TEST_MODE'                             => ['default' => '0'],
             'MULTISAFEPAY_OFFICIAL_API_KEY'                               => ['default' => ''],
-            'MULTISAFEPAY_OFFICIAL_TEST_API_KEY'                          => ['default' => ''],
-            'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE'                     => ['default' => '30'],
-            'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT'                      => ['default' => self::DAYS],
-            'MULTISAFEPAY_OFFICIAL_TEMPLATE_ID_VALUE'                     => ['default' => ''],
-            'MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION'                     => ['default' => 'Payment for order: {order_reference}'],
-            'MULTISAFEPAY_OFFICIAL_OS_TRIGGER_SHIPPED'                    => ['default' => Configuration::get('PS_OS_SHIPPING')],
-            'MULTISAFEPAY_OFFICIAL_FINAL_ORDER_STATUS'                    => ['default' => '["'.Configuration::get('PS_OS_REFUND').'"]', 'multiple' => true],
-            'MULTISAFEPAY_OFFICIAL_DEBUG_MODE'                            => ['default' => '0'],
-            'MULTISAFEPAY_OFFICIAL_SECOND_CHANCE'                         => ['default' => '1'],
             'MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL'              => ['default' => '1'],
-            'MULTISAFEPAY_OFFICIAL_OS_INITIALIZED'                        => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED')],
-            'MULTISAFEPAY_OFFICIAL_OS_COMPLETED'                          => ['default' => Configuration::get('PS_OS_PAYMENT')],
-            'MULTISAFEPAY_OFFICIAL_OS_UNCLEARED'                          => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_UNCLEARED')],
-            'MULTISAFEPAY_OFFICIAL_OS_RESERVED'                           => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED')],
-            'MULTISAFEPAY_OFFICIAL_OS_CHARGEBACK'                         => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_CHARGEBACK')],
-            'MULTISAFEPAY_OFFICIAL_OS_REFUNDED'                           => ['default' => Configuration::get('PS_OS_REFUND')],
-            'MULTISAFEPAY_OFFICIAL_OS_SHIPPED'                            => ['default' => Configuration::get('PS_OS_SHIPPING')],
-            'MULTISAFEPAY_OFFICIAL_OS_PARTIAL_REFUNDED'                   => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_REFUNDED')],
-            'MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS'                     => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS')],
             'MULTISAFEPAY_OFFICIAL_CREATE_ORDER_BEFORE_PAYMENT'           => ['default' => '1'],
-            'MULTISAFEPAY_OFFICIAL_DISABLE_SHOPPING_CART'                 => ['default' => '0'],
+            'MULTISAFEPAY_OFFICIAL_DEBUG_MODE'                            => ['default' => '0'],
             'MULTISAFEPAY_OFFICIAL_DISABLE_BACKOFFICE_ORDER_PAYMENT_LINK' => ['default' => '0'],
+            'MULTISAFEPAY_OFFICIAL_DISABLE_SHOPPING_CART'                 => ['default' => '0'],
+            'MULTISAFEPAY_OFFICIAL_FINAL_ORDER_STATUS'                    => ['default' => '["'.Configuration::get('PS_OS_REFUND').'"]', 'multiple' => true],
+            'MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS'                     => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS')],
+            'MULTISAFEPAY_OFFICIAL_ORDER_DESCRIPTION'                     => ['default' => 'Payment for order: {order_reference}'],
+            'MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED'                         => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED')],
+            'MULTISAFEPAY_OFFICIAL_OS_CHARGEBACK'                         => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_CHARGEBACK')],
+            'MULTISAFEPAY_OFFICIAL_OS_COMPLETED'                          => ['default' => Configuration::get('PS_OS_PAYMENT')],
+            'MULTISAFEPAY_OFFICIAL_OS_INITIALIZED'                        => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED')],
+            'MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED'                   => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED')],
+            'MULTISAFEPAY_OFFICIAL_OS_PARTIAL_REFUNDED'                   => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_REFUNDED')],
+            'MULTISAFEPAY_OFFICIAL_OS_REFUNDED'                           => ['default' => Configuration::get('PS_OS_REFUND')],
+            'MULTISAFEPAY_OFFICIAL_OS_RESERVED'                           => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_INITIALIZED')],
+            'MULTISAFEPAY_OFFICIAL_OS_SHIPPED'                            => ['default' => Configuration::get('PS_OS_SHIPPING')],
+            'MULTISAFEPAY_OFFICIAL_OS_TRIGGER_SHIPPED'                    => ['default' => Configuration::get('PS_OS_SHIPPING')],
+            'MULTISAFEPAY_OFFICIAL_OS_UNCLEARED'                          => ['default' => Configuration::get('MULTISAFEPAY_OFFICIAL_OS_UNCLEARED')],
+            'MULTISAFEPAY_OFFICIAL_SECOND_CHANCE'                         => ['default' => '1'],
+            'MULTISAFEPAY_OFFICIAL_TEMPLATE_ID_VALUE'                     => ['default' => ''],
+            'MULTISAFEPAY_OFFICIAL_TEST_API_KEY'                          => ['default' => ''],
+            'MULTISAFEPAY_OFFICIAL_TEST_MODE'                             => ['default' => '0'],
+            'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT'                      => ['default' => self::DAYS],
+            'MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE'                     => ['default' => '30'],
         ];
     }
 
@@ -741,13 +743,15 @@ class SettingsBuilder
     private function getMultiSafepayTransactionStatus(): array
     {
         return [
-            'initialized',
-            'completed',
-            'uncleared',
-            'refunded',
-            'partial_refunded',
+            'authorized',
             'chargeback',
+            'completed',
+            'initialized',
+            'partial_captured',
+            'partial_refunded',
+            'refunded',
             'shipped',
+            'uncleared',
         ];
     }
 

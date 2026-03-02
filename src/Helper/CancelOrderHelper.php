@@ -23,7 +23,6 @@
 namespace MultiSafepay\PrestaShop\Helper;
 
 use Configuration;
-use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use OrderHistory;
 use PrestaShopCollection;
 
@@ -50,10 +49,10 @@ class CancelOrderHelper
 
             LoggerHelper::log(
                 'info',
-                'Order has been canceled',
+                'Order has been cancelled',
                 true,
-                $order ? (string)$order->id : null,
-                $order->id_cart ?? null
+                (string)$order->id ?: null,
+                $order->id_cart ?: null
             );
         }
     }

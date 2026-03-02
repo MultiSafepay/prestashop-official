@@ -61,7 +61,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
                 'It seems postProcess method of MultiSafepay is being called out of context.',
                 false,
                 null,
-                $this->context->cart->id ?? null
+                $this->context->cart->id ?: null
             );
             Tools::redirect('/index.php?controller=order&step=1');
             return null;
@@ -72,7 +72,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
             'Starting the payment process for Shopping Cart',
             true,
             null,
-            $this->context->cart->id ?? null
+            $this->context->cart->id ?: null
         );
 
         if (!$this->isValidPaymentMethod()) {
@@ -81,7 +81,7 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
                 'The customer address changed just before the end of the checkout process method and now this method is not available any more.',
                 false,
                 null,
-                $this->context->cart->id ?? null
+                $this->context->cart->id ?: null
             );
             Tools::redirect('/index.php?controller=order&step=1');
             return null;
@@ -118,11 +118,13 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
                     $prestaShopException,
                     'Error when try to create an order',
                     null,
-                    $cart->id ?? null
+                    $cart->id ?: null
                 );
                 Tools::redirect($this->context->link->getPageLink('order', true, null, ['step' => '3']));
             }
         }
+
+        $orderIdForLog = $order ? ((string)$order->id ?: null) : null;
 
         $orderRequest = $orderRequestBuilder->build($cart, $customer, $selectedPaymentOption, $order);
 
@@ -141,8 +143,8 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
             'info',
             $message,
             true,
-            $order ? (string)$order->id : null,
-            $cart->id ?? null
+            $orderIdForLog,
+            $cart->id ?: null
         );
 
         try {
@@ -155,8 +157,8 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
                 'error',
                 $apiException,
                 $errorMessage,
-                $order ? (string)$order->id : null,
-                $cart->id ?? null
+                $orderIdForLog,
+                $cart->id ?: null
             );
 
             $this->context->smarty->assign(
@@ -185,8 +187,8 @@ class MultisafepayOfficialPaymentModuleFrontController extends ModuleFrontContro
             'info',
             'A transaction has been created with payment link ' . $transaction->getPaymentUrl(),
             true,
-            $order ? (string)$order->id : null,
-            $cart->id ?? null
+            $orderIdForLog,
+            $cart->id ?: null
         );
 
         Tools::redirect($transaction->getPaymentUrl());

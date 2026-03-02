@@ -98,6 +98,7 @@ class RefundService
     public function processRefund(Order $order, array $productList): bool
     {
         $transactionManager = $this->sdkService->getSdk()->getTransactionManager();
+
         try {
             $transaction = $transactionManager->get($order->reference);
         } catch (Exception $exception) {
@@ -120,7 +121,7 @@ class RefundService
         if (!$paymentOption->canProcessRefunds()) {
             $this->handleMessage(
                 $order,
-                "Refund for Order ID: $order->id has failed, because the Payment Method used for this Order does not support refunds."
+                'Refund has failed, because the payment method used for this order does not support refunds.'
             );
 
             return false;
@@ -141,8 +142,7 @@ class RefundService
             $exceptionCode = $exception->getCode();
             $this->handleMessage(
                 $order,
-                'Refund for Order ID: ' . $order->id . ' has failed' .
-                ($exceptionCode ? '. Error code: ' . $exceptionCode : '.')
+                'Refund has failed' . ($exceptionCode ? '. Error code: ' . $exceptionCode : '.')
             );
 
             return false;
@@ -258,8 +258,8 @@ class RefundService
             return (float)$order->total_shipping;
         }
 
-        // If shipping amount is being partially refunded, the "shipping" key is not set
-        // and shipping_amount value reflects the total amount to be refunded.
+        // If the shipping amount is being partially refunded, the "shipping" key is not set
+        // and the shipping_amount value reflects the total amount to be refunded.
         if (isset($cancelProduct['shipping_amount']) && '0' !== $cancelProduct['shipping_amount']) {
             return (float)$cancelProduct['shipping_amount'];
         }
@@ -305,7 +305,7 @@ class RefundService
         if (!isset($productList)) {
             $this->handleMessage(
                 $order,
-                "Refund for Order ID: $order->id has failed, due to a missing productList"
+                'Refund has failed, due to a missing productList'
             );
 
             return false;
@@ -314,7 +314,7 @@ class RefundService
         if ($this->isVoucherRefund()) {
             $this->handleMessage(
                 $order,
-                "Refund for Order ID: $order->id will not be processed, due to a voucher being generated"
+                'Refund will not be processed, due to a voucher being generated'
             );
 
             return false;
@@ -323,7 +323,7 @@ class RefundService
         if ($this->isSplitOrder($order->reference)) {
             $this->handleMessage(
                 $order,
-                "Refund for Order ID: $order->id has failed, due to the order coming from a split shopping cart"
+                'Refund has failed, due to the order coming from a split shopping cart'
             );
 
             return false;
@@ -353,11 +353,17 @@ class RefundService
      */
     public function handleMessage(Order $order, string $message): void
     {
-        OrderMessageHelper::addMessage($order, $message);
+        $dashboardMessage = (
+            !empty($order->id) ? '[Order ID: ' . $order->id . '] - ' : ''
+            ) . $message;
+
+        OrderMessageHelper::addMessage($order, $dashboardMessage);
         LoggerHelper::log(
             'warning',
-            $message
+            $message,
+            false,
+            (string)$order->id ?: null,
+            $order->id_cart ?: null
         );
-        Tools::displayError($message);
     }
 }

@@ -61,19 +61,10 @@ class ContextAdapter
     public static function getSmarty(): ?Smarty
     {
         try {
-            LoggerHelper::log(
-                'info',
-                'Attempting to get Smarty instance from LegacyContext'
-            );
-
             $contextAdapter = new LegacyContext();
             $smarty = $contextAdapter->getSmarty();
 
             if ($smarty instanceof Smarty) {
-                LoggerHelper::log(
-                    'info',
-                    'Successfully retrieved Smarty instance from LegacyContext'
-                );
                 return $smarty;
             }
         } catch (Exception $exception) {
@@ -98,10 +89,6 @@ class ContextAdapter
     {
         // Method 1: Provided context (preferred method)
         if (!empty($context->language) && (int)$context->language->id > 0) {
-            LoggerHelper::log(
-                'info',
-                'Retrieved language ID: ' . $context->language->id . ' from provided context'
-            );
             return (int)$context->language->id;
         }
 
@@ -256,10 +243,6 @@ class ContextAdapter
     {
         // Try 1: Provided cart parameter (preferred method)
         if ($cart && isset($cart->id_shop) && (int)$cart->id_shop > 0) {
-            LoggerHelper::log(
-                'info',
-                'Successfully retrieved shop ID: ' . $cart->id_shop . ' from provided cart'
-            );
             return new Shop($cart->id_shop);
         }
 
@@ -360,10 +343,6 @@ class ContextAdapter
     public static function getLink(): Link
     {
         try {
-            LoggerHelper::log(
-                'info',
-                'Creating new Link object for URL generation'
-            );
             return new Link();
         } catch (Exception $exception) {
             LoggerHelper::logException(
@@ -389,10 +368,6 @@ class ContextAdapter
             $contextAdapter = new LegacyContext();
             if (method_exists($contextAdapter, 'getLanguages')) {
                 $languages = $contextAdapter->getLanguages();
-                LoggerHelper::log(
-                    'info',
-                    'Successfully retrieved languages from LegacyContext adapter, count: ' . count($languages)
-                );
             } else {
                 // Try 2: get languages from the database directly
                 LoggerHelper::log(
@@ -432,11 +407,6 @@ class ContextAdapter
                     $language['is_default'] = ((int)$language['id_lang'] === $defaultLanguageId) ? '1' : '0';
                 }
                 unset($language); // Break the reference
-
-                LoggerHelper::log(
-                    'info',
-                    'Added is_default key to languages for Smarty template compatibility'
-                );
                 return $languages;
             }
 

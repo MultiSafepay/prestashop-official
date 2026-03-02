@@ -5,7 +5,7 @@
  *
  * Do not edit or add to this file if you wish to upgrade the MultiSafepay plugin
  * to newer versions in the future. If you wish to customize the plugin for your
- * needs please document your changes and make backups before you update.
+ * needs, please document your changes and make backups before you update.
  *
  * @author      MultiSafepay <integration@multisafepay.com>
  * @copyright   Copyright (c) MultiSafepay, Inc. (https://www.multisafepay.com)
@@ -23,10 +23,14 @@
 namespace MultiSafepay\PrestaShop\Services;
 
 use Cart;
+use Configuration;
 use Customer;
 use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
+use MultiSafepay\PrestaShop\Helper\ManualCaptureHelper;
 use MultisafepayOfficial;
+use Order;
+use PrestaShopCollection;
 use PrestaShopException;
 
 if (!defined('_PS_VERSION_')) {
@@ -56,6 +60,10 @@ class NotExistingOrderNotificationService extends NotificationService
     }
 
     /**
+     * Process notification for carts without existing orders
+     *
+     * Used when 'Create order before payment' is disabled
+     *
      * @param TransactionResponse $transaction
      * @param Cart $cart
      * @return void
@@ -63,30 +71,91 @@ class NotExistingOrderNotificationService extends NotificationService
      */
     public function processNotification(TransactionResponse $transaction, Cart $cart): void
     {
-        if (! $this->allowOrderCreation($transaction->getStatus(), $transaction->getPaymentDetails()->getType())) {
+        if (!$this->allowOrderCreation($transaction->getStatus(), $transaction->getPaymentDetails()->getType())) {
             return;
         }
 
-        if (! $cart->orderExists()) {
-            try {
-                $this->orderService->validateOrder(
-                    $cart,
-                    (int)$this->getOrderStatusId($transaction->getStatus()),
-                    $transaction->getAmount() / 100,
-                    $this->getPaymentMethodNameFromTransaction($transaction, $cart->id_lang ?: null),
-                    (new Customer($cart->id_customer))->secure_key,
-                    ['transaction_id' => $transaction->getTransactionId()]
-                );
-            } catch (PrestaShopException $exception) {
-                LoggerHelper::logException(
-                    'error',
-                    $exception,
-                    'Something went wrong while validating the order',
-                    null,
-                    $cart->id ?? null
-                );
-                throw $exception;
-            }
+        if ($cart->orderExists()) {
+            return;
+        }
+
+        if (ManualCaptureHelper::isManualCaptureTransaction($transaction)) {
+            $this->notExistingOrderProcessManualCaptureNotification($transaction, $cart);
+            return;
+        }
+
+        try {
+            $this->orderService->validateOrder(
+                $cart,
+                (int)$this->getOrderStatusId($transaction->getStatus()),
+                $transaction->getAmount() / 100,
+                $this->getPaymentMethodNameFromTransaction($transaction, $cart->id_lang ?: null),
+                (new Customer($cart->id_customer))->secure_key,
+                ['transaction_id' => $transaction->getTransactionId()]
+            );
+        } catch (PrestaShopException $exception) {
+            LoggerHelper::logException(
+                'error',
+                $exception,
+                'Something went wrong while validating the order',
+                null,
+                $cart->id ?: null
+            );
+            throw $exception;
+        }
+    }
+
+    /**
+     * Process notification for manual capture transactions
+     *
+     * @param TransactionResponse $transaction
+     * @param Cart $cart
+     * @return void
+     * @throws PrestaShopException
+     */
+    public function notExistingOrderProcessManualCaptureNotification(TransactionResponse $transaction, Cart $cart): void
+    {
+        try {
+            $transactionStatus = $transaction->getStatus();
+
+            // Determine the target order status
+            $targetOrderStatusId = (int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED');
+
+            // Create order with initialized status first, then update to the final status
+            $this->orderService->validateOrder(
+                $cart,
+                $targetOrderStatusId,
+                $transaction->getAmount() / 100,
+                $this->getPaymentMethodNameFromTransaction($transaction),
+                (new Customer($cart->id_customer))->secure_key,
+                ['transaction_id' => $transaction->getTransactionId()]
+            );
+
+            // Get the created order
+            $orderCollection = new PrestaShopCollection('Order');
+            $orderCollection->where('id_cart', '=', $cart->id);
+            /** @var Order $order */
+            $order = $orderCollection->getFirst();
+
+            ManualCaptureHelper::addManualCaptureNote($order, $transaction);
+
+            LoggerHelper::log(
+                'info',
+                'New manual capture order created with "MultiSafepay authorized". Status: ' .
+                $transactionStatus . ', Financial status: ' . $transaction->getFinancialStatus(),
+                true,
+                (string)$order->id ?: null,
+                $order->id_cart ?: null
+            );
+        } catch (PrestaShopException $prestaShopException) {
+            LoggerHelper::logException(
+                'error',
+                $prestaShopException,
+                'Something went wrong while validating the order',
+                null,
+                $cart->id ?: null
+            );
+            throw $prestaShopException;
         }
     }
 }
