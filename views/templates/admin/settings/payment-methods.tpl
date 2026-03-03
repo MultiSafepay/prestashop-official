@@ -22,6 +22,12 @@
 <div class="row">
     <div class="col-lg-12">
         <div class="fields-rows" id="dragula-container">
+            <div
+                id="multisafepay-direct-payment-confirmation-text"
+                data-title="{l s='Direct payment activation confirmation' mod='multisafepayofficial'}"
+                data-message-template="{l s='Before enabling %payment_method% Direct, ensure all technical and configuration prerequisites are completed. By clicking OK, you explicitly confirm that all prerequisites have been fulfilled.' mod='multisafepayofficial'}"
+                style="display:none;"
+            ></div>
             <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
             {if empty($payment_options)}
                 <p class="text-center w-100 no-payments">{$no_payments|escape:'htmlall':'UTF-8'}</p>

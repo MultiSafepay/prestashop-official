@@ -61,11 +61,11 @@
             }
 
             $(directOn).on('click', function () {
-                $(merchantInfo).closest('.form-group').slideDown();
+                $(merchantInfo).closest('.form-group').show();
             });
 
             $(directOff).on('click', function () {
-                $(merchantInfo).closest('.form-group').slideUp();
+                $(merchantInfo).closest('.form-group').hide();
             });
         }
 
@@ -80,6 +80,8 @@
             '#MULTISAFEPAY_OFFICIAL_DIRECT_APPLEPAY_on',
             '.apple-pay-direct-name'
         );
+
+        addDirectPaymentActivationSafeguard();
 
         // Initialize multi-language titles functionality
         initMultiLanguageTitles();
@@ -118,6 +120,105 @@ function togglePaymentOptionFieldStatus(paymentOptionIdPanel, disable)
     } else {
         $('#' + paymentOptionIdPanel + ' .panel-body .form-group:first .multisafepay-payment-methods-list-switch input:radio:first').trigger('click');
     }
+}
+
+function getDirectPaymentConfirmationText()
+{
+    const defaultTitle = 'Direct payment activation confirmation';
+    const defaultMessage = 'Before enabling %payment_method% Direct, confirm all prerequisites are fulfilled.';
+    const $confirmationTextElement = $('#multisafepay-direct-payment-confirmation-text');
+
+    if ($confirmationTextElement.length === 0) {
+        return {
+            title: defaultTitle,
+            messageTemplate: defaultMessage,
+        };
+    }
+
+    return {
+        title: $confirmationTextElement.data('title') || defaultTitle,
+        messageTemplate: $confirmationTextElement.data('message-template') || defaultMessage,
+    };
+}
+
+function getDirectPaymentMethodName($field)
+{
+    const paymentMethodName = $field
+        .closest('.multisafepay-panel-payment-option')
+        .find('.panel-heading .panel-title .title')
+        .first()
+        .text()
+        .trim();
+
+    return paymentMethodName || 'this payment method';
+}
+
+function addDirectPaymentActivationSafeguard()
+{
+    const previousValueKey = 'multisafepayPreviousValue';
+    const skipConfirmationKey = 'multisafepaySkipConfirmation';
+    const toggleGateways = ['GOOGLEPAY', 'APPLEPAY'];
+
+    const toggleSelector = toggleGateways
+        .map(function (gatewayCode) {
+            const fieldName = 'MULTISAFEPAY_OFFICIAL_DIRECT_' + gatewayCode;
+            return 'input[type="radio"][name="' + fieldName + '"]';
+        })
+        .join(', ');
+    const confirmationText = getDirectPaymentConfirmationText();
+
+    $(toggleSelector).each(function () {
+        const $fieldGroup = $('input[name="' + $(this).attr('name') + '"]');
+        const $firstField = $fieldGroup.first();
+        const checkedField = $fieldGroup.get().find(function (field) {
+            return field.checked;
+        });
+        const currentValue = checkedField ? checkedField.value : '0';
+        $firstField.data(previousValueKey, currentValue);
+    });
+
+    $(toggleSelector).on('change', function () {
+        const $field = $(this);
+        const $fieldGroup = $('input[name="' + $field.attr('name') + '"]');
+        const $firstField = $fieldGroup.first();
+        const checkedField = $fieldGroup.get().find(function (field) {
+            return field.checked;
+        });
+        const currentValue = checkedField ? checkedField.value : '0';
+
+        if ($firstField.data(skipConfirmationKey)) {
+            $firstField.data(skipConfirmationKey, false);
+            $firstField.data(previousValueKey, currentValue);
+            return;
+        }
+
+        const previousValue = $firstField.data(previousValueKey) || '0';
+
+        if (previousValue !== '1' && currentValue === '1') {
+            const paymentMethodName = getDirectPaymentMethodName($field);
+            const confirmationMessage = confirmationText.messageTemplate
+                .split('%payment_method%')
+                .join(paymentMethodName);
+            const confirmation = window.confirm(confirmationText.title + '\n\n' + confirmationMessage);
+
+            if (!confirmation) {
+                const rollbackValue = previousValue || '0';
+                const rollbackField = $fieldGroup.get().find(function (field) {
+                    return field.value === rollbackValue;
+                });
+
+                $firstField.data(skipConfirmationKey, true);
+                if (rollbackField) {
+                    rollbackField.checked = true;
+                    $(rollbackField).trigger('click').trigger('change');
+                }
+
+                return;
+            }
+        }
+
+        $firstField.data(previousValueKey, currentValue);
+    });
 }
 
 function initDragula()
