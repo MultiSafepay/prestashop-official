@@ -1019,7 +1019,8 @@ abstract class NotificationService
      * Get Payment Method Name from Transaction Information
      *
      * Returns the localized payment method name based on transaction details,
-     * handling special cases like grouped credit cards and gift card coupons.
+     * including wallet transactions and special cases like grouped credit cards
+     * and gift card coupons.
      *
      * @param TransactionResponse $transaction
      * @param int|null $langId
@@ -1033,6 +1034,14 @@ abstract class NotificationService
     {
         $gatewayCode = $transaction->getPaymentDetails()->getType();
 
+        $walletGatewayCode = $this->getWalletGatewayCodeFromTransaction($transaction);
+        if (!empty($walletGatewayCode) && $walletGatewayCode !== $gatewayCode) {
+            $walletName = $this->getPaymentOptionFrontEndNameByGatewayCode($walletGatewayCode, $langId);
+            $underlyingMethodName = $this->getPaymentOptionFrontEndNameByGatewayCode($gatewayCode, $langId);
+
+            return $walletName . ' (' . $underlyingMethodName . ')';
+        }
+
         if (in_array($gatewayCode, PaymentOptionService::CREDIT_CARD_GATEWAYS, true) &&
             Configuration::get('MULTISAFEPAY_OFFICIAL_GROUP_CREDITCARDS')
         ) {
@@ -1042,15 +1051,61 @@ abstract class NotificationService
         // When an order is being fully paid using a gift card
         if (strpos($gatewayCode, 'Coupon::') !== false) {
             $data = $transaction->getPaymentDetails()->getData();
-            return $this->paymentOptionService->getMultiSafepayPaymentOption($data['coupon_brand'])->getFrontEndName($langId);
+            return $this->getPaymentOptionFrontEndNameByGatewayCode($data['coupon_brand'], $langId);
         // When an order is being paid using multiple gift cards
         } elseif (strpos($gatewayCode, 'Coupon') !== false) {
             $data = $transaction->getPaymentDetails()->getData();
             $gatewayCodes = explode(';', $data['coupon_brand']);
-            return $this->paymentOptionService->getMultiSafepayPaymentOption($gatewayCodes[0])->getFrontEndName($langId);
+            return $this->getPaymentOptionFrontEndNameByGatewayCode($gatewayCodes[0], $langId);
         }
 
-        return $this->paymentOptionService->getMultiSafepayPaymentOption($gatewayCode)->getFrontEndName($langId);
+        return $this->getPaymentOptionFrontEndNameByGatewayCode($gatewayCode, $langId);
+    }
+
+    /**
+     * Resolve the localized payment option name for a gateway code.
+     *
+     * Falls back to the original gateway code when the payment option
+     * is not available in the current payment method list.
+     *
+     * @param string $gatewayCode
+     * @param int|null $langId
+     * @return string
+     */
+    private function getPaymentOptionFrontEndNameByGatewayCode(string $gatewayCode, ?int $langId = null): string
+    {
+        $normalizedGatewayCode = trim($gatewayCode);
+        if ($normalizedGatewayCode === '') {
+            return $normalizedGatewayCode;
+        }
+
+        $paymentOption = $this->paymentOptionService->getMultiSafepayPaymentOption($normalizedGatewayCode);
+        if (!$paymentOption) {
+            return $normalizedGatewayCode;
+        }
+
+        return $paymentOption->getFrontEndName($langId);
+    }
+
+    /**
+     * Resolve the wallet gateway code from callback payload.
+     *
+     * Reads `payment_details.wallet` and returns it when present as a non-empty string.
+     *
+     * @param TransactionResponse $transaction
+     * @return string
+     */
+    private function getWalletGatewayCodeFromTransaction(TransactionResponse $transaction): string
+    {
+        $paymentDetailsData = $transaction->getPaymentDetails()->getData();
+        if (isset($paymentDetailsData['wallet']) && is_string($paymentDetailsData['wallet'])) {
+            $walletGatewayCode = trim($paymentDetailsData['wallet']);
+            if ($walletGatewayCode !== '') {
+                return $walletGatewayCode;
+            }
+        }
+
+        return '';
     }
 
     /**

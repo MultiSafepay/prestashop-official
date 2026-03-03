@@ -84,6 +84,24 @@ class BasePaymentOptionTest extends BaseMultiSafepayTest
         $this->assertTrue($this->basePaymentOption->canProcessRefunds());
     }
 
+    public function testIsWalletReturnsFalseForNonWalletMethod(): void
+    {
+        $this->assertFalse($this->basePaymentOption->isWallet());
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testIsWalletReturnsTrueForWalletMethod(): void
+    {
+        /** @var MultisafepayOfficial $mockModule */
+        $mockModule = $this->createMock(MultisafepayOfficial::class);
+        $paymentMethod = new PaymentMethod($this->googlePayPaymentMethodData());
+        $walletPaymentOption = new BasePaymentOption($paymentMethod, $mockModule);
+
+        $this->assertTrue($walletPaymentOption->isWallet());
+    }
+
     public function testGetDescriptionReturnsConfiguredValue()
     {
         Configuration::set('MULTISAFEPAY_OFFICIAL_DESCRIPTION_' . $this->basePaymentOption->getUniqueName(), 'Visa Custom Description');
@@ -192,5 +210,15 @@ class BasePaymentOptionTest extends BaseMultiSafepayTest
             ],
             'type' => 'payment-method'
         ];
+    }
+
+    private function googlePayPaymentMethodData(): array
+    {
+        $data = $this->visaPaymentMethodData();
+        $data['id'] = 'GOOGLEPAY';
+        $data['name'] = 'Google Pay';
+        $data['is_wallet'] = true;
+
+        return $data;
     }
 }

@@ -360,7 +360,209 @@ class NotificationServiceTest extends BaseMultiSafepayTest
     }
 
     /**
-     * Invoke a private NotificationService method using reflection.
+     * Test wallet transactions return "Wallet Name (Underlying Method Name)".
+     */
+    public function testGetPaymentMethodNameFromTransactionReturnsWalletWithUnderlyingMethodName(): void
+    {
+        $walletOptionMock = $this->createPaymentOptionMock('Google Pay', true);
+        $underlyingOptionMock = $this->createPaymentOptionMock('Visa', false);
+
+        $paymentOptionServiceMock = $this->createMock(PaymentOptionService::class);
+        $paymentOptionServiceMock->method('getMultiSafepayPaymentOption')->willReturnCallback(
+            static function (string $gatewayCode) use ($walletOptionMock, $underlyingOptionMock) {
+                switch ($gatewayCode) {
+                    case 'GOOGLEPAY':
+                        return $walletOptionMock;
+                    case 'VISA':
+                        return $underlyingOptionMock;
+                    default:
+                        return null;
+                }
+            }
+        );
+
+        $notificationService = $this->createNotificationServiceWithPaymentOptionService($paymentOptionServiceMock);
+
+        $paymentDetailsMock = $this->createMock(PaymentDetails::class);
+        $paymentDetailsMock->method('getType')->willReturn('VISA');
+        $paymentDetailsMock->method('getData')->willReturn(['wallet' => 'GOOGLEPAY']);
+
+        $transactionMock = $this->createMock(TransactionResponse::class);
+        $transactionMock->method('getPaymentDetails')->willReturn($paymentDetailsMock);
+
+        $result = $notificationService->getPaymentMethodNameFromTransaction($transactionMock, 1);
+
+        self::assertSame('Google Pay (Visa)', $result);
+    }
+
+    /**
+     * Test wallet transactions return a single method name when wallet equals payment type.
+     */
+    public function testGetPaymentMethodNameFromTransactionReturnsSingleNameWhenWalletEqualsType(): void
+    {
+        $walletOptionMock = $this->createPaymentOptionMock('Google Pay', true);
+
+        $paymentOptionServiceMock = $this->createMock(PaymentOptionService::class);
+        $paymentOptionServiceMock->method('getMultiSafepayPaymentOption')->willReturnCallback(
+            static function (string $gatewayCode) use ($walletOptionMock) {
+                if ($gatewayCode === 'GOOGLEPAY') {
+                    return $walletOptionMock;
+                }
+
+                return null;
+            }
+        );
+
+        $notificationService = $this->createNotificationServiceWithPaymentOptionService($paymentOptionServiceMock);
+
+        $paymentDetailsMock = $this->createMock(PaymentDetails::class);
+        $paymentDetailsMock->method('getType')->willReturn('GOOGLEPAY');
+        $paymentDetailsMock->method('getData')->willReturn(['wallet' => 'GOOGLEPAY']);
+
+        $transactionMock = $this->createMock(TransactionResponse::class);
+        $transactionMock->method('getPaymentDetails')->willReturn($paymentDetailsMock);
+
+        $result = $notificationService->getPaymentMethodNameFromTransaction($transactionMock, 1);
+
+        self::assertSame('Google Pay', $result);
+    }
+
+    /**
+     * Test non-wallet transactions follow the normal payment method naming path.
+     */
+    public function testGetPaymentMethodNameFromTransactionReturnsUnderlyingMethodNameForNonWallet(): void
+    {
+        $underlyingOptionMock = $this->createPaymentOptionMock('Visa', false);
+
+        $paymentOptionServiceMock = $this->createMock(PaymentOptionService::class);
+        $paymentOptionServiceMock->method('getMultiSafepayPaymentOption')->willReturnCallback(
+            static function (string $gatewayCode) use ($underlyingOptionMock) {
+                if ($gatewayCode === 'VISA') {
+                    return $underlyingOptionMock;
+                }
+
+                return null;
+            }
+        );
+
+        $notificationService = $this->createNotificationServiceWithPaymentOptionService($paymentOptionServiceMock);
+
+        $paymentDetailsMock = $this->createMock(PaymentDetails::class);
+        $paymentDetailsMock->method('getType')->willReturn('VISA');
+        $paymentDetailsMock->method('getData')->willReturn([]);
+
+        $transactionMock = $this->createMock(TransactionResponse::class);
+        $transactionMock->method('getPaymentDetails')->willReturn($paymentDetailsMock);
+
+        $result = $notificationService->getPaymentMethodNameFromTransaction($transactionMock, 1);
+
+        self::assertSame('Visa', $result);
+    }
+
+    /**
+     * Test payment option name fallback returns normalized gateway code when the option is missing.
+     *
+     * @throws ReflectionException
+     */
+    public function testGetPaymentOptionFrontEndNameByGatewayCodeReturnsTrimmedCodeWhenOptionNotFound(): void
+    {
+        $paymentOptionServiceMock = $this->createMock(PaymentOptionService::class);
+        $paymentOptionServiceMock->method('getMultiSafepayPaymentOption')->willReturn(null);
+
+        $notificationService = $this->createNotificationServiceWithPaymentOptionService($paymentOptionServiceMock);
+
+        $result = $this->invokePrivateMethodOnService(
+            $notificationService,
+            'getPaymentOptionFrontEndNameByGatewayCode',
+            [' IDEAL ', 1]
+        );
+
+        self::assertSame('IDEAL', $result);
+    }
+
+    /**
+     * Test wallet gateway resolver returns an empty string when the wallet is missing or invalid.
+     *
+     * @throws ReflectionException
+     */
+    public function testGetWalletGatewayCodeFromTransactionReturnsEmptyStringWhenWalletIsMissing(): void
+    {
+        $paymentOptionServiceMock = $this->createMock(PaymentOptionService::class);
+        $paymentOptionServiceMock->method('getMultiSafepayPaymentOption')->willReturn(null);
+
+        $notificationService = $this->createNotificationServiceWithPaymentOptionService($paymentOptionServiceMock);
+
+        $paymentDetailsWithoutWalletMock = $this->createMock(PaymentDetails::class);
+        $paymentDetailsWithoutWalletMock->method('getData')->willReturn([]);
+
+        $transactionWithoutWalletMock = $this->createMock(TransactionResponse::class);
+        $transactionWithoutWalletMock->method('getPaymentDetails')->willReturn($paymentDetailsWithoutWalletMock);
+
+        $missingWalletResult = $this->invokePrivateMethodOnService(
+            $notificationService,
+            'getWalletGatewayCodeFromTransaction',
+            [$transactionWithoutWalletMock]
+        );
+
+        self::assertSame('', $missingWalletResult);
+    }
+
+    /**
+     * Test wallet gateway resolver returns an empty string when the wallet key is invalid.
+     *
+     * @throws ReflectionException
+     */
+    public function testGetWalletGatewayCodeFromTransactionReturnsEmptyStringWhenWalletIsInvalid(): void
+    {
+        $paymentOptionServiceMock = $this->createMock(PaymentOptionService::class);
+        $paymentOptionServiceMock->method('getMultiSafepayPaymentOption')->willReturn(null);
+
+        $notificationService = $this->createNotificationServiceWithPaymentOptionService($paymentOptionServiceMock);
+
+        $paymentDetailsWithInvalidWalletMock = $this->createMock(PaymentDetails::class);
+        $paymentDetailsWithInvalidWalletMock->method('getData')->willReturn(['wallet' => ['GOOGLEPAY']]);
+
+        $transactionWithInvalidWalletMock = $this->createMock(TransactionResponse::class);
+        $transactionWithInvalidWalletMock->method('getPaymentDetails')->willReturn($paymentDetailsWithInvalidWalletMock);
+
+        $invalidWalletResult = $this->invokePrivateMethodOnService(
+            $notificationService,
+            'getWalletGatewayCodeFromTransaction',
+            [$transactionWithInvalidWalletMock]
+        );
+
+        self::assertSame('', $invalidWalletResult);
+    }
+
+    /**
+     * Test wallet gateway resolver returns wallet code when present in callback payload.
+     *
+     * @throws ReflectionException
+     */
+    public function testGetWalletGatewayCodeFromTransactionReturnsWalletCodeWhenPresent(): void
+    {
+        $paymentOptionServiceMock = $this->createMock(PaymentOptionService::class);
+        $paymentOptionServiceMock->method('getMultiSafepayPaymentOption')->willReturn(null);
+
+        $notificationService = $this->createNotificationServiceWithPaymentOptionService($paymentOptionServiceMock);
+
+        $paymentDetailsMock = $this->createMock(PaymentDetails::class);
+        $paymentDetailsMock->method('getData')->willReturn(['wallet' => 'GOOGLEPAY']);
+
+        $transactionMock = $this->createMock(TransactionResponse::class);
+        $transactionMock->method('getPaymentDetails')->willReturn($paymentDetailsMock);
+
+        $result = $this->invokePrivateMethodOnService(
+            $notificationService,
+            'getWalletGatewayCodeFromTransaction',
+            [$transactionMock]
+        );
+
+        self::assertSame('GOOGLEPAY', $result);
+    }
+
+    /**
+     * Invoke a private NotificationService method on the default test service instance.
      *
      * @param string $methodName
      * @param array $arguments
@@ -369,11 +571,63 @@ class NotificationServiceTest extends BaseMultiSafepayTest
      */
     private function invokePrivateMethod(string $methodName, array $arguments = [])
     {
-        $reflection = new ReflectionClass(get_class($this->notificationService));
+        return $this->invokePrivateMethodOnService($this->notificationService, $methodName, $arguments);
+    }
+
+    /**
+     * Invoke a private NotificationService method on a specific service instance.
+     *
+     * @param NotificationService $notificationService
+     * @param string $methodName
+     * @param array $arguments
+     * @return mixed
+     * @throws ReflectionException
+     */
+    private function invokePrivateMethodOnService(NotificationService $notificationService, string $methodName, array $arguments = [])
+    {
+        $reflection = new ReflectionClass(get_class($notificationService));
         $method = $reflection->getMethod($methodName);
         $method->setAccessible(true);
 
-        return $method->invokeArgs($this->notificationService, $arguments);
+        return $method->invokeArgs($notificationService, $arguments);
+    }
+
+    /**
+     * Create the NotificationService using a custom PaymentOptionService mock.
+     *
+     * @param PaymentOptionService $paymentOptionService
+     * @return NotificationService
+     */
+    private function createNotificationServiceWithPaymentOptionService(PaymentOptionService $paymentOptionService): NotificationService
+    {
+        /** @var MultisafepayOfficial $mockMultisafepay */
+        $mockMultisafepay = $this->createMock(MultisafepayOfficial::class);
+        /** @var SdkService $mockSdk */
+        $mockSdk = $this->createMock(SdkService::class);
+        /** @var OrderService $mockOrderService */
+        $mockOrderService = $this->createMock(OrderService::class);
+
+        return new NotExistingOrderNotificationService($mockMultisafepay, $mockSdk, $paymentOptionService, $mockOrderService);
+    }
+
+    /**
+     * Create a BasePaymentOption mock with deterministic front-end name and wallet behavior.
+     *
+     * @param string $frontEndName
+     * @param bool $isWallet
+     * @return BasePaymentOption
+     */
+    private function createPaymentOptionMock(string $frontEndName, bool $isWallet): BasePaymentOption
+    {
+        $paymentOptionMock = $this->getMockBuilder(BasePaymentOption::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getFrontEndName', 'isWallet'])
+            ->getMock();
+
+        $paymentOptionMock->method('getFrontEndName')->willReturn($frontEndName);
+        $paymentOptionMock->method('isWallet')->willReturn($isWallet);
+
+        return $paymentOptionMock;
     }
 
     /**

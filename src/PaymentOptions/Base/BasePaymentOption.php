@@ -223,6 +223,16 @@ class BasePaymentOption
     }
 
     /**
+     * Return whether this payment option is a wallet-based method.
+     *
+     * @return bool
+     */
+    public function isWallet(): bool
+    {
+        return $this->paymentMethod->isWallet();
+    }
+
+    /**
      * @return array
      */
     public function getAllowedCountries(): array
