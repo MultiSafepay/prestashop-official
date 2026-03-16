@@ -4,7 +4,7 @@
     "type": "prestashop-module",
     "version": "6.2.0",
     "keywords" : [ "prestashop" ],
-    "license": "MIT",
+    "license": "OSL-3.0",
     "require": {
         "multisafepay/php-sdk": "^5.21",
         "kriswallsmith/buzz": "^1.1",
