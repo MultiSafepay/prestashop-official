@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ***
 
+## 6.3.0
+Release date: Apr 6th, 2026
+
+### Added
++ PRES-391: Add Manual Capture
++ DAVAMS-984: Add wallet and card information to the transaction display
++ DAVAMS-980: Add confirmation when enabling direct Google Pay or Apple Pay
+
+### Changed
++ PRES-510: Change license to OSL-3.0 and update README
+
+***
+
 ## 6.2.0
 Release date: Feb 25th, 2026
 
