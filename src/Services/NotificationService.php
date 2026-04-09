@@ -230,8 +230,11 @@ abstract class NotificationService
         }
 
         if ($this->isFinalStatus((int)$order->current_state)) {
-            $message = 'It seems a notification is trying to process an order which already have a final order status defined. For this reason notification is being ignored. ';
-            $message .= 'Transaction ID received is ' . Tools::getValue('transactionid') . ' with status ' . $transaction->getStatus();
+            $message = sprintf(
+                'A payment status update was received from MultiSafepay. This order is already in a final status, so no status change was applied. Transaction ID: %s (status: %s). If this is unexpected, review the "Final order status" setting in the MultiSafepay plugin.',
+                (string) Tools::getValue('transactionid'),
+                $transaction->getStatus()
+            );
             LoggerHelper::log(
                 'warning',
                 $message,
