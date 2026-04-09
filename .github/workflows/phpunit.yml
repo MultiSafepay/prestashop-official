@@ -27,11 +27,6 @@ jobs:
         with:
           php-version: '${{ matrix.php-version }}'
 
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: '0'
-
       - name: Clone private repository with submodules
         uses: actions/checkout@v4
         with:
@@ -42,7 +37,7 @@ jobs:
           fetch-depth: 0
 
       - name: Checkout branch
-        run: git fetch --all && git checkout ${{ github.event.pull_request.head.ref }}
+        run: git fetch --all && git checkout ${{ github.head_ref || github.ref_name }}
         working-directory: docker-prestashop/modules/multisafepayofficial
 
       - name: Update environment file
