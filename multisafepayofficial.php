@@ -183,7 +183,20 @@ class MultisafepayOfficial extends PaymentModule
             return false;
         }
 
-        (new Installer($this))->install();
+        try {
+            (new Installer($this))->install();
+        } catch (Throwable $exception) {
+            $installResourcesErrorMessage = 'Module installation failed while creating MultiSafepay resources.';
+
+            LoggerHelper::logException(
+                'alert',
+                $exception,
+                $installResourcesErrorMessage
+            );
+            $this->_errors[] = $installResourcesErrorMessage;
+
+            return false;
+        }
 
         // Some legacy hooks used in templates may not exist in older DBs.
         if (version_compare(_PS_VERSION_, '1.7.7.0', '<')) {

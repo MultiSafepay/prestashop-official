@@ -117,18 +117,20 @@ class Installer
 
     /**
      * Set default values on install
+     *
+     * @throws PrestaShopException
      * @return void
      */
     private function setDefaultValues(): void
     {
         foreach (SettingsBuilder::getConfigFieldsAndDefaultValues() as $configField => $configData) {
-            Configuration::updateGlobalValue($configField, $configData['default']);
+            $this->updateGlobalValueOrFail($configField, $configData['default']);
         }
 
         $paymentOptionService = new PaymentOptionService($this->module);
         foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
             foreach ($paymentOption->getGatewaySettings() as $settingKey => $settings) {
-                Configuration::updateGlobalValue($settingKey, $settings['default']);
+                $this->updateGlobalValueOrFail($settingKey, $settings['default']);
             }
             // Adding default values for countries of the branded payment methods
             $brandedCountries = $paymentOption->getAllowedCountries();
@@ -137,8 +139,10 @@ class Installer
                 foreach ($brandedCountries as $brandedCountry) {
                     $isoBrandedCountries[] = (string)Country::getByIso($brandedCountry);
                 }
-                Configuration::updateGlobalValue('MULTISAFEPAY_OFFICIAL_COUNTRIES_' .
-                    $paymentOption->getUniqueName(), json_encode($isoBrandedCountries));
+                $this->updateGlobalValueOrFail(
+                    'MULTISAFEPAY_OFFICIAL_COUNTRIES_' . $paymentOption->getUniqueName(),
+                    json_encode($isoBrandedCountries)
+                );
             }
         }
     }
@@ -154,19 +158,46 @@ class Installer
         $multisafepayStatusPrefix = 'MULTISAFEPAY_OFFICIAL_OS_';
         $multisafepayOrderStatuses = $this->getMultiSafepayOrderStatuses();
         foreach ($multisafepayOrderStatuses as $multisafepayOrderStatusKey => $multisafepayOrderStatusValues) {
-            if (!Configuration::get($multisafepayStatusPrefix . Tools::strtoupper($multisafepayOrderStatusKey))) {
+            $statusConfigKey = $multisafepayStatusPrefix . Tools::strtoupper($multisafepayOrderStatusKey);
+            $orderStateId = (int)Configuration::get($statusConfigKey);
+
+            if ($orderStateId <= 0) {
                 $orderState = $this->createOrderStatus($multisafepayOrderStatusValues);
-                Configuration::updateGlobalValue(
-                    $multisafepayStatusPrefix . Tools::strtoupper($multisafepayOrderStatusKey),
-                    (int)$orderState->id
+                $orderStateId = (int)$orderState->id;
+                $this->updateGlobalValueOrFail(
+                    $statusConfigKey,
+                    $orderStateId
                 );
             }
+
+            $this->cloneOrderStateIcon($orderStateId, $multisafepayOrderStatusValues);
+
             if ($multisafepayOrderStatusKey === 'authorized') {
-                Configuration::updateGlobalValue($multisafepayStatusPrefix . 'AUTHORIZED_STATUS_CREATED', '1');
+                $this->updateGlobalValueOrFail($multisafepayStatusPrefix . 'AUTHORIZED_STATUS_CREATED', '1');
             }
             if ($multisafepayOrderStatusKey === 'partial_captured') {
-                Configuration::updateGlobalValue($multisafepayStatusPrefix . 'PARTIAL_CAPTURED_STATUS_CREATED', '1');
+                $this->updateGlobalValueOrFail($multisafepayStatusPrefix . 'PARTIAL_CAPTURED_STATUS_CREATED', '1');
             }
+        }
+    }
+
+    /**
+     * Persist a configuration value during install and fail fast if DB persistence fails.
+     *
+     * @param string $configurationKey
+     * @param mixed $configurationValue
+     * @return void
+     * @throws PrestaShopException
+     */
+    private function updateGlobalValueOrFail(string $configurationKey, $configurationValue): void
+    {
+        if (!Configuration::updateGlobalValue($configurationKey, $configurationValue)) {
+            throw new PrestaShopException(
+                sprintf(
+                    'Failed to persist MultiSafepay configuration key "%s" during install.',
+                    $configurationKey
+                )
+            );
         }
     }
 
@@ -194,8 +225,114 @@ class Installer
         $orderState->template    = $multisafepayOrderStatusValues['template'];
         $orderState->paid        = $multisafepayOrderStatusValues['paid'];
         $orderState->module_name = 'multisafepayofficial';
-        $orderState->add();
+        if (!$orderState->add() || (int)$orderState->id <= 0) {
+            throw new PrestaShopException(
+                sprintf(
+                    'Failed to create MultiSafepay order status "%s".',
+                    (string)($multisafepayOrderStatusValues['name'] ?? 'unknown')
+                )
+            );
+        }
+
         return $orderState;
+    }
+
+    /**
+     * Clone an icon from module assets to PrestaShop order state icon directory.
+     *
+     * Best-effort and non-blocking by design: if no icon is found
+     * or destination is not writable, installation continues.
+     * Failures may be logged as warnings, but they do not interrupt install.
+     *
+     * @param int $orderStateId
+     * @param array $multisafepayOrderStatusValues
+     * @return void
+     */
+    private function cloneOrderStateIcon(int $orderStateId, array $multisafepayOrderStatusValues): void
+    {
+        if ($orderStateId <= 0) {
+            return;
+        }
+
+        $sourceDirectory = _PS_MODULE_DIR_ . 'multisafepayofficial/views/img/order_states/';
+        $destinationDirectory = defined('_PS_ORDER_STATE_IMG_DIR_')
+            ? _PS_ORDER_STATE_IMG_DIR_
+            : _PS_IMG_DIR_ . 'os/';
+        $destinationDirectory = rtrim(
+            $destinationDirectory,
+            '/\\'
+        ) . DIRECTORY_SEPARATOR;
+
+        if (!is_dir($destinationDirectory) || !is_writable($destinationDirectory)) {
+            return;
+        }
+
+        $destinationPath = $destinationDirectory . $orderStateId . '.gif';
+        if (is_file($destinationPath)) {
+            return;
+        }
+
+        $candidates = array_unique([
+            basename((string)($multisafepayOrderStatusValues['icon'] ?? 'default.gif')),
+            'default.gif',
+        ]);
+
+        $lastSourcePathTried = '';
+
+        if (is_dir($sourceDirectory)) {
+            foreach ($candidates as $candidate) {
+                $candidate = (string)$candidate;
+                if ($candidate === '') {
+                    continue;
+                }
+
+                if (pathinfo($candidate, PATHINFO_EXTENSION) === '') {
+                    $candidate .= '.gif';
+                }
+
+                $sourcePath = $sourceDirectory . $candidate;
+                if (!is_file($sourcePath) || !is_readable($sourcePath)) {
+                    continue;
+                }
+
+                $lastSourcePathTried = $sourcePath;
+
+                if (@copy($sourcePath, $destinationPath)) {
+                    return;
+                }
+            }
+        }
+
+        $fallbackSourcePath = $destinationDirectory . '2.gif';
+        if (is_file($fallbackSourcePath) && is_readable($fallbackSourcePath)) {
+            $lastSourcePathTried = $fallbackSourcePath;
+            if (@copy($fallbackSourcePath, $destinationPath)) {
+                return;
+            }
+        }
+
+        if ($lastSourcePathTried !== '') {
+            LoggerHelper::log(
+                'warning',
+                sprintf(
+                    'Failed to copy MultiSafepay order-state icon from "%s" to "%s".',
+                    $lastSourcePathTried,
+                    $destinationPath
+                )
+            );
+            return;
+        }
+
+        LoggerHelper::log(
+            'warning',
+            sprintf(
+                'Could not resolve a readable MultiSafepay order-state icon source for destination "%s". '
+                . 'Checked module directory "%s" and fallback "%s".',
+                $destinationPath,
+                $sourceDirectory,
+                $fallbackSourcePath
+            )
+        );
     }
 
     /**
@@ -208,6 +345,7 @@ class Installer
         return [
             'authorized' => [
                 'name'      => 'authorized',
+                'icon'      => 'authorized.gif',
                 'send_mail' => false,
                 'color'     => '#207F4B',
                 'invoice'   => false,
@@ -217,6 +355,7 @@ class Installer
             ],
             'partial_captured' => [
                 'name'      => 'partially captured',
+                'icon'      => 'partially_captured.gif',
                 'send_mail' => false,
                 'color'     => '#A700D3',
                 'invoice'   => false,
@@ -226,6 +365,7 @@ class Installer
             ],
             'chargeback' => [
                 'name'      => 'chargeback',
+                'icon'      => 'chargeback.gif',
                 'send_mail' => true,
                 'color'     => '#EC2E15',
                 'invoice'   => false,
@@ -235,6 +375,7 @@ class Installer
             ],
             'initialized' => [
                 'name'      => 'initialized',
+                'icon'      => 'initialized.gif',
                 'send_mail' => false,
                 'color'     => '#4169E1',
                 'invoice'   => false,
@@ -244,6 +385,7 @@ class Installer
             ],
             'partial_refunded' => [
                 'name'      => 'partial refunded',
+                'icon'      => 'partial_refunded.gif',
                 'send_mail' => true,
                 'color'     => '#EC2E15',
                 'invoice'   => false,
@@ -253,6 +395,7 @@ class Installer
             ],
             'uncleared' => [
                 'name'      => 'uncleared',
+                'icon'      => 'uncleared.gif',
                 'send_mail' => false,
                 'color'     => '#EC2E15',
                 'invoice'   => false,
