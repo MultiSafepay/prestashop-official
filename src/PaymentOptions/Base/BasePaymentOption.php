@@ -394,7 +394,19 @@ class BasePaymentOption
 
     public function getLogo(): string
     {
-        return $this->paymentMethod->getMediumIconUrl() ?: '';
+        $defaultLogo = $this->paymentMethod->getMediumIconUrl() ?: '';
+
+        if ($this->gatewayCode !== 'CREDITCARD') {
+            return $defaultLogo;
+        }
+
+        $selectedIcon = Configuration::get('MULTISAFEPAY_OFFICIAL_PAYMENT_ICON_' . $this->getUniqueName());
+
+        if (empty($selectedIcon) || $selectedIcon === 'default') {
+            return $defaultLogo;
+        }
+
+        return $this->module->getPathUri() . 'views/img/creditcard-' . $selectedIcon . '.png';
     }
 
     /**
@@ -635,6 +647,37 @@ class BasePaymentOption
                 ),
                 'default'    => '0',
                 'order'      => 16,
+            ];
+        }
+
+        if ($this->gatewayCode === 'CREDITCARD') {
+            $settings['MULTISAFEPAY_OFFICIAL_PAYMENT_ICON_' . $this->getUniqueName()] = [
+                'type'       => 'image-radio',
+                'name'       => $this->module->l('Select an icon', self::CLASS_NAME),
+                'value'      => Configuration::get('MULTISAFEPAY_OFFICIAL_PAYMENT_ICON_' . $this->getUniqueName()) ?: 'default',
+                'options' => [
+                    [
+                        'id' => 'default',
+                        'name' => $this->module->l('Default', self::CLASS_NAME),
+                        'image' => $this->paymentMethod->getMediumIconUrl()
+                    ],
+                    [
+                        'id' => '1',
+                        'name' => $this->module->l('Alternative 1', self::CLASS_NAME),
+                        'image' => $this->module->getPathUri() . 'views/img/creditcard-1.png'
+                    ],
+                    [
+                        'id' => '2',
+                        'name' => $this->module->l('Alternative 2', self::CLASS_NAME),
+                        'image' => $this->module->getPathUri() . 'views/img/creditcard-2.png'
+                    ],
+                    [
+                        'id' => '3',
+                        'name' => $this->module->l('Alternative 3', self::CLASS_NAME),
+                        'image' => $this->module->getPathUri() . 'views/img/creditcard-3.png'
+                    ],
+                ],
+                'order'      => 17,
             ];
         }
 

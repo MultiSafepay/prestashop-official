@@ -420,3 +420,64 @@
     font-size: 11px;
     margin-top: 3px;
 }
+
+/* Image Radio Button Styles */
+.multisafepay-image-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 4px 0;
+}
+
+.multisafepay-image-radio-option {
+    position: relative;
+    cursor: pointer;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 10px;
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
+    max-width: 250px;
+}
+
+.multisafepay-image-radio-option:hover {
+    border-color: #25b9d7;
+    background-color: #f8fcfd;
+}
+
+.multisafepay-image-radio-option.selected,
+.multisafepay-image-radio-option:has(input:checked) {
+    border-color: #25b9d7;
+    background-color: #e8f7fa;
+    box-shadow: 0 0 0 1px rgba(37, 185, 215, 0.2);
+}
+
+.multisafepay-image-radio-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.multisafepay-image-radio-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.multisafepay-image-radio-img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    border-radius: 2px;
+}
+
+.multisafepay-image-radio-label {
+    font-size: 12px;
+    color: #363a41;
+    line-height: 1.2;
+}

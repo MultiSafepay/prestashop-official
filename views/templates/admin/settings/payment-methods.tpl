@@ -149,6 +149,31 @@
                                             </div>
                                         </div>
                                     {/if}
+                                    {if $option['type'] == 'image-radio'}
+                                        <div class="form-group">
+                                            <label class="control-label col-lg-3">
+                                                {$option['name']|escape:'html':'UTF-8'}
+                                            </label>
+                                            <div class="col-lg-9">
+                                                <div class="multisafepay-image-radio-group">
+                                                    {foreach $option['options'] as $imageOption}
+                                                        <label class="multisafepay-image-radio-option{if $option['value'] == $imageOption['id']} selected{/if}">
+                                                            <input type="radio" name="{$optionId|escape:'html':'UTF-8'}" value="{$imageOption['id']|escape:'html':'UTF-8'}"{if $option['value'] == $imageOption['id']} checked="checked"{/if}>
+                                                            <span class="multisafepay-image-radio-wrapper">
+                                                                <img src="{$imageOption['image']|escape:'html':'UTF-8'}" alt="{$imageOption['name']|escape:'html':'UTF-8'}" class="multisafepay-image-radio-img">
+                                                                {if isset($imageOption['name']) && $imageOption['name']}
+                                                                    <span class="multisafepay-image-radio-label">{$imageOption['name']|escape:'html':'UTF-8'}</span>
+                                                                {/if}
+                                                            </span>
+                                                        </label>
+                                                    {/foreach}
+                                                </div>
+                                                {if isset($option['helperText'])}
+                                                    <p class="help-block">{$option['helperText']|escape:'html':'UTF-8'}</p>
+                                                {/if}
+                                            </div>
+                                        </div>
+                                    {/if}
                                 {/foreach}
                             </div>
                         </div>

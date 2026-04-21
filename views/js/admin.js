@@ -86,6 +86,9 @@
         // Initialize multi-language titles functionality
         initMultiLanguageTitles();
 
+        // Initialize image radio buttons functionality
+        initImageRadioButtons();
+
         // Ensure permanent help texts remain visible
         $('.multisafepay-permanent-help').show().css({
             'display': 'block',
@@ -342,5 +345,44 @@ function initMultiLanguageTitles() {
             $button.attr('title', 'Contract Other Languages');
             $button.removeClass('collapsed').addClass('expanded');
         }
+    });
+}
+
+/**
+ * Initialize Image Radio Buttons functionality
+ * Handles visual selection for radio buttons with images
+ */
+function initImageRadioButtons() {
+    // Handle clicks on image radio options
+    $('.multisafepay-image-radio-option').on('click', function() {
+        const $option = $(this);
+        const $group = $option.closest('.multisafepay-image-radio-group');
+        const $radio = $option.find('input[type="radio"]');
+
+        // Remove selected class from all options in the group
+        $group.find('.multisafepay-image-radio-option').removeClass('selected');
+
+        // Add selected class to clicked option
+        $option.addClass('selected');
+
+        // Check the radio button
+        $radio.prop('checked', true).trigger('change');
+    });
+
+    // Initialize selected state based on checked radio buttons
+    $('.multisafepay-image-radio-option input[type="radio"]:checked').each(function() {
+        $(this).closest('.multisafepay-image-radio-option').addClass('selected');
+    });
+
+    // Handle radio button change events (for keyboard navigation)
+    $('.multisafepay-image-radio-option input[type="radio"]').on('change', function() {
+        const $radio = $(this);
+        const $group = $radio.closest('.multisafepay-image-radio-group');
+
+        // Remove selected class from all options in the group
+        $group.find('.multisafepay-image-radio-option').removeClass('selected');
+
+        // Add selected class to the parent option of the checked radio
+        $group.find('input[type="radio"]:checked').closest('.multisafepay-image-radio-option').addClass('selected');
     });
 }
