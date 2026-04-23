@@ -87,6 +87,11 @@ class OrderPaymentHelper
             $payment->payment_method = $order->payment;
             $payment->update();
         }
+
+        // Update total_paid_real to ensure the order reflects the actual paid amount,
+        // especially when PS_INVOICE is disabled and PrestaShop doesn't update it automatically
+        $order->total_paid_real = $transaction->getAmount() / 100;
+        $order->update();
     }
 
     /**
@@ -114,6 +119,11 @@ class OrderPaymentHelper
 
         try {
             $payment->save();
+
+            // Update total_paid_real to ensure the order reflects the actual paid amount,
+            // especially when PS_INVOICE is disabled and PrestaShop doesn't update it automatically
+            $order->total_paid_real = $transaction->getAmount() / 100;
+            $order->update();
 
             LoggerHelper::log(
                 'info',
@@ -183,6 +193,11 @@ class OrderPaymentHelper
             if ($linkToLatestOrderInvoice) {
                 self::linkPaymentToLatestOrderInvoice($order, (int)$payment->id);
             }
+
+            // Update total_paid_real by adding the partial amount,
+            // especially when PS_INVOICE is disabled and PrestaShop doesn't update it automatically
+            $order->total_paid_real += $amount;
+            $order->update();
 
             LoggerHelper::log(
                 'info',
