@@ -75,6 +75,7 @@ class DirectInstantiationPatternTest extends TestCase
 
             $hasDirectInstantiation = (
                 strpos($content, 'new SdkService(') !== false ||
+                strpos($content, 'new CartDetailsService(') !== false ||
                 strpos($content, 'new OrderService(') !== false ||
                 strpos($content, 'new PaymentOptionService(') !== false ||
                 strpos($content, 'new TokenizationService(') !== false

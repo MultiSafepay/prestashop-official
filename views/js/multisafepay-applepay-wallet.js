@@ -29,13 +29,15 @@ class ApplePayDirect {
         this.isLegacyOPC= isLegacyOPC;
         this.isLatestOPC = isLatestOPC;
         this.debug = configApplePayDebugMode === true;
+        const directWalletConfig = window.multisafepayDirectWalletConfig;
         this.config = {
             applePayVersion: 10,
             supportedNetworks: ['amex', 'maestro', 'masterCard', 'visa', 'vPay'],
             merchantCapabilities: ['supports3DS'],
             billingContactFields: ['postalAddress', 'name', 'phone', 'email'],
             shippingContactFields: ['postalAddress', 'name', 'phone', 'email'],
-            multiSafepayServerScript: './index.php?fc=module&module=multisafepayofficial&controller=applepaysession'
+            cartDetailsEndpoint: directWalletConfig.cartDetailsEndpoint,
+            multiSafepayServerScript: directWalletConfig.applePaySessionEndpoint
         };
 
         this.init()
@@ -62,20 +64,60 @@ class ApplePayDirect {
     }
 
     /**
+     * Append the wallet button using the same confirmation wrapper structure
+     * used on the initial checkout render.
+     *
+     * @param {HTMLElement} button
+     * @param {HTMLElement} buttonContainer
+     * @returns {boolean}
+     */
+    appendToConfirmationWrapper(button, buttonContainer)
+    {
+        const parentContainer = buttonContainer.parentElement;
+        if (!parentContainer) {
+            debugDirect('Button container not found', this.debug);
+            return false;
+        }
+
+        const wrapperDiv = document.createElement('div');
+        wrapperDiv.classList.add('multisafepay-wallet-button-wrapper');
+        wrapperDiv.appendChild(button);
+        parentContainer.appendChild(wrapperDiv);
+
+        return true;
+    }
+
+    /**
      * Event handler for Apple Pay button click
      *
+     * @param {Event} event
      * @returns {Promise<void>}
      */
-    onApplePaymentButtonClicked = async() => {
-        const checkTos = isTosChecked();
-        if (checkTos) {
-            try {
-                await this.beginApplePaySession();
-            } catch (error) {
-                console.error('Error starting Apple Pay session:', error);
-            }
-        } else {
-            debugDirect('Terms of Service for Apple Pay not checked', this.debug, 'warn');
+    onApplePaymentButtonClicked = async(event) => {
+        if (
+            window.multisafepayCheckoutUtils &&
+            typeof window.multisafepayCheckoutUtils.validateTheCheckoutBeforePayment === 'function' &&
+            !await window.multisafepayCheckoutUtils.validateTheCheckoutBeforePayment()
+        ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            debugDirect('The Checkout validation blocked Apple Pay', this.debug, 'warn');
+            return;
+        }
+
+        // Modern "One Page Checkout PS" disables the Apple Pay button and shows its own delivery-address alert.
+        const reportOpcDeliveryValidity = !(this.isLatestOPC && this.containerId === 'payment-confirmation');
+        const checkoutApprovalError = getDirectWalletCheckoutApprovalError('Apple Pay', { reportOpcDeliveryValidity });
+
+        if (checkoutApprovalError) {
+            debugDirect(checkoutApprovalError, this.debug, 'warn');
+            return;
+        }
+
+        try {
+            await this.beginApplePaySession();
+        } catch (error) {
+            console.error('Error starting Apple Pay session:', error);
         }
     }
 
@@ -101,6 +143,14 @@ class ApplePayDirect {
         button.style.cursor = 'pointer';
         button.style.height = '40px';
         button.addEventListener('click', this.onApplePaymentButtonClicked);
+
+        // Use the standard confirmation wrapper only outside legacy and modern One Page Checkout PS flows.
+        // The Checkout is not excluded because it uses #confirm_order when available.
+        if (this.containerId === 'payment-confirmation' && !this.isLegacyOPC && !this.isLatestOPC) {
+            button.style.width = '160px';
+            this.appendToConfirmationWrapper(button, buttonContainer);
+            return;
+        }
 
         if (this.isLegacyOPC || this.isLatestOPC) {
             // Create a wrapper div to avoid the PrestaShop automated disabling
@@ -140,6 +190,7 @@ class ApplePayDirect {
                 debugDirect('Button container not found', this.debug);
                 return;
             }
+
             buttonContainer.appendChild(button);
         }
     }
@@ -154,16 +205,24 @@ class ApplePayDirect {
      */
     async beginApplePaySession()
     {
+        // OPC can refresh carrier/payment blocks without reloading Media::addJsDef values.
+        // Refresh the cart details here so Apple Pay authorizes the same data sent in the OrderRequest.
+        const cartDetails = await fetchDirectWalletCartDetails(
+            this.config.cartDetailsEndpoint,
+            'Apple Pay',
+            this.debug
+        );
+
         // Create the payment request object
         const paymentRequest = {
-            countryCode: configApplePayCountryCode,
-            currencyCode: configApplePayCurrencyCode,
+            countryCode: cartDetails.countryCode,
+            currencyCode: cartDetails.currencyCode,
             merchantCapabilities: this.config.merchantCapabilities,
             supportedNetworks: this.config.supportedNetworks,
             total: {
                 label: configApplePayMerchantName,
                 type: 'final',
-                amount: configApplePayTotalPrice.toFixed(2),
+                amount: cartDetails.totalPrice.toFixed(2),
             },
             requiredBillingContactFields: this.config.billingContactFields,
             requiredShippingContactFields: this.config.shippingContactFields
@@ -254,6 +313,15 @@ class ApplePayDirect {
      */
     async submitApplePayForm(paymentToken)
     {
+        if (
+            window.multisafepayCheckoutUtils &&
+            typeof window.multisafepayCheckoutUtils.validateTheCheckoutBeforePayment === 'function' &&
+            !await window.multisafepayCheckoutUtils.validateTheCheckoutBeforePayment()
+        ) {
+            debugDirect('The Checkout validation blocked Apple Pay', this.debug, 'warn');
+            return false;
+        }
+
         if ((typeof (paymentToken) !== 'string') || (paymentToken.trim() === '')) {
             debugDirect('Invalid payload provided', this.debug);
             return false;

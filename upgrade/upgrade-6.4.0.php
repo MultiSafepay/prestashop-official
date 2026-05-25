@@ -25,32 +25,73 @@ if (!defined('_PS_VERSION_')) {
 }
 
 /**
- * Ensure Back Office order-state icons exist for configured MultiSafepay statuses.
+ * Initialize the new default payment method setting and backfill order-state icons.
  *
- * The script tries module icon candidates first and falls back to img/os/2.gif.
- * It is non-blocking and returns success when prerequisites are not available.
+ * Configuration initialization is blocking and fails the upgrade when the new
+ * setting cannot be persisted. The icon copy step remains best-effort: it tries
+ * module icon candidates first, falls back to img/os/2.gif, and returns success
+ * when icon prerequisites are not available.
  *
  * @param mixed|null $module
  * @return bool
  */
-function upgrade_module_6_3_1($module = null): bool
+function upgrade_module_6_4_0($module = null): bool
 {
-    $destinationDirectory = upgrade631GetOrderStateIconsDirectory();
+    if (!upgrade640EnsureDefaultPaymentMethodConfigExists()) {
+        return false;
+    }
+
+    $destinationDirectory = upgrade640GetOrderStateIconsDirectory();
     if (!is_dir($destinationDirectory) || !is_writable($destinationDirectory)) {
-        upgrade631LogIconDestinationDirectoryUnavailable($destinationDirectory);
+        upgrade640LogIconDestinationDirectoryUnavailable($destinationDirectory);
         return true;
     }
 
-    foreach (upgrade631GetMultiSafepayOrderStatuses() as $statusKey => $statusValues) {
+    foreach (upgrade640GetMultiSafepayOrderStatuses() as $statusKey => $statusValues) {
         $orderStateId = (int)Configuration::get($statusKey);
         if ($orderStateId <= 0) {
             continue;
         }
 
-        upgrade631CloneOrderStateIcon($orderStateId, $statusValues, $destinationDirectory);
+        upgrade640CloneOrderStateIcon($orderStateId, $statusValues, $destinationDirectory);
     }
 
     return true;
+}
+
+/**
+ * Ensure upgraded installations persist the new default payment method setting.
+ *
+ * @return bool
+ */
+function upgrade640EnsureDefaultPaymentMethodConfigExists(): bool
+{
+    $configKey = 'MULTISAFEPAY_OFFICIAL_DEFAULT_PAYMENT_METHOD';
+
+    if (Configuration::get($configKey) !== false) {
+        return true;
+    }
+
+    // Seed a deterministic global fallback for upgraded installs. Merchants can
+    // still save a different value per shop or shop group later, because
+    // PrestaShop resolves shop and group overrides before the global value.
+    if (Configuration::updateGlobalValue($configKey, '')) {
+        return true;
+    }
+
+    $message = sprintf(
+        'MultiSafepay upgrade 6.3.1: failed to initialize configuration key "%s".',
+        $configKey
+    );
+
+    if (class_exists('PrestaShopLogger')) {
+        PrestaShopLogger::addLog($message, 3);
+        return false;
+    }
+
+    error_log($message);
+
+    return false;
 }
 
 /**
@@ -59,7 +100,7 @@ function upgrade_module_6_3_1($module = null): bool
  * @param string $destinationDirectory
  * @return void
  */
-function upgrade631LogIconDestinationDirectoryUnavailable(string $destinationDirectory): void
+function upgrade640LogIconDestinationDirectoryUnavailable(string $destinationDirectory): void
 {
     $message = sprintf(
         'MultiSafepay upgrade 6.3.1: destination order-state icon directory "%s" '
@@ -80,7 +121,7 @@ function upgrade631LogIconDestinationDirectoryUnavailable(string $destinationDir
  *
  * @return array<string, array{name:string,icon:string}>
  */
-function upgrade631GetMultiSafepayOrderStatuses(): array
+function upgrade640GetMultiSafepayOrderStatuses(): array
 {
     return [
         'MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED' => [
@@ -115,7 +156,7 @@ function upgrade631GetMultiSafepayOrderStatuses(): array
  *
  * @return string
  */
-function upgrade631GetOrderStateIconsDirectory(): string
+function upgrade640GetOrderStateIconsDirectory(): string
 {
     if (defined('_PS_ORDER_STATE_IMG_DIR_')) {
         return rtrim(_PS_ORDER_STATE_IMG_DIR_, '/\\')
@@ -139,7 +180,7 @@ function upgrade631GetOrderStateIconsDirectory(): string
  * @param string $destinationDirectory
  * @return void
  */
-function upgrade631CloneOrderStateIcon(
+function upgrade640CloneOrderStateIcon(
     int $orderStateId,
     array $multisafepayOrderStatusValues,
     string $destinationDirectory
@@ -208,11 +249,11 @@ function upgrade631CloneOrderStateIcon(
     }
 
     if ($lastSourcePathTried !== '') {
-        upgrade631LogIconCopyFailure($lastSourcePathTried, $destinationPath);
+        upgrade640LogIconCopyFailure($lastSourcePathTried, $destinationPath);
         return;
     }
 
-    upgrade631LogMissingIconSource(
+    upgrade640LogMissingIconSource(
         $destinationPath,
         $sourceDirectory,
         $fallbackSourcePath,
@@ -227,7 +268,7 @@ function upgrade631CloneOrderStateIcon(
  * @param string $destinationPath
  * @return void
  */
-function upgrade631LogIconCopyFailure(string $sourcePath, string $destinationPath): void
+function upgrade640LogIconCopyFailure(string $sourcePath, string $destinationPath): void
 {
     $message = sprintf(
         'MultiSafepay upgrade 6.3.1: failed to copy order-state icon from "%s" to "%s".',
@@ -252,7 +293,7 @@ function upgrade631LogIconCopyFailure(string $sourcePath, string $destinationPat
  * @param array $candidates
  * @return void
  */
-function upgrade631LogMissingIconSource(
+function upgrade640LogMissingIconSource(
     string $destinationPath,
     string $sourceDirectory,
     string $fallbackSourcePath,

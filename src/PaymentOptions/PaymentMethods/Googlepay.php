@@ -25,7 +25,6 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 use Cart;
 use Configuration;
 use Context;
-use Currency;
 use Exception;
 use Media;
 use MultiSafepay\Api\Transactions\OrderRequest;
@@ -87,8 +86,7 @@ class Googlepay extends BasePaymentOption
                 'module-multisafepay-googlepay-wallet-javascript',
                 PathHelper::getAssetPath('multisafepay-googlepay-wallet.js'),
                 [
-                    'priority' => 200,
-                    'attributes' => 'async'
+                    'priority' => 199
                 ]
             );
 
@@ -96,8 +94,7 @@ class Googlepay extends BasePaymentOption
                 'module-multisafepay-initialize-common-wallets-javascript',
                 PathHelper::getAssetPath('multisafepay-common-wallets.js'),
                 [
-                    'priority' => 300,
-                    'attributes' => 'async'
+                    'priority' => 201
                 ]
             );
 
@@ -113,9 +110,6 @@ class Googlepay extends BasePaymentOption
             Media::addJsDef([
                 'configEnvironment'           => $environment,
                 'configGatewayMerchantId'     => $this->getMultiSafepayAccountId(),
-                'configGooglePayTotalPrice'   => $context->cart->getOrderTotal(),
-                'configGooglePayCurrencyCode' => (new Currency($context->cart->id_currency))->iso_code,
-                'configGooglePayCountryCode'  => $this->getCountryCode($context),
                 'configGooglePayMerchantName' => $merchantName,
                 'configGooglePayMerchantId'   => $merchantId,
                 'configGooglePayDebugMode'    => (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')

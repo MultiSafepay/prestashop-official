@@ -87,6 +87,10 @@ class GooglePayDirect {
         this.isLegacyOPC = isLegacyOPC;
         this.isLatestOPC = isLatestOPC;
         this.debug = debugModeGooglePay;
+        const directWalletConfig = window.multisafepayDirectWalletConfig;
+        this.config = {
+            cartDetailsEndpoint: directWalletConfig.cartDetailsEndpoint
+        };
         this.init()
             .then(() => {
                 debugDirect('Google Pay Direct initialized', this.debug, 'log');
@@ -111,21 +115,45 @@ class GooglePayDirect {
     }
 
     /**
-     * Validate the Terms of Service and prevent event propagation if not checked
+     * Validate checkout approvals and prevent event propagation if any approval is missing.
      *
      * @param {Event} event - The click event
      * @param {string} source - Source identifier for debugging
-     * @returns {boolean} - true if TOS is checked, false otherwise
+     * @returns {boolean}
      */
-    validateTosAndPreventEvent(event, source = 'unknown')
+    validateCheckoutApprovalAndPreventEvent(event, source = 'unknown')
     {
-        const checkTos = isTosChecked();
-        if (!checkTos) {
+        const checkoutApprovalError = getDirectWalletCheckoutApprovalError('Google Pay');
+        if (checkoutApprovalError) {
             event.preventDefault();
             event.stopImmediatePropagation();
-            debugDirect(`Terms of Service for Google Pay not checked - ${source} click prevented`, this.debug, 'warn');
+            debugDirect(checkoutApprovalError + ' - ' + source + ' click prevented', this.debug, 'warn');
             return false;
         }
+        return true;
+    }
+
+    /**
+     * Append the wallet button using the same confirmation wrapper structure
+     * used on the initial checkout render.
+     *
+     * @param {HTMLElement} button
+     * @param {HTMLElement} buttonContainer
+     * @returns {boolean}
+     */
+    appendToConfirmationWrapper(button, buttonContainer)
+    {
+        const parentContainer = buttonContainer.parentElement;
+        if (!parentContainer) {
+            debugDirect('Button container not found', this.debug);
+            return false;
+        }
+
+        const wrapperDiv = document.createElement('div');
+        wrapperDiv.classList.add('multisafepay-wallet-button-wrapper');
+        wrapperDiv.appendChild(button);
+        parentContainer.appendChild(wrapperDiv);
+
         return true;
     }
 
@@ -159,19 +187,25 @@ class GooglePayDirect {
 
         // Add a capturing event listener to intercept clicks before Google Pay processes them
         button.addEventListener('click', (event) => {
-            if (!this.validateTosAndPreventEvent(event, 'button')) {
+            if (!this.validateCheckoutApprovalAndPreventEvent(event, 'button')) {
                 return false;
             }
         }, true);
+
+        // Use the standard confirmation wrapper only outside legacy and modern One Page Checkout PS flows.
+        // The Checkout is not excluded because it uses #confirm_order when available.
+        if (this.containerId === 'payment-confirmation' && !this.isLegacyOPC && !this.isLatestOPC) {
+            this.appendToConfirmationWrapper(button, buttonContainer);
+            return;
+        }
 
         if (this.isLegacyOPC || this.isLatestOPC) {
             // Create a wrapper div to avoid the PrestaShop automated disabling
             const wrapperDiv = document.createElement('div');
 
-            // Validates Terms of Service BEFORE the click reaches the button.
-            // This intercepts the event early to prevent Google Pay from processing if TOS is not checked.
+            // Validate checkout approvals before the click reaches the Google Pay button.
             wrapperDiv.addEventListener('click', (event) => {
-                if (!this.validateTosAndPreventEvent(event, 'wrapper')) {
+                if (!this.validateCheckoutApprovalAndPreventEvent(event, 'wrapper')) {
                     return false;
                 }
             }, true);
@@ -193,17 +227,15 @@ class GooglePayDirect {
                 }
                 button.firstChild.classList.add('btn', 'btn-primary', 'btn-lg', 'pull-right');
             } else if (this.isLatestOPC) {
-                if (buttonContainer) {
-                    buttonContainer.style.textAlign = 'right';
-                }
+                if (this.containerId === 'payment-confirmation') {
+                    const parentContainer = buttonContainer.parentElement;
+                    if (!parentContainer) {
+                        debugDirect('Button container not found', this.debug);
+                        return;
+                    }
 
-                // Override OPC styles for Google Pay button
-                const gpayButton = button.querySelector('button');
-                if (gpayButton) {
-                    gpayButton.style.setProperty('min-height', 'auto', 'important');
-                    gpayButton.style.setProperty('max-height', 'none', 'important');
-                    gpayButton.style.setProperty('background-color', '#000', 'important');
-                    gpayButton.style.setProperty('height', '40px', 'important');
+                    buttonContainer = parentContainer;
+                    wrapperDiv.classList.add('multisafepay-wallet-button-wrapper');
                 }
             }
             // Append the button to the wrapper
@@ -217,6 +249,7 @@ class GooglePayDirect {
                 return;
             }
             buttonContainer = parentContainer;
+
             // Append the button to the "parent" container,
             // so we can avoid the automated disabling from PrestaShop
             buttonContainer.appendChild(button);
@@ -229,17 +262,24 @@ class GooglePayDirect {
      * Some variables from the global scope are launched from
      * the internal code of Prestashop
      *
-     * @returns {object} paymentDataRequest
+     * @returns {Promise<object>} paymentDataRequest
      */
-    getGooglePaymentDataRequest()
+    async getGooglePaymentDataRequest()
     {
+        // OPC can refresh carrier/payment blocks without reloading Media::addJsDef values.
+        // Refresh the cart details here so Google Pay displays the same data sent in the OrderRequest.
+        const cartDetails = await fetchDirectWalletCartDetails(
+            this.config.cartDetailsEndpoint,
+            'Google Pay',
+            this.debug
+        );
         const paymentDataRequest = Object.assign({}, baseRequest);
         paymentDataRequest.allowedPaymentMethods = [cardPaymentMethod];
         paymentDataRequest.transactionInfo = {
             totalPriceStatus: 'FINAL',
-            totalPrice: configGooglePayTotalPrice.toFixed(2),
-            currencyCode: configGooglePayCurrencyCode,
-            countryCode: configGooglePayCountryCode
+            totalPrice: cartDetails.totalPrice.toFixed(2),
+            currencyCode: cartDetails.currencyCode,
+            countryCode: cartDetails.countryCode
         };
         paymentDataRequest.merchantInfo = {
             merchantName: configGooglePayMerchantName,
@@ -255,15 +295,30 @@ class GooglePayDirect {
      */
     async onGooglePaymentButtonClicked()
     {
+        if (
+            window.multisafepayCheckoutUtils &&
+            typeof window.multisafepayCheckoutUtils.validateTheCheckoutBeforePayment === 'function' &&
+            !await window.multisafepayCheckoutUtils.validateTheCheckoutBeforePayment()
+        ) {
+            debugDirect('The Checkout validation blocked Google Pay', this.debug, 'warn');
+            return;
+        }
+
+        const checkoutApprovalError = getDirectWalletCheckoutApprovalError('Google Pay');
+        if (checkoutApprovalError) {
+            debugDirect(checkoutApprovalError, this.debug, 'warn');
+            return;
+        }
+
         if (paymentsClient && paymentsClient.loadPaymentData) {
             try {
-                const dataRequest = this.getGooglePaymentDataRequest();
+                const dataRequest = await this.getGooglePaymentDataRequest();
                 if (this.debug && (!dataRequest || (typeof dataRequest !== 'object'))) {
                     debugDirect('Invalid data from paymentDataRequest object', this.debug);
                 }
 
                 const paymentData = await paymentsClient.loadPaymentData(dataRequest);
-                const processedPayment = this.processGooglePayment(paymentData);
+                const processedPayment = await this.processGooglePayment(paymentData);
                 if (this.debug && !processedPayment) {
                     debugDirect('Failed to process Google Pay payment', this.debug);
                 }
@@ -279,10 +334,19 @@ class GooglePayDirect {
      * Submit the Google Pay form
      *
      * @param {string} tokenValue
-     * @returns {boolean}
+     * @returns {Promise<boolean>}
      */
-    submitGooglePayForm(tokenValue)
+    async submitGooglePayForm(tokenValue)
     {
+        if (
+            window.multisafepayCheckoutUtils &&
+            typeof window.multisafepayCheckoutUtils.validateTheCheckoutBeforePayment === 'function' &&
+            !await window.multisafepayCheckoutUtils.validateTheCheckoutBeforePayment()
+        ) {
+            debugDirect('The Checkout validation blocked Google Pay', this.debug, 'warn');
+            return false;
+        }
+
         if ((typeof (tokenValue) !== 'string') || (tokenValue.trim() === '')) {
             debugDirect('Invalid payload provided', this.debug);
             return false;
@@ -318,9 +382,9 @@ class GooglePayDirect {
 
     /**
      * @param {object} paymentData
-     * @returns {boolean}
+     * @returns {Promise<boolean>}
      */
-    processGooglePayment(paymentData)
+    async processGooglePayment(paymentData)
     {
         // Validate input
         if (!paymentData ||
@@ -342,6 +406,6 @@ class GooglePayDirect {
         }
 
         // Call the submit function only if the payload is valid
-        return this.submitGooglePayForm(payload);
+        return await this.submitGooglePayForm(payload);
     }
 }

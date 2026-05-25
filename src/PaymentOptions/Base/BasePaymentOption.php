@@ -801,7 +801,10 @@ class BasePaymentOption
 
             $context->controller->registerJavascript(
                 'module-multisafepay-initialize-payment-component-javascript',
-                PathHelper::getAssetPath('multisafepayofficial.js')
+                PathHelper::getAssetPath('multisafepayofficial.js'),
+                [
+                    'priority' => 200
+                ]
             );
         }
     }

@@ -25,7 +25,6 @@ namespace MultiSafepay\PrestaShop\PaymentOptions\PaymentMethods;
 use Cart;
 use Configuration;
 use Context;
-use Currency;
 use Exception;
 use Media;
 use MultiSafepay\Api\Transactions\OrderRequest\Arguments\GatewayInfoInterface;
@@ -69,7 +68,7 @@ class Applepay extends BasePaymentOption
             'module-multisafepay-applepay-javascript',
             PathHelper::getAssetPath('multisafepay-applepay.js'),
             [
-                'priority' => 200
+                'priority' => 197
             ]
         );
 
@@ -79,8 +78,7 @@ class Applepay extends BasePaymentOption
                 'module-multisafepay-applepay-wallet-javascript',
                 PathHelper::getAssetPath('multisafepay-applepay-wallet.js'),
                 [
-                    'priority' => 200,
-                    'attributes' => 'async'
+                    'priority' => 198
                 ]
             );
 
@@ -88,17 +86,13 @@ class Applepay extends BasePaymentOption
                 'module-multisafepay-initialize-common-wallets-javascript',
                 PathHelper::getAssetPath('multisafepay-common-wallets.js'),
                 [
-                    'priority' => 300,
-                    'attributes' => 'async'
+                    'priority' => 201
                 ]
             );
 
             $applePayMerchantName = Configuration::get('MULTISAFEPAY_OFFICIAL_MERCHANT_NAME_APPLEPAY') ?: '';
 
             Media::addJsDef([
-                'configApplePayTotalPrice'   => $context->cart->getOrderTotal(),
-                'configApplePayCurrencyCode' => (new Currency($context->cart->id_currency))->iso_code,
-                'configApplePayCountryCode'  => $this->getCountryCode($context),
                 'configApplePayMerchantName' => $applePayMerchantName,
                 'configApplePayDebugMode'    => (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE')
             ]);

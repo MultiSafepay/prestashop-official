@@ -27,15 +27,15 @@
 
 // One Page Checkout PS support. Version 4.0.X
 $(document).on('opc-load-payment:completed', function () {
-    checkIfDeviceSupportApplePay(true);
+    checkIfDeviceSupportApplePay();
 });
 
-if (typeof prestashop !== 'undefined') {
+if (window.multisafepayCheckoutUtils.hasPrestashopEventBus()) {
     // One Page Checkout PS support. Version 4.1.X
     prestashop.on(
         'opc-payment-getPaymentList-complete',
         function (event) {
-            checkIfDeviceSupportApplePay(true);
+            checkIfDeviceSupportApplePay();
         }
     );
 
@@ -51,31 +51,36 @@ if (typeof prestashop !== 'undefined') {
     prestashop.on(
         'thecheckout_updatePaymentBlock',
         function (event) {
-            if (event && event.reason === 'update') {
+            if (
+                event &&
+                event.reason === 'update' &&
+                window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isTheCheckoutActive
+            ) {
                 checkIfDeviceSupportApplePay();
             }
         }
     );
 }
 
-function checkIfDeviceSupportApplePay(isOpc = false)
+function checkIfDeviceSupportApplePay()
 {
     try {
         if (!window.ApplePaySession || !ApplePaySession.canMakePayments()) {
-            removeApplePay(isOpc);
+            removeApplePay();
         }
     } catch (error) {
         console.error(error);
     }
 }
 
-function removeApplePay(isOpc)
+function removeApplePay()
 {
-    if (isOpc) {
-        $('*[data-module-name="APPLEPAY"]').closest('.module_payment_container').remove();
-        // Required when the payment method form field is missing but the logo is still displayed
-        $('img[src*="applepay.png"], img[title="Apple Pay"]').closest('.module_payment_container').remove();
-    } else {
-        $('*[data-module-name="APPLEPAY"]').parent().closest('div').remove();
-    }
+    const applePayOptionSelector = '*[data-module-name^="APPLEPAY"]';
+    const applePayLogoSelector = '.payment-options img[src*="applepay.png"], .payment-options img[title="Apple Pay"]';
+    const paymentOptionWrappers = '.module_payment_container, .payment-option, div[id$="-container"]';
+
+    $(applePayOptionSelector).closest(paymentOptionWrappers).remove();
+
+    // Some checkout renders may leave only the logo node behind after async updates.
+    $(applePayLogoSelector).closest(paymentOptionWrappers).remove();
 }

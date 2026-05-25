@@ -67,6 +67,13 @@ class MultisafepayOfficial extends PaymentModule
     private static $mspTransactionCache = [];
 
     /**
+     * Maximum number of cart details refresh retries for direct wallets.
+     *
+     * @var int
+     */
+    private const DIRECT_WALLET_CART_DETAILS_MAX_ATTEMPTS = 3;
+
+    /**
      * @var string
      */
     private $paymentUrlEmailHook = '';
@@ -297,7 +304,7 @@ class MultisafepayOfficial extends PaymentModule
             }
         }
 
-        // Fallback: parse from URL path segments (e.g., /orders/{orderId}/view, /sell/orders/{orderId}/status, ...)
+        // Fallback: parse from URL path segments (e.g. /orders/{orderId}/view, /sell/orders/{orderId}/status, ...)
         if (!empty($_SERVER['REQUEST_URI'])) {
             $path = parse_url((string)$_SERVER['REQUEST_URI'], PHP_URL_PATH);
             if (is_string($path) && $path !== '') {
@@ -424,6 +431,7 @@ class MultisafepayOfficial extends PaymentModule
      * @param array $params
      * @return void
      * @throws Exception
+     * @throws ClientExceptionInterface
      */
     public function hookActionFrontControllerSetMedia(array $params): void
     {
@@ -448,13 +456,44 @@ class MultisafepayOfficial extends PaymentModule
             ]
         );
 
+        // Several checkout scripts read multisafepayCheckoutUtils while parsing, so the
+        // shared checkout utils must load before any payment-option script can be evaluated.
+        $this->context->controller->registerJavascript(
+            'module-multisafepay-checkout-utils-javascript',
+            PathHelper::getAssetPath('multisafepay-checkout-utils.js'),
+            [
+                'priority' => 195
+            ]
+        );
+
+        // Make sure this loads before multisafepayofficial.js by using a lower priority,
+        // because the payment component (200) depends on helpers defined here.
         $this->context->controller->registerJavascript(
             'module-multisafepay-javascript',
             PathHelper::getAssetPath('front.js'),
             [
-                'priority' => 200
+                'priority' => 196
             ]
         );
+
+        if (class_exists('Media')) {
+            $shopId = !empty($this->context->shop->id) ? (int)$this->context->shop->id : 0;
+            $customerId = !empty($this->context->customer->id) ? (int)$this->context->customer->id : 0;
+            $cartId = !empty($this->context->cart->id) ? (int)$this->context->cart->id : 0;
+            Media::addJsDef([
+                'multisafepayCheckoutSelectionConfig' => [
+                    'defaultGateway' => (string)Configuration::get('MULTISAFEPAY_OFFICIAL_DEFAULT_PAYMENT_METHOD'),
+                    'debug' => (bool)Configuration::get('MULTISAFEPAY_OFFICIAL_DEBUG_MODE'),
+                    'storageKey' => 'multisafepayofficial_last_gateway_' . $shopId . '_' . $customerId . '_' . $cartId,
+                ],
+                'multisafepayDirectWalletCartDetailsConfig' => [
+                    'maxAttempts' => self::DIRECT_WALLET_CART_DETAILS_MAX_ATTEMPTS,
+                    'errorMessage' => $this->l(
+                        'We could not refresh your cart details. Please refresh the page and try again.'
+                    ),
+                ],
+            ]);
+        }
 
         $paymentOptionService = new PaymentOptionService($this);
 
@@ -1131,7 +1170,7 @@ class MultisafepayOfficial extends PaymentModule
     }
 
     /**
-     * Add "Capture" button to order detail page for MultiSafepay authorized orders
+     * Add the "Capture" button to the order detail page for MultiSafepay authorized orders
      *
      * This hook adds a button to the admin order view page that allows merchants
      * to manually capture funds for orders that are in "authorized" status.

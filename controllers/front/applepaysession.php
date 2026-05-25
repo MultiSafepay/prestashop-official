@@ -23,6 +23,7 @@
 use MultiSafepay\Api\Wallets\ApplePay\MerchantSessionRequest;
 use MultiSafepay\Exception\ApiException;
 use MultiSafepay\Exception\InvalidDataInitializationException;
+use MultiSafepay\PrestaShop\Helper\CartDetailsResponseHelper;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
 use MultiSafepay\PrestaShop\Services\SdkService;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -36,6 +37,8 @@ class MultisafepayOfficialApplepaysessionModuleFrontController extends ModuleFro
 
     public const VALIDATION_URL_KEY = 'validation_url';
     public const ORIGIN_DOMAIN_KEY = 'origin_domain';
+    public const ACTION_KEY = 'action';
+    public const CART_DETAILS_ACTION = 'cart_details';
 
     public function __construct()
     {
@@ -45,6 +48,7 @@ class MultisafepayOfficialApplepaysessionModuleFrontController extends ModuleFro
 
     /**
      * @return void
+     * @throws Exception
      */
     public function initContent(): void
     {
@@ -53,6 +57,12 @@ class MultisafepayOfficialApplepaysessionModuleFrontController extends ModuleFro
 
         // Set the content type to JSON
         header('Content-Type: application/json');
+
+        // Backward-compatible route for cached Apple Pay JS that still asks this controller for cart details.
+        if (Tools::getValue(self::ACTION_KEY) === self::CART_DETAILS_ACTION) {
+            $this->ajaxRender(CartDetailsResponseHelper::buildResponse($this->context));
+            exit;
+        }
 
         $appleSessionArguments = $this->getApplePaySessionArguments();
 

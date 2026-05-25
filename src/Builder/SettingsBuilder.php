@@ -62,12 +62,39 @@ class SettingsBuilder
     private $module;
 
     /**
+     * Reused across the settings render to avoid fetching the same payment methods
+     * more than once in the back office.
+     *
+     * @var PaymentOptionService|null
+     */
+    private $paymentOptionService;
+
+    /**
      * SettingsBuilder constructor.
      * @param MultisafepayOfficial $module
      */
     public function __construct(MultisafepayOfficial $module)
     {
         $this->module  = $module;
+    }
+
+    /**
+     * Reuse a single payment option service while building the settings page.
+     *
+     * The settings form reads payment options from multiple sections during the same request
+     * (default selection, payment methods tab, special defaults sync, and mandatory countries).
+     * Sharing one service instance keeps the existing behaviour while avoiding duplicate API fetches
+     * in back office renders.
+     *
+     * @return PaymentOptionService
+     */
+    private function getPaymentOptionService(): PaymentOptionService
+    {
+        if (!$this->paymentOptionService instanceof PaymentOptionService) {
+            $this->paymentOptionService = new PaymentOptionService($this->module);
+        }
+
+        return $this->paymentOptionService;
     }
 
     /**
@@ -84,6 +111,7 @@ class SettingsBuilder
             'MULTISAFEPAY_OFFICIAL_CONFIRMATION_ORDER_EMAIL'              => ['default' => '1'],
             'MULTISAFEPAY_OFFICIAL_CREATE_ORDER_BEFORE_PAYMENT'           => ['default' => '1'],
             'MULTISAFEPAY_OFFICIAL_DEBUG_MODE'                            => ['default' => '0'],
+            'MULTISAFEPAY_OFFICIAL_DEFAULT_PAYMENT_METHOD'                => ['default' => ''],
             'MULTISAFEPAY_OFFICIAL_DISABLE_BACKOFFICE_ORDER_PAYMENT_LINK' => ['default' => '0'],
             'MULTISAFEPAY_OFFICIAL_DISABLE_SHOPPING_CART'                 => ['default' => '0'],
             'MULTISAFEPAY_OFFICIAL_FINAL_ORDER_STATUS'                    => ['default' => '["'.Configuration::get('PS_OS_REFUND').'"]', 'multiple' => true],
@@ -191,6 +219,7 @@ class SettingsBuilder
      *
      * @return array
      * @throws SmartyException
+     * @throws Exception
      *
      * @phpcs:disable Generic.Files.LineLength.TooLong
      */
@@ -307,6 +336,15 @@ class SettingsBuilder
                                 'label' => $this->module->l('Disabled', self::CLASS_NAME),
                             ],
                         ],
+                        'section' => 'default'
+                    ],
+                    [
+                        'tab'     => 'general_settings',
+                        'type'    => 'select',
+                        'desc'    => $this->module->l('Choose which "active" payment method is selected by default at checkout. If the customer has previously paid with another one, their last used method is selected instead.', self::CLASS_NAME),
+                        'name'    => 'MULTISAFEPAY_OFFICIAL_DEFAULT_PAYMENT_METHOD',
+                        'label'   => $this->module->l('Default selected payment method', self::CLASS_NAME),
+                        'options' => $this->getDefaultPaymentMethodOptions(),
                         'section' => 'default'
                     ],
                     [
@@ -517,7 +555,7 @@ class SettingsBuilder
     public function getPaymentMethodsHtmlContent(): string
     {
         try {
-            $paymentOptionService = new PaymentOptionService($this->module);
+            $paymentOptionService = $this->getPaymentOptionService();
             $languageId = ContextAdapter::getLanguageId($this->module->getModuleContext());
             $groups = Group::getGroups($languageId);
             $smarty = ContextAdapter::getSmarty();
@@ -625,6 +663,10 @@ class SettingsBuilder
      */
     public function postProcess(): array
     {
+        // Reset before reading dynamic payment-option fields so save processing
+        // does not reuse a service created earlier in the request with stale API/config state.
+        $this->paymentOptionService = null;
+
         $result = ['success' => true];
         $formValues = $this->getConfigFormValues();
         foreach ($formValues as $key => $value) {
@@ -641,6 +683,10 @@ class SettingsBuilder
                 Configuration::updateValue($key, Tools::getValue($key));
             }
         }
+
+        // Reset again because the settings page is rendered immediately after saving.
+        // This makes the next render rebuild payment options from persisted values.
+        $this->paymentOptionService = null;
 
         return $result;
     }
@@ -680,7 +726,7 @@ class SettingsBuilder
      */
     private function getMandatoryCountriesForSetting(string $settingKey): array
     {
-        $paymentOptionService = new PaymentOptionService($this->module);
+        $paymentOptionService = $this->getPaymentOptionService();
 
         foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
             $specialDefaultValues = $this->getSpecialDefaultValues($paymentOption);
@@ -709,6 +755,39 @@ class SettingsBuilder
         $prestaShopOrderStatusesOptions['id'] = 'id';
         $prestaShopOrderStatusesOptions['name'] = 'name';
         return $prestaShopOrderStatusesOptions;
+    }
+
+    /**
+     * Return available active payment methods for the default-selection setting
+     *
+     * @return array
+     * @throws Exception
+     */
+    private function getDefaultPaymentMethodOptions(): array
+    {
+        $paymentMethodsOptions = [
+            [
+                'id' => '',
+                'name' => $this->module->l('None', self::CLASS_NAME),
+            ],
+        ];
+
+        $paymentOptionService = $this->getPaymentOptionService();
+        $languageId = ContextAdapter::getLanguageId($this->module->getModuleContext());
+
+        /** @var BasePaymentOption $paymentOption */
+        foreach ($paymentOptionService->getActivePaymentOptions() as $paymentOption) {
+            $paymentMethodsOptions[] = [
+                'id' => $paymentOption->getUniqueName(),
+                'name' => $paymentOption->getFrontEndName($languageId ?: null),
+            ];
+        }
+
+        return [
+            'query' => $paymentMethodsOptions,
+            'id' => 'id',
+            'name' => 'name',
+        ];
     }
 
     /**
@@ -775,7 +854,7 @@ class SettingsBuilder
         }
 
         if ($includePaymentOptionSettings) {
-            $paymentOptionService = new PaymentOptionService($this->module);
+            $paymentOptionService = $this->getPaymentOptionService();
             /** @var BasePaymentOption $paymentOption */
             foreach ($paymentOptionService->getMultiSafepayPaymentOptions() as $paymentOption) {
                 $specialDefaultValues = $this->getSpecialDefaultValues($paymentOption);

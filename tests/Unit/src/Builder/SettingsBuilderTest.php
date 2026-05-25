@@ -23,18 +23,19 @@
 
 namespace MultiSafepay\Tests\Builder;
 
+use Context;
+use MultiSafepay\PrestaShop\Adapter\ContextAdapter;
 use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
+use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
+use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
 use MultisafepayOfficial;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionClass;
+use ReflectionException;
 
 class SettingsBuilderTest extends BaseMultiSafepayTest
 {
-    /**
-     * @var SettingsBuilder
-     */
-    private $settingsBuilder;
-
     /**
      * @var MockObject
      */
@@ -46,8 +47,9 @@ class SettingsBuilderTest extends BaseMultiSafepayTest
 
         /** @var MultisafepayOfficial $mockModule */
         $mockModule = $this->createMock(MultisafepayOfficial::class);
+        $mockModule->method('l')->willReturnArgument(0);
+        $mockModule->method('getModuleContext')->willReturn(Context::getContext());
         $this->mockModule = $mockModule;
-        $this->settingsBuilder = new SettingsBuilder($mockModule);
     }
 
     /**
@@ -83,6 +85,7 @@ class SettingsBuilderTest extends BaseMultiSafepayTest
         $this->assertArrayHasKey('MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_VALUE', $configFields);
         $this->assertArrayHasKey('MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT', $configFields);
         $this->assertArrayHasKey('MULTISAFEPAY_OFFICIAL_DEBUG_MODE', $configFields);
+        $this->assertArrayHasKey('MULTISAFEPAY_OFFICIAL_DEFAULT_PAYMENT_METHOD', $configFields);
 
         // Test default values for some fields
         $this->assertEquals('0', $configFields['MULTISAFEPAY_OFFICIAL_TEST_MODE']['default']);
@@ -91,6 +94,7 @@ class SettingsBuilderTest extends BaseMultiSafepayTest
         $this->assertEquals(SettingsBuilder::DAYS, $configFields['MULTISAFEPAY_OFFICIAL_TIME_ACTIVE_UNIT']['default']);
         $this->assertEquals('0', $configFields['MULTISAFEPAY_OFFICIAL_DEBUG_MODE']['default']);
         $this->assertEquals('1', $configFields['MULTISAFEPAY_OFFICIAL_SECOND_CHANCE']['default']);
+        $this->assertEquals('', $configFields['MULTISAFEPAY_OFFICIAL_DEFAULT_PAYMENT_METHOD']['default']);
     }
 
     /**
@@ -202,5 +206,159 @@ class SettingsBuilderTest extends BaseMultiSafepayTest
         foreach ($requiredFields as $requiredField) {
             $this->assertArrayHasKey($requiredField, $configFields);
         }
+    }
+
+    /**
+     * Test the default payment method helper text
+     *
+     * @covers \MultiSafepay\PrestaShop\Builder\SettingsBuilder
+     * @throws ReflectionException
+     */
+    public function testDefaultPaymentMethodHelperText(): void
+    {
+        /** @var SettingsBuilder&MockObject $settingsBuilder */
+        $settingsBuilder = $this->getMockBuilder(SettingsBuilder::class)
+            ->setConstructorArgs([$this->mockModule])
+            ->onlyMethods([
+                'getPaymentMethodsHtmlContent',
+                'getSystemStatusHtmlContent',
+                'getSupportHtmlContent',
+            ])
+            ->getMock();
+
+        $settingsBuilder->method('getPaymentMethodsHtmlContent')->willReturn('');
+        $settingsBuilder->method('getSystemStatusHtmlContent')->willReturn('');
+        $settingsBuilder->method('getSupportHtmlContent')->willReturn('');
+
+        $reflection = new ReflectionClass($settingsBuilder);
+        $method = $reflection->getMethod('getConfigForm');
+        $method->setAccessible(true);
+
+        $configForm = $method->invoke($settingsBuilder);
+        $defaultPaymentMethodField = null;
+
+        foreach ($configForm[0]['form']['input'] as $field) {
+            if (($field['name'] ?? '') === 'MULTISAFEPAY_OFFICIAL_DEFAULT_PAYMENT_METHOD') {
+                $defaultPaymentMethodField = $field;
+                break;
+            }
+        }
+
+        $this->assertNotNull($defaultPaymentMethodField);
+
+        $this->assertSame(
+            'Choose which "active" payment method is selected by default at checkout. If the customer has previously paid with another one, their last used method is selected instead.',
+            $defaultPaymentMethodField['desc']
+        );
+    }
+
+    /**
+     * Test that the payment option service is reused within the same builder lifecycle
+     *
+     * @covers \MultiSafepay\PrestaShop\Builder\SettingsBuilder
+     * @throws ReflectionException
+     */
+    public function testPaymentOptionServiceIsReusedWithinBuilderLifecycle(): void
+    {
+        $settingsBuilder = new SettingsBuilder($this->mockModule);
+        $reflection = new ReflectionClass(SettingsBuilder::class);
+        $method = $reflection->getMethod('getPaymentOptionService');
+        $method->setAccessible(true);
+
+        $firstPaymentOptionService = $method->invoke($settingsBuilder);
+        $secondPaymentOptionService = $method->invoke($settingsBuilder);
+
+        $this->assertInstanceOf(PaymentOptionService::class, $firstPaymentOptionService);
+        $this->assertSame($firstPaymentOptionService, $secondPaymentOptionService);
+    }
+
+    /**
+     * Test that saving settings clears the cached payment option service before and after processing
+     *
+     * @covers \MultiSafepay\PrestaShop\Builder\SettingsBuilder::postProcess
+     * @throws ReflectionException
+     */
+    public function testPostProcessClearsCachedPaymentOptionServiceBeforeAndAfterProcessing(): void
+    {
+        /** @var SettingsBuilder&MockObject $settingsBuilder */
+        $settingsBuilder = $this->getMockBuilder(SettingsBuilder::class)
+            ->setConstructorArgs([$this->mockModule])
+            ->onlyMethods(['getConfigFormValues'])
+            ->getMock();
+
+        $cachedPaymentOptionService = $this->createMock(PaymentOptionService::class);
+        $reflection = new ReflectionClass(SettingsBuilder::class);
+        $property = $reflection->getProperty('paymentOptionService');
+        $property->setAccessible(true);
+        $property->setValue($settingsBuilder, $cachedPaymentOptionService);
+
+        $settingsBuilder->method('getConfigFormValues')->willReturnCallback(function () use ($property, $settingsBuilder): array {
+            $this->assertNull($property->getValue($settingsBuilder));
+
+            return [];
+        });
+
+        $result = $settingsBuilder->postProcess();
+        $method = $reflection->getMethod('getPaymentOptionService');
+        $method->setAccessible(true);
+        $recreatedPaymentOptionService = $method->invoke($settingsBuilder);
+
+        $this->assertSame(['success' => true], $result);
+        $this->assertNotSame($cachedPaymentOptionService, $recreatedPaymentOptionService);
+    }
+
+    /**
+     * Test that default payment method options are built from active methods only
+     *
+     * @covers \MultiSafepay\PrestaShop\Builder\SettingsBuilder
+     * @throws ReflectionException
+     */
+    public function testDefaultPaymentMethodOptionsUseActiveMethodsOnly(): void
+    {
+        $expectedLanguageId = ContextAdapter::getLanguageId($this->mockModule->getModuleContext()) ?: null;
+
+        $firstActivePaymentOption = $this->getMockBuilder(BasePaymentOption::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getUniqueName', 'getFrontEndName'])
+            ->getMock();
+        $firstActivePaymentOption->method('getUniqueName')->willReturn('AMAZONBTN');
+        $firstActivePaymentOption->method('getFrontEndName')->with($expectedLanguageId)->willReturn('Amazon Pay');
+
+        $secondActivePaymentOption = $this->getMockBuilder(BasePaymentOption::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getUniqueName', 'getFrontEndName'])
+            ->getMock();
+        $secondActivePaymentOption->method('getUniqueName')->willReturn('VISA');
+        $secondActivePaymentOption->method('getFrontEndName')->with($expectedLanguageId)->willReturn('Visa');
+
+        $paymentOptionService = $this->createMock(PaymentOptionService::class);
+        $paymentOptionService->expects($this->once())
+            ->method('getActivePaymentOptions')
+            ->willReturn([$firstActivePaymentOption, $secondActivePaymentOption]);
+        $paymentOptionService->expects($this->never())
+            ->method('getMultiSafepayPaymentOptions');
+
+        $settingsBuilder = new SettingsBuilder($this->mockModule);
+        $reflection = new ReflectionClass(SettingsBuilder::class);
+        $property = $reflection->getProperty('paymentOptionService');
+        $property->setAccessible(true);
+        $property->setValue($settingsBuilder, $paymentOptionService);
+
+        $method = $reflection->getMethod('getDefaultPaymentMethodOptions');
+        $method->setAccessible(true);
+        $options = $method->invoke($settingsBuilder);
+
+        $this->assertSame(
+            [
+                'query' => [
+                    ['id' => '', 'name' => 'None'],
+                    ['id' => 'AMAZONBTN', 'name' => 'Amazon Pay'],
+                    ['id' => 'VISA', 'name' => 'Visa'],
+                ],
+                'id' => 'id',
+                'name' => 'name',
+            ],
+            $options
+        );
     }
 }
