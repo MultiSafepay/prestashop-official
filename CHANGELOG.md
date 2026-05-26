@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.4.0] - 2026-05-26
+
+### Added
+- PRES-519: Add alternative card payment icons
+- PRES-518: Add a new setting field to define a default payment method option
+
+### Fixed
+- PRES-525: Fix Apple Pay and Google Pay buttons alignment in checkout page
+- PRES-520: Fix Order->total_paid_real not updated when PS_INVOICE is disabled
+- PRES-514: Fix missing order-state icon which cause broken image in Admin Order History
+
+### Changed
+- PRES-516: Improve order message when a payment notification is ignored due to final order status
+
 ## [6.3.0] - 2026-04-06
 
 ### Added
