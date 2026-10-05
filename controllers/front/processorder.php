@@ -21,6 +21,7 @@
  */
 
 use MultiSafepay\PrestaShop\Adapter\ContextAdapter;
+use MultiSafepay\PrestaShop\Helper\CustomerSecureKeyHelper;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -51,6 +52,7 @@ class MultisafepayOfficialProcessorderModuleFrontController extends ModuleFrontC
         }
 
         $orderId = Order::getIdByCartId($cart->id);
+        $secureKey = CustomerSecureKeyHelper::resolveForCart($cart, $this->context);
 
         $redirectUrl = ContextAdapter::getLink()->getPageLink(
             'order-confirmation',
@@ -59,7 +61,7 @@ class MultisafepayOfficialProcessorderModuleFrontController extends ModuleFrontC
             'id_cart=' . $cart->id .
             '&id_order=' . $orderId .
             '&id_module=' . $this->module->id .
-            '&key=' . ($this->context->customer->id ? $this->context->customer->secure_key : '')
+            '&key=' . $secureKey
         );
 
         exit(json_encode(['redirectUrl' => $redirectUrl]));

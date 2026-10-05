@@ -20,6 +20,7 @@
  *
  */
 
+use MultiSafepay\PrestaShop\Helper\CustomerSecureKeyHelper;
 use MultiSafepay\PrestaShop\Helper\PathHelper;
 use MultiSafepay\PrestaShop\Adapter\ContextAdapter;
 
@@ -47,6 +48,7 @@ class MultisafepayOfficialCallbackModuleFrontController extends ModuleFrontContr
     {
         $transactionId = Tools::getValue('transactionid');
         $cart = new Cart($transactionId);
+        $secureKey = CustomerSecureKeyHelper::resolveForCart($cart, $this->context);
 
         if ($cart->orderExists()) {
             $order = Order::getByCartId($cart->id);
@@ -58,7 +60,7 @@ class MultisafepayOfficialCallbackModuleFrontController extends ModuleFrontContr
                 'id_cart=' . $cart->id .
                 '&id_order=' . $order->id .
                 '&id_module=' . $this->module->id .
-                '&key=' . ($this->context->customer->id ? $this->context->customer->secure_key : '')
+                '&key=' . $secureKey
             );
 
             Tools::redirect($redirectUrl);
@@ -88,7 +90,7 @@ class MultisafepayOfficialCallbackModuleFrontController extends ModuleFrontContr
                     '&id_cart=' . $cart->id .
                     '&id_order=' . null .
                     '&id_module=' . $this->module->id .
-                    '&key=' . ($this->context->customer->id ? $this->context->customer->secure_key : '')
+                    '&key=' . $secureKey
                 )
             ]
         );

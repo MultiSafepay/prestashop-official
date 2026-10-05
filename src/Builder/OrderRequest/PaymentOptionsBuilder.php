@@ -72,9 +72,11 @@ class PaymentOptionsBuilder implements OrderRequestBuilderInterface
     ): void {
         $paymentOptions = new PaymentOptions();
 
-        $redirectUrl = ContextAdapter::getLink()->getModuleLink('multisafepayofficial', 'callback', [], true);
-        $cancelUrl = ContextAdapter::getLink()->getPageLink('order', true, null, ['step' => '3']);
         $secureKey = $customer->secure_key;
+        $redirectUrl = ContextAdapter::getLink()->getModuleLink('multisafepayofficial', 'callback', [
+            'key' => $secureKey,
+        ], true);
+        $cancelUrl = ContextAdapter::getLink()->getPageLink('order', true, null, ['step' => '3']);
 
         if (isset($order)) {
             $redirectUrl = ContextAdapter::getLink()->getPageLink(
