@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.5.0] - 2026-10-07
+
+### Added
+- PRES-522: Add support for PrestShop 9.2 One Page Checkout
+
+### Fixed
+- PRES-528: Fix redirection to order confirmation page on QR payment methods
+
+### Changed
+- PRES-526: Downgrade monolog dev dependency to version 2 preventing conflicts with PrestaShop 9.1
+
 ## [6.4.0] - 2026-05-26
 
 ### Added
