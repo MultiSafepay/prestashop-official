@@ -123,6 +123,14 @@ class GooglePayDirect {
      */
     validateCheckoutApprovalAndPreventEvent(event, source = 'unknown')
     {
+        if (
+            this.containerId === 'multisafepay-native-wallet-buttons' &&
+            !validateNativeDirectWalletCheckout('GOOGLEPAY')
+        ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return false;
+        }
         const checkoutApprovalError = getDirectWalletCheckoutApprovalError('Google Pay');
         if (checkoutApprovalError) {
             event.preventDefault();
@@ -191,6 +199,12 @@ class GooglePayDirect {
                 return false;
             }
         }, true);
+
+        if (this.containerId === 'multisafepay-native-wallet-buttons') {
+            buttonContainer.appendChild(button);
+            synchronizeNativeDirectWalletApproval();
+            return;
+        }
 
         // Use the standard confirmation wrapper only outside legacy and modern One Page Checkout PS flows.
         // The Checkout is not excluded because it uses #confirm_order when available.
@@ -296,6 +310,13 @@ class GooglePayDirect {
     async onGooglePaymentButtonClicked()
     {
         if (
+            this.containerId === 'multisafepay-native-wallet-buttons' &&
+            !validateNativeDirectWalletCheckout('GOOGLEPAY')
+        ) {
+            debugDirect('Native checkout validation blocked Google Pay', this.debug, 'warn');
+            return;
+        }
+        if (
             window.multisafepayCheckoutUtils &&
             typeof window.multisafepayCheckoutUtils.validateTheCheckoutBeforePayment === 'function' &&
             !await window.multisafepayCheckoutUtils.validateTheCheckoutBeforePayment()
@@ -338,6 +359,12 @@ class GooglePayDirect {
      */
     async submitGooglePayForm(tokenValue)
     {
+        if (
+            window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive &&
+            !await prepareNativeDirectWalletSubmission('GOOGLEPAY')
+        ) {
+            return false;
+        }
         if (
             window.multisafepayCheckoutUtils &&
             typeof window.multisafepayCheckoutUtils.validateTheCheckoutBeforePayment === 'function' &&

@@ -94,6 +94,14 @@ class ApplePayDirect {
      * @returns {Promise<void>}
      */
     onApplePaymentButtonClicked = async(event) => {
+        if (this.containerId === 'multisafepay-native-wallet-buttons') {
+            event.preventDefault();
+            event.stopPropagation();
+            if (!validateNativeDirectWalletCheckout('APPLEPAY')) {
+                debugDirect('Native checkout validation blocked Apple Pay', this.debug, 'warn');
+                return;
+            }
+        }
         if (
             window.multisafepayCheckoutUtils &&
             typeof window.multisafepayCheckoutUtils.validateTheCheckoutBeforePayment === 'function' &&
@@ -143,6 +151,14 @@ class ApplePayDirect {
         button.style.cursor = 'pointer';
         button.style.height = '40px';
         button.addEventListener('click', this.onApplePaymentButtonClicked);
+
+        if (this.containerId === 'multisafepay-native-wallet-buttons') {
+            button.type = 'button';
+            button.style.width = '160px';
+            buttonContainer.appendChild(button);
+            synchronizeNativeDirectWalletApproval();
+            return;
+        }
 
         // Use the standard confirmation wrapper only outside legacy and modern One Page Checkout PS flows.
         // The Checkout is not excluded because it uses #confirm_order when available.
@@ -313,6 +329,12 @@ class ApplePayDirect {
      */
     async submitApplePayForm(paymentToken)
     {
+        if (
+            window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive &&
+            !await prepareNativeDirectWalletSubmission('APPLEPAY')
+        ) {
+            return false;
+        }
         if (
             window.multisafepayCheckoutUtils &&
             typeof window.multisafepayCheckoutUtils.validateTheCheckoutBeforePayment === 'function' &&

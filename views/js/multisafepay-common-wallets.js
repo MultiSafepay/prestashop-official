@@ -71,7 +71,7 @@ function cleanUpDirectButtons()
             const isDivTag = parentDiv.tagName.toLowerCase() === 'div';
             const hasSingleChild = parentDiv.childNodes.length === 1;
 
-            if (isDivTag && hasSingleChild) {
+            if (isDivTag && hasSingleChild && parentDiv.id !== 'multisafepay-native-wallet-buttons') {
                 parentDiv.remove();
             } else {
                 button.remove();
@@ -418,6 +418,83 @@ async function fetchDirectWalletCartDetails(cartDetailsEndpoint, paymentMethodNa
 
 let multisafepayDirectWalletInitializationTimeoutId = null;
 let multisafepayDirectWalletLastInitializationSignature = '';
+let multisafepayNativeWalletCheckoutIsValid = false;
+let multisafepayNativeWalletSubmissionInProgress = false;
+
+function isNativeDirectWalletSelected(gateway)
+{
+    const selected = document.querySelector("#opc-payment-methods input[name='payment-option']:checked");
+    return selected && selected.getAttribute('data-module-name') === gateway;
+}
+
+function synchronizeNativeDirectWalletApproval()
+{
+    document.querySelectorAll('#multisafepay-native-wallet-buttons button').forEach(button => {
+        // Keep invalid forms clickable so the click can report native field/terms errors.
+        button.disabled = multisafepayNativeWalletSubmissionInProgress;
+    });
+}
+
+function validateNativeDirectWalletCheckout(gateway)
+{
+    if (!getDirectWalletCheckoutApprovalError(gateway === 'APPLEPAY' ? 'Apple Pay' : 'Google Pay')) {
+        const form = document.getElementById('opc-form');
+        if (form && !form.reportValidity()) {
+            return false;
+        }
+        if (multisafepayNativeWalletCheckoutIsValid && isNativeDirectWalletSelected(gateway)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Native OPC owns checkout persistence; wallet tokens are submitted only after it succeeds.
+ * This version reports some failures through events/validation markup rather than rejection.
+ */
+async function prepareNativeDirectWalletSubmission(gateway)
+{
+    if (!window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive) {
+        return true;
+    }
+    if (
+        multisafepayNativeWalletSubmissionInProgress ||
+        !multisafepayNativeWalletCheckoutIsValid ||
+        !isNativeDirectWalletSelected(gateway) ||
+        document.getElementById('opc-pay-button').disabled
+    ) {
+        console.warn('[MultiSafepay] Native checkout is not ready for wallet submission.');
+        return false;
+    }
+    if (typeof window.ps_onepagecheckout?.submitBeforePayment !== 'function') {
+        throw new Error('[MultiSafepay] Native checkout persistence API is unavailable.');
+    }
+
+    let failed = false;
+    const onFailure = function () {
+        failed = true; };
+    prestashop.on('handleError', onFailure);
+    prestashop.on('opcSubmitFailed', onFailure);
+    multisafepayNativeWalletSubmissionInProgress = true;
+    synchronizeNativeDirectWalletApproval();
+    try {
+        await window.ps_onepagecheckout.submitBeforePayment();
+        const validationErrors = document.querySelector(
+            '#opc-form .is-invalid, #opc-form [data-opc-field-error="1"], .js-opc-validation-error'
+        );
+        if (failed || validationErrors || !multisafepayNativeWalletCheckoutIsValid || !isNativeDirectWalletSelected(gateway)) {
+            console.warn('[MultiSafepay] Native checkout validation blocked wallet submission.');
+            return false;
+        }
+        return true;
+    } finally {
+        prestashop.removeListener('handleError', onFailure);
+        prestashop.removeListener('opcSubmitFailed', onFailure);
+        multisafepayNativeWalletSubmissionInProgress = false;
+        synchronizeNativeDirectWalletApproval();
+    }
+}
 
 /**
  * Return a stable signature for the current checkout state used by direct wallets.
@@ -436,7 +513,8 @@ function getDirectWalletInitializationSignature(isLegacyOPC, isLatestOPC)
         '#confirm_order',
         '#payment-confirmation div.ps-shown-by-js',
         '#btn_place_order',
-        '#btn-placer_order'
+        '#btn-placer_order',
+        '#opc-pay-button'
     ].map(selector => selector + ':' + (document.querySelector(selector) ? '1' : '0')).join('|');
     const paymentOptions = Array.from(document.querySelectorAll('[id^="payment-option-"]'))
         .filter(element => !String(element.getAttribute('id') || '').includes('container'))
@@ -459,6 +537,7 @@ function getDirectWalletInitializationSignature(isLegacyOPC, isLatestOPC)
         isLegacyOPC ? 'legacy-opc' : 'standard-opc',
         isLatestOPC ? 'latest-opc' : 'standard-checkout',
         checkoutCompatibilityState.isOnePageCheckoutPsActive ? 'opc' : 'no-opc',
+        checkoutCompatibilityState.isNativeOnePageCheckoutActive ? 'native-opc' : 'no-native-opc',
         checkoutCompatibilityState.isTheCheckoutActive ? 'the-checkout' : 'no-the-checkout',
         checkoutCompatibilityState.hasExternalConfirmationButton ? 'external-confirmation' : 'no-external-confirmation',
         checkoutButtons,
@@ -517,6 +596,7 @@ function ensureDirectWalletVisibilityStyles()
     styleTag.textContent = [
         'body.multisafepay-hide-confirm-order #confirm_order { display: none !important; }',
         'body.multisafepay-hide-native-confirmation #payment-confirmation div.ps-shown-by-js { display: none !important; }',
+        'body.multisafepay-hide-native-opc-confirmation #opc-pay-button { display: none !important; }',
         'body.multisafepay-hide-opc-confirm-order #btn_place_order, body.multisafepay-hide-opc-confirm-order #btn-placer_order { display: none !important; }'
     ].join(' ');
 
@@ -608,6 +688,9 @@ class GoogleApplePayDirectHandler {
      */
     async init()
     {
+        if (window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive) {
+            return this.toggleGoogleAndAppleDirect();
+        }
         this.toggleGoogleAndAppleDirect();
     }
 
@@ -625,7 +708,8 @@ class GoogleApplePayDirectHandler {
             '#confirm_order': 'multisafepay-hide-confirm-order',
             '#payment-confirmation div.ps-shown-by-js': 'multisafepay-hide-native-confirmation',
             '#btn-placer_order': 'multisafepay-hide-opc-confirm-order',
-            '#btn_place_order': 'multisafepay-hide-opc-confirm-order'
+            '#btn_place_order': 'multisafepay-hide-opc-confirm-order',
+            '#opc-pay-button': 'multisafepay-hide-native-opc-confirmation'
         };
         const bodyClassName = bodyClassMap[placeOrderSelector];
 
@@ -663,6 +747,12 @@ class GoogleApplePayDirectHandler {
             try {
                 const response = await paymentsClient.isReadyToPay(isReadyToPayRequest);
                 if (response.result) {
+                    if (
+                        window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive &&
+                        !isNativeDirectWalletSelected('GOOGLEPAY')
+                    ) {
+                        return;
+                    }
                     this.togglePlaceOrderDisplay('none', placeOrderSelector);
                     new GooglePayDirect(containerId, this.isLegacyOPC, this.isLatestOPC);
                 }
@@ -787,6 +877,19 @@ class GoogleApplePayDirectHandler {
     {
         const checkoutCompatibilityState = window.multisafepayCheckoutUtils.getCheckoutCompatibilityState();
 
+        if (checkoutCompatibilityState.isNativeOnePageCheckoutActive) {
+            const payButton = document.getElementById('opc-pay-button');
+            if (payButton && !document.getElementById('multisafepay-native-wallet-buttons')) {
+                const container = document.createElement('div');
+                container.id = 'multisafepay-native-wallet-buttons';
+                payButton.parentElement.appendChild(container);
+            }
+            return {
+                placeOrderSelector: '#opc-pay-button',
+                containerId: 'multisafepay-native-wallet-buttons'
+            };
+        }
+
         if (this.isLegacyOPC) {
             return {
                 placeOrderSelector: this.getOnePageCheckoutPlaceOrderSelector(),
@@ -837,6 +940,17 @@ class GoogleApplePayDirectHandler {
 
         // Object destructuring assignment was introduced in ECMAScript 6 (ES2015) in June 2015.
         const {googlePayScriptExists, applePayScriptExists} = this.checkLoadedDirectScripts();
+
+        if (window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive) {
+            if (isNativeDirectWalletSelected('GOOGLEPAY') && googlePayScriptExists) {
+                await this.handleGooglePayClick(placeOrderSelector, containerId);
+            } else if (isNativeDirectWalletSelected('APPLEPAY') && applePayScriptExists) {
+                this.handleApplePayClick(placeOrderSelector, containerId);
+            } else {
+                this.handleOtherPaymentClick(placeOrderSelector);
+            }
+            return;
+        }
 
         document.querySelectorAll('[id^="payment-option-"]')
             .forEach((element) => {
@@ -907,6 +1021,29 @@ class GoogleApplePayDirectHandler {
 
         // One Page Checkout PS support. Version 4.1.X & 5.0.X
         if (window.multisafepayCheckoutUtils.hasPrestashopEventBus()) {
+            prestashop.on('opcPaymentMethodsUpdated', function () {
+                if (!window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive) {
+                    return;
+                }
+                multisafepayDirectWalletLastInitializationSignature = '';
+                scheduleGoogleApplePayDirectHandler();
+            });
+            prestashop.on('opcPaymentMethodSelected', function () {
+                if (!window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive) {
+                    return;
+                }
+                multisafepayDirectWalletLastInitializationSignature = '';
+                scheduleGoogleApplePayDirectHandler();
+            });
+            prestashop.on('opcPaymentMethodsRefreshed', function () {
+                if (window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive) {
+                    scheduleGoogleApplePayDirectHandler();
+                }
+            });
+            prestashop.on('opcFormValidated', function (state) {
+                multisafepayNativeWalletCheckoutIsValid = !!state && state.isValid === true;
+                synchronizeNativeDirectWalletApproval();
+            });
             prestashop.on(
                 'changedCheckoutStep',
                 function () {

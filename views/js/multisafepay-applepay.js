@@ -31,6 +31,9 @@ $(document).on('opc-load-payment:completed', function () {
 });
 
 if (window.multisafepayCheckoutUtils.hasPrestashopEventBus()) {
+    prestashop.on('opcPaymentMethodsUpdated', function () {
+        checkIfDeviceSupportApplePay();
+    });
     // One Page Checkout PS support. Version 4.1.X
     prestashop.on(
         'opc-payment-getPaymentList-complete',

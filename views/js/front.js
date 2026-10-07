@@ -38,6 +38,12 @@ if (window.multisafepayCheckoutUtils.hasPrestashopEventBus()) {
             triggerCommonMethods(true);
         }
     );
+    prestashop.on('opcPaymentMethodsUpdated', function () {
+        // Let OPC restore its confirmed selection before applying preferences.
+        setTimeout(function () {
+            triggerCommonMethods(true);
+        }, 0);
+    });
 }
 
 let multisafepayIsProgrammaticSelection = false;

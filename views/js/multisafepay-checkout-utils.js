@@ -73,6 +73,7 @@
                 const isOnePageCheckoutPsActive = checkoutHint === 'onepagecheckoutps' || hasOnePageCheckoutPsMarkers;
 
                 return {
+                    isNativeOnePageCheckoutActive: document.querySelector('#opc-form.one-page-checkout') !== null,
                     isOnePageCheckoutPsActive: isOnePageCheckoutPsActive,
                     isTheCheckoutActive: checkoutHint === 'thecheckout' || (hasTheCheckoutMarkers && !isOnePageCheckoutPsActive),
                     hasExternalConfirmationButton: theCheckoutConfirmButton !== null

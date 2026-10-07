@@ -18,12 +18,18 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
+const multisafepayPaymentComponentInstances = new Map();
+let multisafepayNativeCheckoutButtonIsEnabled = false;
+
 const MultiSafepayPaymentComponent = function (config, gateway, paymentComponentId) {
 
     let paymentComponent = null;
     // Null means the SDK has not emitted an onValidation state for this component yet.
     let paymentComponentIsValid = null;
     let recurringPaymentComponentLayoutObserver = null;
+    let paymentComponentIsLoaded = false;
+    const paymentComponentElement = document.getElementById('multisafepay-payment-component-' + paymentComponentId);
+    const paymentComponentEventSuffix = paymentComponentIdAsEventSuffix(paymentComponentId);
     const paymentComponentValidationEventName = 'multisafepayPaymentComponentValidation';
     const checkoutConfirmationButtonLockDataKey = 'multisafepayPaymentComponentButtonLock';
     const checkoutConfirmationButtonDisabledAttribute = 'data-multisafepay-payment-component-disabled';
@@ -40,6 +46,7 @@ const MultiSafepayPaymentComponent = function (config, gateway, paymentComponent
         initializePaymentComponent();
         onPaymentComponentLayoutChange();
         onSubmitCheckoutForm();
+        synchronizeCheckoutConfirmationButtonWithPaymentComponentState();
     };
 
     const getPaymentComponent = function () {
@@ -94,6 +101,10 @@ const MultiSafepayPaymentComponent = function (config, gateway, paymentComponent
 
         if (checkoutCompatibilityState.isOnePageCheckoutPsActive) {
             checkoutConfirmationButtonSelectors.push('#btn-placer_order', '#btn_place_order');
+        }
+
+        if (checkoutCompatibilityState.isNativeOnePageCheckoutActive) {
+            checkoutConfirmationButtonSelectors.push('#opc-pay-button');
         }
 
         return checkoutConfirmationButtonSelectors;
@@ -197,6 +208,9 @@ const MultiSafepayPaymentComponent = function (config, gateway, paymentComponent
      * @returns {void}
      */
     const setCheckoutConfirmationButtonDisabled = function (disabled, releaseAnyPaymentComponentLock) {
+        if (!paymentComponentElement.isConnected) {
+            return;
+        }
         const checkoutConfirmationButtons = $(getCheckoutConfirmationButtonSelectors().join(', '));
 
         if (disabled) {
@@ -215,7 +229,7 @@ const MultiSafepayPaymentComponent = function (config, gateway, paymentComponent
         checkoutConfirmationButtons.each(function () {
             releaseCheckoutConfirmationButtonLock(
                 $(this),
-                checkoutMustKeepConfirmationButtonDisabled,
+                checkoutMustKeepConfirmationButtonDisabled || (this.id === 'opc-pay-button' && !multisafepayNativeCheckoutButtonIsEnabled),
                 releaseAnyPaymentComponentLock === true
             );
         });
@@ -232,6 +246,11 @@ const MultiSafepayPaymentComponent = function (config, gateway, paymentComponent
      */
     const setCheckoutConfirmationButtonDisabledWithDelay = function (disabled, releaseAnyPaymentComponentLock) {
         setCheckoutConfirmationButtonDisabled(disabled, releaseAnyPaymentComponentLock);
+        // Native OPC reports its own gate through opcFormValidated; do not replay stale
+        // button decisions after a newer validation/selection event.
+        if (window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive) {
+            return;
+        }
         setTimeout(function () {
             setCheckoutConfirmationButtonDisabled(disabled, releaseAnyPaymentComponentLock);
         }, 0);
@@ -264,12 +283,26 @@ const MultiSafepayPaymentComponent = function (config, gateway, paymentComponent
      * @returns {void}
      */
     const synchronizeCheckoutConfirmationButtonWithPaymentComponentState = function () {
+        if (!paymentComponentElement.isConnected) {
+            return;
+        }
         if (!isCurrentPaymentComponentSelected()) {
             setCheckoutConfirmationButtonDisabledWithDelay(false);
             return;
         }
 
+        if (
+            window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive &&
+            !paymentComponentIsLoaded
+        ) {
+            setCheckoutConfirmationButtonDisabledWithDelay(true);
+            return;
+        }
+
         if (paymentComponentIsValid === null) {
+            if (window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive) {
+                setCheckoutConfirmationButtonDisabledWithDelay(true);
+            }
             return;
         }
 
@@ -359,6 +392,9 @@ const MultiSafepayPaymentComponent = function (config, gateway, paymentComponent
      * @returns {void}
      */
     const normalizeExpandedRecurringPaymentComponentLayout = function () {
+        if (!paymentComponentElement.isConnected) {
+            return;
+        }
         if (isCurrentPaymentComponentSelected()) {
             normalizeSelectedPaymentComponentContainerLayout();
         }
@@ -474,14 +510,26 @@ const MultiSafepayPaymentComponent = function (config, gateway, paymentComponent
             container: '#multisafepay-payment-component-' + paymentComponentId,
             gateway: gateway,
             onLoad: state => {
+                if (!paymentComponentElement.isConnected) {
+                    return;
+                }
+                paymentComponentIsLoaded = true;
                 logger('onLoad');
                 observeExpandedRecurringPaymentComponentLayout();
                 scheduleExpandedRecurringPaymentComponentLayoutFix();
+                synchronizeCheckoutConfirmationButtonWithPaymentComponentState();
             },
             onError: state => {
+                if (!paymentComponentElement.isConnected) {
+                    return;
+                }
+                updatePaymentComponentValidationState(false);
                 logger('onError');
             },
             onValidation: state => {
+                if (!paymentComponentElement.isConnected) {
+                    return;
+                }
                 updatePaymentComponentValidationState(state);
             }
         });
@@ -495,7 +543,7 @@ const MultiSafepayPaymentComponent = function (config, gateway, paymentComponent
      * @returns {void}
      */
     const onPaymentComponentLayoutChange = function () {
-        const eventNamespace = '.multisafepayPaymentComponentLayout' + paymentComponentIdAsString.replace(/[^a-zA-Z0-9]/g, '');
+        const eventNamespace = '.multisafepayPaymentComponentLayout' + paymentComponentEventSuffix;
 
         $(document)
             .off('change' + eventNamespace, "input[name='payment-option']")
@@ -532,26 +580,56 @@ const MultiSafepayPaymentComponent = function (config, gateway, paymentComponent
      * @returns {void}
      */
     const onSubmitCheckoutForm = function () {
-        const eventNamespace = '.multisafepayPaymentComponentSubmit' + paymentComponentIdAsString.replace(/[^a-zA-Z0-9]/g, '');
+        const eventNamespace = '.multisafepayPaymentComponentSubmit' + paymentComponentEventSuffix;
         const paymentForm = $('#multisafepay-form-' + paymentComponentId);
 
         paymentForm
             .off('submit' + eventNamespace)
             .on('submit' + eventNamespace, function (event) {
-                removePayload();
-                if (hasBlockingPaymentComponentValidationErrors()) {
-                    logger(getPaymentComponent().getErrors());
-                    updatePaymentComponentValidationState(false);
+                if (!preparePaymentComponentSubmission()) {
                     event.preventDefault();
                     event.stopPropagation();
                     return;
                 }
-                const payload = getPaymentComponent().getPaymentData().payload;
-                const tokenize = getPaymentComponent().getPaymentData().tokenize ?? '0';
-                insertPayload(payload);
-                insertTokenize(tokenize);
                 paymentForm.off('submit' + eventNamespace).submit();
             });
+    };
+
+    const preparePaymentComponentSubmission = function () {
+        removePayload();
+        if (
+            window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive &&
+            !paymentComponentIsLoaded
+        ) {
+            console.warn('[MultiSafepay] Payment Component has not finished loading.');
+            synchronizeCheckoutConfirmationButtonWithPaymentComponentState();
+            return false;
+        }
+        if (hasBlockingPaymentComponentValidationErrors()) {
+            logger(getPaymentComponent().getErrors());
+            updatePaymentComponentValidationState(false);
+            return false;
+        }
+
+        const paymentData = getPaymentComponent().getPaymentData();
+        if (!paymentData.payload) {
+            console.error('[MultiSafepay] Payment Component returned an empty payload.');
+            updatePaymentComponentValidationState(false);
+            return false;
+        }
+        insertPayload(paymentData.payload);
+        insertTokenize(paymentData.tokenize ?? '0');
+        return true;
+    };
+
+    this.prepareSubmission = preparePaymentComponentSubmission;
+    this.synchronizeCheckoutState = synchronizePaymentComponentLayoutAndCheckoutState;
+    this.synchronizeValidationState = synchronizeCheckoutConfirmationButtonWithPaymentComponentState;
+    this.destroy = function () {
+        if (recurringPaymentComponentLayoutObserver) {
+            recurringPaymentComponentLayoutObserver.disconnect();
+        }
+        $(document).off('.multisafepayPaymentComponentLayout' + paymentComponentEventSuffix);
     };
 
     const logger = function (argument) {
@@ -564,12 +642,116 @@ const MultiSafepayPaymentComponent = function (config, gateway, paymentComponent
 
 };
 
+function paymentComponentIdAsEventSuffix(paymentComponentId)
+{
+    return String(paymentComponentId).replace(/[^a-zA-Z0-9]/g, '');
+}
+
 function createMultiSafepayPaymentComponents()
 {
+    multisafepayPaymentComponentInstances.forEach(function (instance, element) {
+        if (!element.isConnected) {
+            instance.destroy();
+            multisafepayPaymentComponentInstances.delete(element);
+        }
+    });
     $("[id^='multisafepay-payment-component-']").each(function () {
-        new MultiSafepayPaymentComponent(window['multisafepayPaymentComponentConfig' + $(this).data('payment-id')], $(this).data('gateway'), $(this).data('payment-component-id'));
+        if (multisafepayPaymentComponentInstances.has(this)) {
+            return;
+        }
+        multisafepayPaymentComponentInstances.set(
+            this,
+            new MultiSafepayPaymentComponent(window['multisafepayPaymentComponentConfig' + $(this).data('payment-id')], $(this).data('gateway'), $(this).data('payment-component-id'))
+        );
     });
 }
+
+function getSelectedNativeMultiSafepayPaymentComponent()
+{
+    const selectedForm = window.getSelectedMultiSafepayPaymentForm();
+    const element = selectedForm.find("[id^='multisafepay-payment-component-']").get(0);
+    return element ? multisafepayPaymentComponentInstances.get(element) : null;
+}
+
+if (window.multisafepayCheckoutUtils.hasPrestashopEventBus()) {
+    prestashop.on('opcPaymentMethodsUpdated', function () {
+        createMultiSafepayPaymentComponents();
+    });
+
+    const synchronizeNativeCheckoutComponents = function (validationOnly) {
+        if (!window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive) {
+            return;
+        }
+        // A refresh may remove a previously locked component entirely (e.g. a carrier
+        // restricts that gateway). Do not leave its lock on a hosted payment selection.
+        const selectedForm = window.getSelectedMultiSafepayPaymentForm();
+        if (!selectedForm.find("[id^='multisafepay-payment-component-']").length && multisafepayNativeCheckoutButtonIsEnabled) {
+            $('#opc-pay-button')
+                .filter('[data-multisafepay-payment-component-disabled]')
+                .removeData('multisafepayPaymentComponentButtonLock')
+                .removeAttr('data-multisafepay-payment-component-disabled')
+                .removeClass('disabled')
+                .prop('disabled', false)
+                .removeAttr('disabled');
+        }
+        multisafepayPaymentComponentInstances.forEach(function (instance) {
+            if (validationOnly === true) {
+                instance.synchronizeValidationState();
+            } else {
+                instance.synchronizeCheckoutState();
+            }
+        });
+    };
+    prestashop.on('opcPaymentMethodSelected', synchronizeNativeCheckoutComponents);
+    prestashop.on('opcPaymentMethodsRefreshed', synchronizeNativeCheckoutComponents);
+    prestashop.on('opcFormValidated', function () {
+        // OPC writes its button gate before emitting this event. Its isValid payload
+        // includes field validity too, while OPC intentionally permits clicks to show errors.
+        multisafepayNativeCheckoutButtonIsEnabled = $('#opc-pay-button').prop('disabled') === false;
+        synchronizeNativeCheckoutComponents(true);
+    });
+
+    // OPC submits the inner form with native submit(), bypassing DOM submit handlers.
+    prestashop.on('opcFinalSubmitStarted', function () {
+        if (!window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive) {
+            return;
+        }
+        const selectedForm = window.getSelectedMultiSafepayPaymentForm();
+        const instance = getSelectedNativeMultiSafepayPaymentComponent();
+        if (
+            selectedForm.find("[id^='multisafepay-payment-component-']").length &&
+            (!instance || !instance.prepareSubmission())
+        ) {
+            // Throwing aborts OPC's synchronous handoff; its submit error path releases its lock.
+            throw new Error('[MultiSafepay] Payment Component validation blocked the native checkout handoff.');
+        }
+    });
+}
+
+// Validate before OPC starts persisting checkout data, including keyboard/form submission.
+const guardNativePaymentComponentSubmission = function (event) {
+    if (!window.multisafepayCheckoutUtils.getCheckoutCompatibilityState().isNativeOnePageCheckoutActive) {
+        return;
+    }
+    const target = event.target;
+    const isPayClick = event.type === 'click' && target instanceof Element && target.closest('#opc-pay-button');
+    const isCheckoutSubmit = event.type === 'submit' && target.id === 'opc-form';
+    if (!isPayClick && !isCheckoutSubmit) {
+        return;
+    }
+    const selectedForm = window.getSelectedMultiSafepayPaymentForm();
+    if (!selectedForm.find("[id^='multisafepay-payment-component-']").length) {
+        return;
+    }
+    const instance = getSelectedNativeMultiSafepayPaymentComponent();
+    if (!instance || !instance.prepareSubmission()) {
+        console.warn('[MultiSafepay] Native checkout submission blocked: Payment Component is not ready or invalid.');
+        event.preventDefault();
+        event.stopImmediatePropagation();
+    }
+};
+document.addEventListener('click', guardNativePaymentComponentSubmission, true);
+document.addEventListener('submit', guardNativePaymentComponentSubmission, true);
 
 // Support for "The Checkout module"
 if (window.multisafepayCheckoutUtils.hasPrestashopEventBus()) {
