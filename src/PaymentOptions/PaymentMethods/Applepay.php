@@ -64,16 +64,16 @@ class Applepay extends BasePaymentOption
      */
     public function registerJavascript(Context $context): void
     {
-        $context->controller->registerJavascript(
-            'module-multisafepay-applepay-javascript',
-            PathHelper::getAssetPath('multisafepay-applepay.js'),
-            [
-                'priority' => 197
-            ]
-        );
-
         // To avoid problems with the Apple Pay button, we need to load them in the footer area
         if ($this->isDirect()) {
+            $context->controller->registerJavascript(
+                'module-multisafepay-applepay-javascript',
+                PathHelper::getAssetPath('multisafepay-applepay.js'),
+                [
+                    'priority' => 197
+                ]
+            );
+
             $context->controller->registerJavascript(
                 'module-multisafepay-applepay-wallet-javascript',
                 PathHelper::getAssetPath('multisafepay-applepay-wallet.js'),
