@@ -29,6 +29,7 @@ use MultiSafepay\PrestaShop\PaymentOptions\Base\BasePaymentOption;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
 use MultiSafepay\Tests\BaseMultiSafepayTest;
 use MultisafepayOfficial;
+use ReflectionMethod;
 
 class PaymentOptionServiceTest extends BaseMultiSafepayTest
 {
@@ -194,6 +195,79 @@ class PaymentOptionServiceTest extends BaseMultiSafepayTest
         $result = $this->paymentOptionService->excludePaymentOptionByPaymentOptionSettings($mockPaymentOption, $mockCart);
 
         $this->assertFalse($result);
+    }
+
+    public function testPaymentMethodsCacheKeyIsStableAndDoesNotExposeCredentials(): void
+    {
+        $method = new ReflectionMethod(PaymentOptionService::class, 'getPaymentMethodsCacheKey');
+        $method->setAccessible(true);
+        $apiKey = 'account-a-secret-api-key';
+        $arguments = [1, 'test', $apiKey, ['group_cards' => '0']];
+
+        $key = $method->invokeArgs($this->paymentOptionService, $arguments);
+
+        $this->assertSame($key, $method->invokeArgs($this->paymentOptionService, $arguments));
+        $this->assertStringNotContainsString($apiKey, $key);
+        $this->assertMatchesRegularExpression(
+            '/^multisafepay_payment_methods_cache_1_test_[a-f0-9]{64}$/',
+            $key
+        );
+    }
+
+    /**
+     * @dataProvider paymentMethodsCacheContextProvider
+     */
+    public function testPaymentMethodsCacheKeySeparatesContexts(
+        int $shopId,
+        string $environment,
+        string $apiKey,
+        array $options
+    ): void {
+        $method = new ReflectionMethod(PaymentOptionService::class, 'getPaymentMethodsCacheKey');
+        $method->setAccessible(true);
+        $originalKey = $method->invoke(
+            $this->paymentOptionService,
+            1,
+            'test',
+            'account-a-secret-api-key',
+            ['group_cards' => '0']
+        );
+        $otherKey = $method->invoke($this->paymentOptionService, $shopId, $environment, $apiKey, $options);
+
+        $this->assertNotSame($originalKey, $otherKey);
+    }
+
+    public function paymentMethodsCacheContextProvider(): array
+    {
+        return [
+            'different shop, same credentials' => [2, 'test', 'account-a-secret-api-key', ['group_cards' => '0']],
+            'different shop and credentials' => [2, 'test', 'account-b-secret-api-key', ['group_cards' => '0']],
+            'different environment' => [1, 'live', 'account-a-secret-api-key', ['group_cards' => '0']],
+            'changed credentials' => [1, 'test', 'account-b-secret-api-key', ['group_cards' => '0']],
+            'changed card grouping' => [1, 'test', 'account-a-secret-api-key', ['group_cards' => '1']],
+        ];
+    }
+
+    public function testPaymentMethodsCacheKeyIgnoresOptionsOrder(): void
+    {
+        $method = new ReflectionMethod(PaymentOptionService::class, 'getPaymentMethodsCacheKey');
+        $method->setAccessible(true);
+        $firstKey = $method->invoke(
+            $this->paymentOptionService,
+            1,
+            'test',
+            'account-a-secret-api-key',
+            ['group_cards' => '0', 'other_option' => 'value']
+        );
+        $secondKey = $method->invoke(
+            $this->paymentOptionService,
+            1,
+            'test',
+            'account-a-secret-api-key',
+            ['other_option' => 'value', 'group_cards' => '0']
+        );
+
+        $this->assertSame($firstKey, $secondKey);
     }
 
     /**

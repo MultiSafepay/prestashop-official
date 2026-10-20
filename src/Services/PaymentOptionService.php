@@ -25,6 +25,7 @@ namespace MultiSafepay\PrestaShop\Services;
 use Address;
 use Cart;
 use Configuration;
+use Context;
 use Customer;
 use Exception;
 use MultiSafepay\Api\PaymentMethods\PaymentMethod;
@@ -396,7 +397,12 @@ class PaymentOptionService
             $sdk = $sdkService->getSdk();
             $cache = new FilesystemAdapter();
             $environment = $sdkService->getTestMode() ? 'test' : 'live';
-            $item = $cache->getItem(self::CACHE_NAME . '_' . $environment);
+            $item = $cache->getItem($this->getPaymentMethodsCacheKey(
+                (int) Context::getContext()->shop->id,
+                $environment,
+                $apiKey,
+                $options
+            ));
 
             if (($item instanceof CacheItemInterface) &&
                 !defined('_PS_ADMIN_DIR_') &&
@@ -443,6 +449,18 @@ class PaymentOptionService
             );
             return [];
         }
+    }
+
+    private function getPaymentMethodsCacheKey(
+        int $shopId,
+        string $environment,
+        string $apiKey,
+        array $options
+    ): string {
+        ksort($options);
+        $fingerprint = hash('sha256', serialize([$apiKey, $options]));
+
+        return self::CACHE_NAME . '_' . $shopId . '_' . $environment . '_' . $fingerprint;
     }
 
     /**
