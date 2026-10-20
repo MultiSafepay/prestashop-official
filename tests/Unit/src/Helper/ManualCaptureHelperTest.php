@@ -23,7 +23,10 @@
 
 namespace MultiSafepay\Tests\Helper;
 
+use Cache;
+use Currency;
 use Exception;
+use MultiSafepay\Api\Base\Response;
 use MultiSafepay\Api\TransactionManager;
 use MultiSafepay\Api\Transactions\CaptureRequest;
 use MultiSafepay\Api\Transactions\Transaction;
@@ -507,6 +510,75 @@ class ManualCaptureHelperTest extends BaseMultiSafepayTest
             $this->transactionManagerMock,
             'TEST-ORDER-123'
         );
+    }
+
+    /**
+     * @dataProvider captureAmountProvider
+     *
+     * @param float|string $totalPaid
+     * @param int $expectedAmount
+     * @return void
+     */
+    public function testCaptureTransactionFundsSendsExactAmount($totalPaid, int $expectedAmount): void
+    {
+        $orderId = 2147483647;
+        $cacheKey = 'objectmodel_Order_' . $orderId . '_0_0';
+        $wasCached = Cache::isStored($cacheKey);
+        $previousCache = $wasCached ? Cache::retrieve($cacheKey) : null;
+
+        $this->orderMock->id = $orderId;
+        $currency = Currency::getCurrency((int)$this->orderMock->id_currency);
+        $this->transactionMock->method('getAmount')->willReturn($expectedAmount);
+        $this->transactionMock->method('getCurrency')->willReturn($currency['iso_code']);
+        $this->transactionMock->method('getStatus')->willReturn(Transaction::COMPLETED);
+        $this->transactionManagerMock->method('get')->willReturn($this->transactionMock);
+        $this->transactionManagerMock->expects($this->once())
+            ->method('capture')
+            ->with(
+                'TEST-ORDER-123',
+                $this->callback(function (CaptureRequest $request) use ($expectedAmount): bool {
+                    $this->assertSame($expectedAmount, $request->getData()['amount']);
+                    return true;
+                })
+            )
+            ->willReturn(Response::withJson('{"success":true,"data":{}}'));
+
+        // The capture helper reloads Order; seed its cache without writing a database fixture.
+        Cache::store($cacheKey, [
+            'id_cart' => $this->orderMock->id_cart,
+            'id_currency' => $this->orderMock->id_currency,
+            'total_paid' => $totalPaid,
+        ]);
+
+        try {
+            ManualCaptureHelper::captureTransactionFunds(
+                $this->orderMock,
+                $this->transactionManagerMock,
+                'TEST-ORDER-123'
+            );
+        } finally {
+            if ($wasCached) {
+                Cache::store($cacheKey, $previousCache);
+            } else {
+                Cache::clean($cacheKey);
+            }
+        }
+    }
+
+    public static function captureAmountProvider(): array
+    {
+        return [
+            '19.99 float' => [19.99, 1999],
+            '19.99 database string' => ['19.990000', 1999],
+            '0.29 float' => [0.29, 29],
+            '0.29 database string' => ['0.290000', 29],
+            '1.13 float' => [1.13, 113],
+            '1.13 database string' => ['1.130000', 113],
+            '25.99 float' => [25.99, 2599],
+            '25.99 database string' => ['25.990000', 2599],
+            '10.00 float' => [10.00, 1000],
+            '10.00 database string' => ['10.000000', 1000],
+        ];
     }
 
     /**

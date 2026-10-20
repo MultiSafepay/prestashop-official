@@ -712,7 +712,7 @@ class ManualCaptureHelper
 
         $captureRequest = new CaptureRequest();
         $captureRequest->addData([
-            'amount' => (int)($order->total_paid * 100),
+            'amount' => (int)round((float)$order->total_paid * 100),
             'new_order_status' => Transaction::COMPLETED,
             'tracktrace_code' => $trackingNumber,
             'carrier' => $carrierName,
