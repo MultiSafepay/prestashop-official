@@ -848,39 +848,6 @@ class MultisafepayOfficial extends PaymentModule
                     );
                     OrderMessageHelper::addMessage($order, $message);
                 }
-            } else {
-                // For non-manual capture orders, simply update the transaction status to cancelled
-                $updateOrder = new UpdateRequest();
-                $updateOrder->addData([
-                    'status' => Transaction::CANCELLED,
-                    'reason' => 'Order #' . $order->id . ' cancelled',
-                    'description' => 'Cancellation processed by MultiSafepay module for PrestaShop' .
-                        (defined('_PS_VERSION_') ? ' ' . _PS_VERSION_ : '')
-                ]);
-
-                try {
-                    $transactionManager->update($orderId, $updateOrder);
-
-                    $message = 'Transaction successfully cancelled';
-                    LoggerHelper::log(
-                        'info',
-                        $message,
-                        false,
-                        (string)$order->id ?: null,
-                        $order->id_cart ?: null
-                    );
-                    OrderMessageHelper::addMessage($order, $message);
-                } catch (ApiException $apiException) {
-                    $message = 'Failed to cancel transaction due to an API error. Please try again or contact support.';
-                    LoggerHelper::logException(
-                        'alert',
-                        $apiException,
-                        $message,
-                        (string)$order->id ?: null,
-                        $order->id_cart ?: null
-                    );
-                    OrderMessageHelper::addMessage($order, $message);
-                }
             }
         } catch (ApiException $apiException) {
             LoggerHelper::logException(
