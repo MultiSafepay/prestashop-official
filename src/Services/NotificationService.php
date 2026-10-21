@@ -603,9 +603,10 @@ abstract class NotificationService
                 LoggerHelper::log(
                     'warning',
                     'Manual capture: authorized callback detected but MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED is missing/invalid. '
+                    . 'Complete the module upgrade or contact support if it already completed. '
                     . 'Skipped order-state change; note still registered. Status: '
                     . $transaction->getStatus() . ', Financial status: ' . $financialStatus,
-                    true,
+                    false,
                     (string)$order->id ?: null,
                     $order->id_cart ?: null
                 );
@@ -745,11 +746,12 @@ abstract class NotificationService
                 LoggerHelper::log(
                     'warning',
                     'Manual capture: partial capture detected but MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED is missing/invalid. '
+                    . 'Complete the module upgrade or contact support if it already completed. '
                     . 'Skipped order-state change; note registered and payment row '
                     . ($paymentRowRegistered ? 'registered' : 'could not be registered')
                     . '. Status: '
                     . $transaction->getStatus() . ', Financial status: ' . $financialStatus,
-                    true,
+                    false,
                     (string)$order->id ?: null,
                     $order->id_cart ?: null
                 );
@@ -818,7 +820,7 @@ abstract class NotificationService
             return false;
         }
 
-        return Validate::isLoadedObject($orderState);
+        return Validate::isLoadedObject($orderState) && !$orderState->deleted;
     }
 
     /**
@@ -1141,6 +1143,7 @@ abstract class NotificationService
      *
      * @param string $transactionStatus
      * @return int
+     * @throws PrestaShopException
      */
     public function getOrderStatusId(string $transactionStatus): int
     {
@@ -1172,11 +1175,11 @@ abstract class NotificationService
                 $orderStatusId = Configuration::get('PS_OS_SHIPPING');
                 break;
             case 'authorized':
-                $orderStatusId = Configuration::get('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED');
+                $orderStatusId = ManualCaptureHelper::getRequiredOrderStateId('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED');
                 break;
             case 'partial_captured':
             case 'partially_captured':
-                $orderStatusId = Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED');
+                $orderStatusId = ManualCaptureHelper::getRequiredOrderStateId('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED');
                 break;
             case Transaction::INITIALIZED:
             default:

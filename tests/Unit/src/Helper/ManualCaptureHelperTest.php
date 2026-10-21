@@ -24,6 +24,7 @@
 namespace MultiSafepay\Tests\Helper;
 
 use Cache;
+use Configuration;
 use Currency;
 use Exception;
 use MultiSafepay\Api\Base\Response;
@@ -53,9 +54,6 @@ class ManualCaptureHelperTest extends BaseMultiSafepayTest
     protected function setUp(): void
     {
         parent::setUp();
-
-        // Clear any previous mocked configuration values
-        $this->clearMockedConfiguration();
 
         // Mock Order object
         $this->orderMock = $this->createMock(Order::class);
@@ -582,97 +580,16 @@ class ManualCaptureHelperTest extends BaseMultiSafepayTest
     }
 
     /**
-     * Test ensureAuthorizedStatusExists validates existing configuration
+     * Test reading an existing order state.
      *
      * @return void
      */
-    public function testEnsureAuthorizedStatusExistsValidatesExistingConfiguration(): void
+    public function testGetRequiredOrderStateIdValidatesExistingConfiguration(): void
     {
-        // Mock the configuration flag as existing
-        $this->mockConfiguration();
-
-        // Test that method doesn't throw exceptions - this is more of an integration test
-        try {
-            ManualCaptureHelper::ensureAuthorizedStatusExists();
-            $this->assertTrue(true, 'Method completed without exceptions');
-        } catch (Exception $exception) {
-            $this->fail('Method should not throw exceptions when status already exists: ' . $exception->getMessage());
-        }
-    }
-
-    /**
-     * Helper method to mock Configuration::get
-     * Creates a functional mock that validates input and stores configuration values
-     *
-     * @return void
-     */
-    private function mockConfiguration(): void
-    {
-        // Initialize global configuration storage if not exists
-        if (!isset($GLOBALS['test_configuration_values'])) {
-            $GLOBALS['test_configuration_values'] = [];
-        }
-
-        // Store the configuration value
-        $GLOBALS['test_configuration_values']['MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED'] = '1';
-
-        // Validate inputs - this makes the method actually useful
-        $this->assertIsString(
-            'MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED',
-            'Configuration key must be a string, got: ' . gettype('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED')
+        $this->assertSame(
+            (int)Configuration::get('PS_OS_PAYMENT'),
+            ManualCaptureHelper::getRequiredOrderStateId('PS_OS_PAYMENT')
         );
-        $this->assertNotEmpty(
-            'MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED',
-            'Configuration key cannot be empty'
-        );
-
-        // Use assertMatchesRegularExpression for PHPUnit 9+, assertRegExp for PHPUnit 8
-        if (method_exists($this, 'assertMatchesRegularExpression')) {
-            $this->assertMatchesRegularExpression(
-                '/^[A-Z_]+$/',
-                'MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED',
-                'Configuration key should be uppercase with underscores: MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED'
-            );
-        } else {
-            $this->assertRegExp(
-                '/^[A-Z_]+$/',
-                'MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED',
-                'Configuration key should be uppercase with underscores: MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED'
-            );
-        }
-
-        // Validate common configuration key patterns
-        $validPrefixes = ['MULTISAFEPAY_', 'PS_'];
-        $hasValidPrefix = false;
-        foreach ($validPrefixes as $prefix) {
-            if (strpos('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED', $prefix) === 0) {
-                $hasValidPrefix = true;
-                break;
-            }
-        }
-        $this->assertTrue(
-            $hasValidPrefix,
-            'Configuration key should start with valid prefix: MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED'
-        );
-
-        // Store and verify the value was set correctly
-        $this->assertArrayHasKey(
-            'MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED',
-            $GLOBALS['test_configuration_values'],
-            'Configuration key should be stored'
-        );
-    }
-
-    /**
-     * Helper method to clear all mocked configuration values
-     *
-     * @return void
-     */
-    private function clearMockedConfiguration(): void
-    {
-        if (isset($GLOBALS['test_configuration_values'])) {
-            unset($GLOBALS['test_configuration_values']);
-        }
     }
 
     /**

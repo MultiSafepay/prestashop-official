@@ -24,6 +24,7 @@ namespace MultiSafepay\PrestaShop\Helper;
 
 use Configuration;
 use Country;
+use Hook;
 use Language;
 use MultiSafepay\PrestaShop\Builder\SettingsBuilder;
 use MultiSafepay\PrestaShop\Services\PaymentOptionService;
@@ -33,6 +34,7 @@ use PrestaShopDatabaseException;
 use PrestaShopException;
 use Tab;
 use Tools;
+use Validate;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -66,7 +68,51 @@ class Installer
     {
         $this->registerMultiSafepayOrderStatuses();
         $this->installMultiSafepayTab();
+        $this->registerOrderViewHook();
         $this->setDefaultValues();
+    }
+
+    /**
+     * Install capture resources without resetting merchant settings during upgrades.
+     *
+     * @return void
+     * @throws PrestaShopException
+     */
+    public function installManualCaptureResources(): void
+    {
+        if (!$this->module->id) {
+            throw new PrestaShopException('Cannot install manual capture resources for an uninstalled module.');
+        }
+
+        $this->registerMultiSafepayOrderStatuses(['authorized', 'partial_captured']);
+        $this->installCaptureTab();
+        $this->registerOrderViewHook();
+    }
+
+    /**
+     * @return void
+     * @throws PrestaShopException
+     */
+    private function registerOrderViewHook(): void
+    {
+        $hookName = version_compare(_PS_VERSION_, '1.7.7.0', '>=')
+            ? 'actionGetAdminOrderButtons'
+            : 'displayBackOfficeOrderActions';
+
+        if (!Hook::getIdByName($hookName)) {
+            $hook = new Hook();
+            $hook->name = $hookName;
+            $hook->title = $hookName;
+            $hook->description = $hookName;
+            if (!$hook->add()) {
+                throw new PrestaShopException('Failed to create manual capture hook "' . $hookName . '".');
+            }
+        }
+
+        // PrestaShop skips existing registrations and handles all shops when no shop list is supplied.
+        if (!$this->module->registerHook($hookName)) {
+            throw new PrestaShopException('Failed to register manual capture hook "' . $hookName . '".');
+        }
     }
 
     /**
@@ -87,7 +133,9 @@ class Installer
         foreach ($languages as $language) {
             $tab->name[$language['id_lang']] = 'MultiSafepay';
         }
-        $tab->add();
+        if (!$tab->add()) {
+            throw new PrestaShopException('Failed to install the MultiSafepay admin tab.');
+        }
 
         // Install hidden tab for capture controller
         $this->installCaptureTab();
@@ -103,6 +151,15 @@ class Installer
      */
     private function installCaptureTab(): void
     {
+        $tabId = Tab::getIdFromClassName('AdminMultisafepayOfficialCapture');
+        if ($tabId) {
+            $tab = new Tab($tabId);
+            if ($tab->module !== $this->module->name) {
+                throw new PrestaShopException('The manual capture admin tab belongs to another module.');
+            }
+            return;
+        }
+
         $captureTab             = new Tab();
         $captureTab->class_name = 'AdminMultisafepayOfficialCapture';
         $captureTab->id_parent  = -1; // Hidden tab (not visible in menu)
@@ -112,7 +169,9 @@ class Installer
         foreach ($languages as $language) {
             $captureTab->name[$language['id_lang']] = 'MultiSafepay Capture';
         }
-        $captureTab->add();
+        if (!$captureTab->add() || (int)$captureTab->id <= 0) {
+            throw new PrestaShopException('Failed to install the MultiSafepay manual capture admin tab.');
+        }
     }
 
     /**
@@ -150,24 +209,40 @@ class Installer
     /**
      * Register the MultiSafepay Order statuses
      *
+     * @param string[] $statusKeys Empty to register all states.
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
-    private function registerMultiSafepayOrderStatuses(): void
+    private function registerMultiSafepayOrderStatuses(array $statusKeys = []): void
     {
         $multisafepayStatusPrefix = 'MULTISAFEPAY_OFFICIAL_OS_';
         $multisafepayOrderStatuses = $this->getMultiSafepayOrderStatuses();
         foreach ($multisafepayOrderStatuses as $multisafepayOrderStatusKey => $multisafepayOrderStatusValues) {
-            $statusConfigKey = $multisafepayStatusPrefix . Tools::strtoupper($multisafepayOrderStatusKey);
-            $orderStateId = (int)Configuration::get($statusConfigKey);
+            if ($statusKeys && !in_array($multisafepayOrderStatusKey, $statusKeys, true)) {
+                continue;
+            }
 
-            if ($orderStateId <= 0) {
+            $statusConfigKey = $multisafepayStatusPrefix . Tools::strtoupper($multisafepayOrderStatusKey);
+            $configValue = trim((string)Configuration::getGlobalValue($statusConfigKey));
+            $orderStateId = ctype_digit($configValue) ? (int)$configValue : 0;
+            $orderState = $orderStateId > 0 ? new OrderState($orderStateId) : null;
+
+            if (!$orderState || !Validate::isLoadedObject($orderState) || $orderState->deleted) {
                 $orderState = $this->createOrderStatus($multisafepayOrderStatusValues);
                 $orderStateId = (int)$orderState->id;
                 $this->updateGlobalValueOrFail(
                     $statusConfigKey,
                     $orderStateId
                 );
+            }
+
+            if ($multisafepayOrderStatusKey === 'partial_captured'
+                && $orderState->color !== $multisafepayOrderStatusValues['color']
+            ) {
+                $orderState->color = $multisafepayOrderStatusValues['color'];
+                if (!$orderState->update()) {
+                    throw new PrestaShopException('Failed to update the MultiSafepay partially captured order status.');
+                }
             }
 
             $this->cloneOrderStateIcon($orderStateId, $multisafepayOrderStatusValues);
@@ -194,7 +269,7 @@ class Installer
         if (!Configuration::updateGlobalValue($configurationKey, $configurationValue)) {
             throw new PrestaShopException(
                 sprintf(
-                    'Failed to persist MultiSafepay configuration key "%s" during install.',
+                    'Failed to persist MultiSafepay configuration key "%s" during install or upgrade.',
                     $configurationKey
                 )
             );

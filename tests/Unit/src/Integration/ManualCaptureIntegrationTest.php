@@ -23,6 +23,7 @@
 
 namespace MultiSafepay\Tests\Integration;
 
+use Configuration;
 use Exception;
 use MultiSafepay\Api\TransactionManager;
 use MultiSafepay\Api\Transactions\CaptureRequest;
@@ -168,16 +169,15 @@ class ManualCaptureIntegrationTest extends BaseMultiSafepayTest
     }
 
     /**
-     * Test module installation with manual capture status creation
+     * Test reading the configured authorized status without creating resources.
      * @throws PrestaShopException
      */
-    public function testModuleInstallationWithManualCaptureStatusCreation(): void
+    public function testConfiguredAuthorizedStatusCanBeRead(): void
     {
-        // Test that ensureAuthorizedStatusExists is called during module initialization
-        // This is tested by verifying the method doesn't throw exceptions
-        $this->expectNotToPerformAssertions();
-
-        ManualCaptureHelper::ensureAuthorizedStatusExists();
+        $this->assertSame(
+            (int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED'),
+            ManualCaptureHelper::getRequiredOrderStateId('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED')
+        );
     }
 
     /**

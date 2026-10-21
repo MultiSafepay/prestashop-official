@@ -96,68 +96,6 @@ class MultisafepayOfficial extends PaymentModule
         $this->description            = $this->l('MultiSafepay payment plugin for PrestaShop');
         $this->confirmUninstall       = $this->l('Are you sure you want to uninstall MultiSafepay?');
         $this->ps_versions_compliancy = ['min' => '1.7.6', 'max' => _PS_VERSION_];
-
-        // Ensure the authorized status exists during module initialization
-        // This prevents issues when manual capture orders are created
-        ManualCaptureHelper::ensureAuthorizedStatusExists();
-
-        // Ensure the partially captured status exists during module initialization
-        ManualCaptureHelper::ensurePartialCapturedStatusExists();
-
-        // TEMPORARY: Register new hooks if not already registered (for existing installations)
-        // TODO: Remove this after the next version upgrade script is implemented
-        $this->registerNewHooksIfNeeded();
-    }
-
-    /**
-     * TEMPORARY: Register new hooks and tabs for existing installations
-     *
-     * This method ensures that new hooks added in recent versions are registered
-     * for modules that were installed before these hooks were added.
-     * This should be removed once a proper upgrade script is implemented.
-     *
-     * @return void
-     * @throws PrestaShopDatabaseException
-     */
-    private function registerNewHooksIfNeeded(): void
-    {
-        // Only run if the module is installed
-        if (!$this->id) {
-            return;
-        }
-
-        // Register order-view hooks depending on PS version
-        // PS >= 1.7.7: modern hook (Symfony order page action bar buttons)
-        // PS < 1.7.7: legacy order page inject into the top action bar
-        if (version_compare(_PS_VERSION_, '1.7.7.0', '>=')) {
-            $hookName = 'actionGetAdminOrderButtons';
-        } else {
-            $hookName = 'displayBackOfficeOrderActions';
-            $this->ensureHookExists($hookName);
-        }
-        $hookId = Hook::getIdByName($hookName);
-        if ($hookId && !$this->isRegisteredInHook($hookName)) {
-            $this->registerHook($hookName);
-        }
-
-        // Install capture tab if not exists
-        $captureTabId = Tab::getIdFromClassName('AdminMultisafepayOfficialCapture');
-        if (!$captureTabId) {
-            $captureTab = new Tab();
-            $captureTab->class_name = 'AdminMultisafepayOfficialCapture';
-            $captureTab->id_parent = -1; // Hidden tab
-            $captureTab->module = 'multisafepayofficial';
-            $captureTab->active = true;
-            $languages = Language::getLanguages();
-            foreach ($languages as $language) {
-                $captureTab->name[$language['id_lang']] = 'MultiSafepay Capture';
-            }
-            try {
-                $captureTab->add();
-            } catch (Exception $exception) {
-                // Silently fail - tab registration is not critical
-            }
-        }
     }
 
     /**
@@ -205,11 +143,6 @@ class MultisafepayOfficial extends PaymentModule
             return false;
         }
 
-        // Some legacy hooks used in templates may not exist in older DBs.
-        if (version_compare(_PS_VERSION_, '1.7.7.0', '<')) {
-            $this->ensureHookExists('displayBackOfficeOrderActions');
-        }
-
         $hooks = [
             'actionFrontControllerSetMedia',
             'actionAdminControllerSetMedia',
@@ -223,13 +156,6 @@ class MultisafepayOfficial extends PaymentModule
             'actionEmailAddAfterContent',
         ];
 
-        // Order-view button hooks differ across PS versions
-        if (version_compare(_PS_VERSION_, '1.7.7.0', '>=')) {
-            $hooks[] = 'actionGetAdminOrderButtons';
-        } else {
-            $hooks[] = 'displayBackOfficeOrderActions';
-        }
-
         foreach ($hooks as $hook) {
             if (!$this->registerHook($hook)) {
                 return false;
@@ -237,31 +163,6 @@ class MultisafepayOfficial extends PaymentModule
         }
 
         return true;
-    }
-
-    /**
-     * Create a hook if it does not exist in DB (useful for legacy installations).
-     *
-     * @param string $hookName
-     * @return void
-     * @throws PrestaShopDatabaseException
-     */
-    private function ensureHookExists(string $hookName): void
-    {
-        if (Hook::getIdByName($hookName)) {
-            return;
-        }
-
-        $hook = new Hook();
-        $hook->name = $hookName;
-        $hook->title = $hookName;
-        $hook->description = $hookName;
-
-        try {
-            $hook->add();
-        } catch (Exception $exception) {
-            // Non-critical: if we can't create the hook, the feature will fall back to other hooks.
-        }
     }
 
     /**

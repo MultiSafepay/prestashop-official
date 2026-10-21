@@ -25,7 +25,6 @@ namespace MultiSafepay\PrestaShop\Helper;
 use Configuration;
 use Currency;
 use Exception;
-use Language;
 use MultiSafepay\Api\TransactionManager;
 use MultiSafepay\Api\Transactions\CaptureRequest;
 use MultiSafepay\Api\Transactions\Transaction;
@@ -92,255 +91,29 @@ class ManualCaptureHelper
     }
 
     /**
-     * Ensure the authorized order status exists
+     * Read required capture configuration without repairing it during a request.
      *
-     * This method validates that MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED exists.
-     * If it does not exist (e.g., the upgrade or installation script failed, data corruption, etc.),
-     * it creates it automatically. This prevents errors when accessing the authorized status.
-     *
-     * Performance optimization: Uses MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED flag
-     * to skip validation when status was already verified as existing.
-     *
-     * @return void
+     * @param string $configKey
+     * @return int
      * @throws PrestaShopException
      */
-    public static function ensureAuthorizedStatusExists(): void
+    public static function getRequiredOrderStateId(string $configKey): int
     {
-        // Early return if status was already created and verified
-        if (Configuration::get('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED') === '1') {
-            // Flag exists, so we can trust the configuration value is valid
-            return;
+        $statusId = self::validateConfigValue(Configuration::get($configKey));
+        if ($statusId !== null) {
+            $orderState = new OrderState($statusId);
+            if (Validate::isLoadedObject($orderState) && !$orderState->deleted) {
+                return $statusId;
+            }
         }
 
-        try {
-            $configValue = Configuration::get('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED');
-            $authorizedStatusId = self::validateConfigValue($configValue);
-
-            if ($authorizedStatusId === null) {
-                // Configuration key does not exist or has an invalid value
-                LoggerHelper::log(
-                    'info',
-                    'MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED configuration invalid or missing: '
-                    . var_export($configValue, true)
-                );
-            } else {
-                // Valid integer, verify the OrderState exists in database
-                $orderState = new OrderState($authorizedStatusId);
-                if (Validate::isLoadedObject($orderState)) {
-                    // Set flag to indicate status was verified as existing
-                    Configuration::updateGlobalValue('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED', '1');
-                    return;
-                } else {
-                    LoggerHelper::log(
-                        'warning',
-                        'MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED points to non-existent OrderState ID: '
-                        . $authorizedStatusId
-                    );
-                }
-            }
-
-            // Status does not exist, create it (same logic as an upgrade script)
-            LoggerHelper::log(
-                'warning',
-                'MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED not found, creating it automatically. ' .
-                'This should only happen during initial setup, upgrading or data corruption recovery.'
-            );
-
-            $orderStatusData = [
-                'name'      => 'authorized',
-                'send_mail' => false,
-                'color'     => '#207F4B',
-                'invoice'   => false,
-                'template'  => '',
-                'paid'      => false,
-                'logable'   => false
-            ];
-
-            $orderState = new OrderState();
-            foreach (Language::getLanguages() as $language) {
-                $orderState->name[$language['id_lang']] = 'MultiSafepay ' . $orderStatusData['name'];
-            }
-            $orderState->send_email = $orderStatusData['send_mail'];
-            $orderState->color = $orderStatusData['color'];
-            $orderState->unremovable = false;
-            $orderState->hidden = false;
-            $orderState->delivery = false;
-            $orderState->logable = $orderStatusData['logable'];
-            $orderState->invoice = $orderStatusData['invoice'];
-            $orderState->template = $orderStatusData['template'];
-            $orderState->paid = $orderStatusData['paid'];
-            $orderState->module_name = 'multisafepayofficial';
-
-            if ($orderState->add()) {
-                Configuration::updateGlobalValue('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED', (int)$orderState->id);
-
-                // Set flag to indicate status was created and verified
-                Configuration::updateGlobalValue('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED_STATUS_CREATED', '1');
-
-                LoggerHelper::log(
-                    'info',
-                    'MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED created successfully with ID: ' . $orderState->id
-                );
-
-                return;
-            } else {
-                throw new PrestaShopException(
-                    'Failed to create MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED order status'
-                );
-            }
-        } catch (PrestaShopException $prestaShopException) {
-            $message = 'Error creating MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED status';
-
-            LoggerHelper::logException(
-                'error',
-                $prestaShopException,
-                $message
-            );
-
-            throw new PrestaShopException(
-                $message . ': ' . $prestaShopException->getMessage(),
-                0,
-                $prestaShopException
-            );
-        } catch (Exception $exception) {
-            $message = 'Critical error ensuring authorized status exists';
-
-            LoggerHelper::logException(
-                'error',
-                $exception,
-                $message
-            );
-
-            throw new PrestaShopException(
-                $message . ': ' . $exception->getMessage(),
-                0,
-                $exception
-            );
-        }
-    }
-
-    /**
-     * Ensure the partially captured order status exists
-     *
-     * This method validates that MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED exists.
-     * If it does not exist, it creates it automatically.
-     *
-     * Performance optimization: Uses MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED_STATUS_CREATED flag
-     * to skip validation when status was already verified as existing.
-     *
-     * @return void
-     * @throws PrestaShopException
-     */
-    public static function ensurePartialCapturedStatusExists(): void
-    {
-        if (Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED_STATUS_CREATED') === '1') {
-            return;
-        }
-
-        try {
-            $configValue = Configuration::get('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED');
-            $partialCapturedStatusId = self::validateConfigValue($configValue);
-
-            if ($partialCapturedStatusId === null) {
-                LoggerHelper::log(
-                    'info',
-                    'MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED configuration invalid or missing: '
-                    . var_export($configValue, true)
-                );
-            } else {
-                $orderState = new OrderState($partialCapturedStatusId);
-                if (Validate::isLoadedObject($orderState)) {
-                    if ($orderState->color !== '#A700D3') {
-                        $orderState->color = '#A700D3';
-                        $orderState->save();
-                    }
-
-                    Configuration::updateGlobalValue('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED_STATUS_CREATED', '1');
-                    return;
-                }
-
-                LoggerHelper::log(
-                    'warning',
-                    'MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED points to non-existent OrderState ID: '
-                    . $partialCapturedStatusId
-                );
-            }
-
-            LoggerHelper::log(
-                'warning',
-                'MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED not found, creating it automatically. ' .
-                'This should only happen during initial setup, upgrading or data corruption recovery.'
-            );
-
-            $orderStatusData = [
-                'name'      => 'partially captured',
-                'send_mail' => false,
-                'color'     => '#A700D3',
-                'invoice'   => false,
-                'template'  => '',
-                'paid'      => false,
-                'logable'   => false
-            ];
-
-            $orderState = new OrderState();
-            foreach (Language::getLanguages() as $language) {
-                $orderState->name[$language['id_lang']] = 'MultiSafepay ' . $orderStatusData['name'];
-            }
-            $orderState->send_email = $orderStatusData['send_mail'];
-            $orderState->color = $orderStatusData['color'];
-            $orderState->unremovable = false;
-            $orderState->hidden = false;
-            $orderState->delivery = false;
-            $orderState->logable = $orderStatusData['logable'];
-            $orderState->invoice = $orderStatusData['invoice'];
-            $orderState->template = $orderStatusData['template'];
-            $orderState->paid = $orderStatusData['paid'];
-            $orderState->module_name = 'multisafepayofficial';
-
-            if ($orderState->add()) {
-                Configuration::updateGlobalValue('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED', (int)$orderState->id);
-                Configuration::updateGlobalValue('MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED_STATUS_CREATED', '1');
-
-                LoggerHelper::log(
-                    'info',
-                    'MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED created successfully with ID: ' . $orderState->id
-                );
-
-                return;
-            }
-
-            throw new PrestaShopException(
-                'Failed to create MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED order status'
-            );
-        } catch (PrestaShopException $prestaShopException) {
-            $message = 'Error creating MULTISAFEPAY_OFFICIAL_OS_PARTIAL_CAPTURED status';
-
-            LoggerHelper::logException(
-                'error',
-                $prestaShopException,
-                $message
-            );
-
-            throw new PrestaShopException(
-                $message . ': ' . $prestaShopException->getMessage(),
-                0,
-                $prestaShopException
-            );
-        } catch (Exception $exception) {
-            $message = 'Critical error ensuring partially captured status exists';
-
-            LoggerHelper::logException(
-                'error',
-                $exception,
-                $message
-            );
-
-            throw new PrestaShopException(
-                $message . ': ' . $exception->getMessage(),
-                0,
-                $exception
-            );
-        }
+        $message = sprintf(
+            'MultiSafepay order state "%s" is missing or invalid. Complete the module upgrade '
+            . 'from the Module manager. If the upgrade already completed, contact support.',
+            $configKey
+        );
+        LoggerHelper::log('error', $message);
+        throw new PrestaShopException($message);
     }
 
     /**

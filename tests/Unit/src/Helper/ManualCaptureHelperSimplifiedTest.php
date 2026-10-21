@@ -23,7 +23,7 @@
 
 namespace MultiSafepay\Tests\Helper;
 
-use Exception;
+use Configuration;
 use MultiSafepay\Api\Transactions\Transaction;
 use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\Api\Transactions\TransactionResponse\PaymentDetails;
@@ -229,17 +229,13 @@ class ManualCaptureHelperSimplifiedTest extends BaseMultiSafepayTest
     }
 
     /**
-     * Test ensureAuthorizedStatusExists method doesn't throw exceptions
+     * Test reading an existing order state.
      */
-    public function testEnsureAuthorizedStatusExistsDoesNotThrowExceptions(): void
+    public function testGetRequiredOrderStateIdReturnsExistingState(): void
     {
-        // This test ensures the method runs without throwing exceptions
-        $this->expectNotToPerformAssertions();
-
-        try {
-            ManualCaptureHelper::ensureAuthorizedStatusExists();
-        } catch (Exception $exception) {
-            $this->fail('ensureAuthorizedStatusExists should not throw exceptions: ' . $exception->getMessage());
-        }
+        $this->assertSame(
+            (int)Configuration::get('PS_OS_PAYMENT'),
+            ManualCaptureHelper::getRequiredOrderStateId('PS_OS_PAYMENT')
+        );
     }
 }

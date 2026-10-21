@@ -23,7 +23,6 @@
 namespace MultiSafepay\PrestaShop\Services;
 
 use Cart;
-use Configuration;
 use Customer;
 use MultiSafepay\Api\Transactions\TransactionResponse;
 use MultiSafepay\PrestaShop\Helper\LoggerHelper;
@@ -119,7 +118,7 @@ class NotExistingOrderNotificationService extends NotificationService
             $transactionStatus = $transaction->getStatus();
 
             // Determine the target order status
-            $targetOrderStatusId = (int)Configuration::get('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED');
+            $targetOrderStatusId = ManualCaptureHelper::getRequiredOrderStateId('MULTISAFEPAY_OFFICIAL_OS_AUTHORIZED');
 
             // Create order with initialized status first, then update to the final status
             $this->orderService->validateOrder(
