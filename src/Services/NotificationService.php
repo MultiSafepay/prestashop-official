@@ -764,6 +764,7 @@ abstract class NotificationService
         if ($transaction->getStatus() === Transaction::CANCELLED ||
             $transaction->getStatus() === Transaction::VOID) {
             $cancelledStatusId = (int)Configuration::get('PS_OS_CANCELED');
+            $history->changeIdOrderState($cancelledStatusId, $order->id, true);
             $history->id_order_state = $cancelledStatusId;
             $history->addWithemail();
 
