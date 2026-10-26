@@ -455,6 +455,11 @@
     box-shadow: 0 0 0 1px rgba(37, 185, 215, 0.2);
 }
 
+.multisafepay-image-radio-option:has(input:focus-visible) {
+    outline: 2px solid #25b9d7;
+    outline-offset: 2px;
+}
+
 .multisafepay-image-radio-option input[type="radio"] {
     position: absolute;
     opacity: 0;

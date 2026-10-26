@@ -125,7 +125,12 @@
             }
 
             form.addEventListener('submit', function (e) {
-                if (!confirmOrRevertWithElement(stateSelect.value)) {
+                const currentValue = toStr(stateSelect.value);
+                if (currentValue === lastConfirmedValue) {
+                    return;
+                }
+
+                if (!confirmOrRevertWithElement(currentValue)) {
                     e.preventDefault();
                     e.stopPropagation();
                 }

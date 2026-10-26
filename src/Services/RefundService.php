@@ -127,7 +127,8 @@ class RefundService
             return false;
         }
 
-        $refundRequest = $this->createRefundRequest($transactionManager, $transaction, $order, $productList);
+        $refundData = $this->getRefundData($order, $productList);
+        $refundRequest = $this->createRefundRequest($transactionManager, $transaction, $order, $productList, $refundData);
 
         try {
             $transactionManager->refund($transaction, $refundRequest);
@@ -148,7 +149,6 @@ class RefundService
             return false;
         }
 
-        $refundData = $this->getRefundData($order, $productList);
         $amount = $refundData['amount'];
         $currency = $refundData['currency'];
         $message = 'A refund of ' . $amount . ' ' . $currency . ' has been processed';
@@ -172,12 +172,15 @@ class RefundService
      * @param mixed $transaction
      * @param Order $order
      * @param array $productList
+     * @param array|null $refundData Precomputed refund data; calculated from the order when omitted
      *
      * @return RefundRequest
      * @throws InvalidArgumentException
      */
-    public function createRefundRequest($transactionManager, $transaction, Order $order, array $productList): RefundRequest
+    public function createRefundRequest($transactionManager, $transaction, Order $order, array $productList, ?array $refundData = null): RefundRequest
     {
+        $refundData = $refundData ?? $this->getRefundData($order, $productList);
+
         // If the shopping cart is disabled, or if the transaction does not require a shopping cart, we can create a
         // simple refund request with just the amount and description. Otherwise, we need to create a refund request
         // with the shopping cart data.
@@ -185,11 +188,9 @@ class RefundService
             $refundRequest = new RefundRequest();
             $addDescription = (new Description)->addDescription('Refund order');
             $refundRequest->addDescription($addDescription);
-            $refundData = $this->getRefundData($order, $productList);
             $refundRequest->addMoney(MoneyHelper::createMoney((float)$refundData['amount'], $refundData['currency']));
         } else {
             $refundRequest = $transactionManager->createRefundRequest($transaction);
-            $refundData = $this->getRefundData($order, $productList);
             $refundItem = new CartItem();
             $refundItem->addName('Refund')
                 ->addQuantity(1)

@@ -813,7 +813,7 @@ class MultisafepayOfficial extends PaymentModule
                     'status' => Transaction::CANCELLED,
                     'reason' => 'Order #' . $order->id . ' using manual capture cancelled',
                     'description' => 'Cancellation processed by MultiSafepay module for PrestaShop' .
-                    defined('_PS_VERSION_') ? ' ' . _PS_VERSION_ : ''
+                        (defined('_PS_VERSION_') ? ' ' . _PS_VERSION_ : '')
                 ]);
 
                 try {

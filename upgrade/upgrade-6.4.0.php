@@ -68,7 +68,7 @@ function upgrade640EnsureDefaultPaymentMethodConfigExists(): bool
 {
     $configKey = 'MULTISAFEPAY_OFFICIAL_DEFAULT_PAYMENT_METHOD';
 
-    if (Configuration::get($configKey) !== false) {
+    if (Configuration::hasKey($configKey) !== false) {
         return true;
     }
 
@@ -80,7 +80,7 @@ function upgrade640EnsureDefaultPaymentMethodConfigExists(): bool
     }
 
     $message = sprintf(
-        'MultiSafepay upgrade 6.3.1: failed to initialize configuration key "%s".',
+        'MultiSafepay upgrade 6.4.0: failed to initialize configuration key "%s".',
         $configKey
     );
 
@@ -103,7 +103,7 @@ function upgrade640EnsureDefaultPaymentMethodConfigExists(): bool
 function upgrade640LogIconDestinationDirectoryUnavailable(string $destinationDirectory): void
 {
     $message = sprintf(
-        'MultiSafepay upgrade 6.3.1: destination order-state icon directory "%s" '
+        'MultiSafepay upgrade 6.4.0: destination order-state icon directory "%s" '
         . 'is missing or not writable. Skipping icon backfill.',
         $destinationDirectory
     );
@@ -271,7 +271,7 @@ function upgrade640CloneOrderStateIcon(
 function upgrade640LogIconCopyFailure(string $sourcePath, string $destinationPath): void
 {
     $message = sprintf(
-        'MultiSafepay upgrade 6.3.1: failed to copy order-state icon from "%s" to "%s".',
+        'MultiSafepay upgrade 6.4.0: failed to copy order-state icon from "%s" to "%s".',
         $sourcePath,
         $destinationPath
     );
@@ -308,7 +308,7 @@ function upgrade640LogMissingIconSource(
     }
 
     $message = sprintf(
-        'MultiSafepay upgrade 6.3.1: no readable order-state icon source found for "%s". '
+        'MultiSafepay upgrade 6.4.0: no readable order-state icon source found for "%s". '
         . 'Checked module source "%s" with candidates [%s] and fallback "%s".',
         $destinationPath,
         $sourceDirectory,

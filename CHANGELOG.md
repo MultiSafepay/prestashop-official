@@ -410,7 +410,7 @@ If you are upgrading from a 4.x version of our plugin, it is recommended to only
 - Improve logging on debug mode to trace any information that might be important related with the behavior of the plugin.
 - Improve support for order collections, (multiple orders splitted from one single cart)
 - Improve support for multi stores.
-- Improve filters for each payment method which can be set by minimum amount, maximum amount, countries, currencies, customer group or selected carrrier.
+- Improve filters for each payment method which can be set by minimum amount, maximum amount, countries, currencies, customer group or selected carrier.
 - Supported gateways: AfterPay, Alipay, American Express, Apple Pay, Bancontact, Bank Transfer, Belfius, Betaal per Maand, CBC, Credit card, Dotpay, E-Invoicing, EPS, Giropay, Google Pay, iDEAL, iDEAL QR, in3, ING Home'Pay, KBC, Klarna, Maestro, Mastercard, MultiSafepay, Pay After Delivery, PayPal, Paysafecard, Request to Pay, SEPA Direct Debit, Sofort, Trustly, TrustPay, Visa, WeChat Pay.
 - Supported gift cards: Baby Giftcard, Beauty and wellness, Boekenbon, Fashion gift card, Fashioncheque, Fietsenbon, Gezondheidsbon, Givacard, Good4fun Giftcard, Goodcard, Nationale tuinbon, Parfum cadeaukaart, Podium cadeaukaart, Sport & Fit, VVV Cadeaukaart, Webshop gift card, Wellness gift card, Wijncadeau, Winkelcheque, YourGift.
 - POST notifications, instead of using GET notifications.
