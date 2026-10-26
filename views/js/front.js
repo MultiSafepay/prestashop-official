@@ -728,8 +728,6 @@ function autoSelectPreferredPaymentMethod()
         return;
     }
 
-    multisafepayAutoSelectionRetryCount = 0;
-
     if (!preferredPaymentOptionInput.prop('checked')) {
         debugCheckoutSelection('Auto-selecting preferred gateway: ' + preferredGateway, 'info');
         multisafepayIsProgrammaticSelection = true;
