@@ -706,6 +706,7 @@ abstract class NotificationService
                 (string)$order->id ?: null,
                 $order->id_cart ?: null
             );
+
             return;
         }
 
@@ -760,21 +761,26 @@ abstract class NotificationService
             return;
         }
 
-        // Case 3: Manual capture canceled - Special handling to avoid a generic message
-        if ($transaction->getStatus() === Transaction::CANCELLED ||
-            $transaction->getStatus() === Transaction::VOID) {
-            $cancelledStatusId = (int)Configuration::get('PS_OS_CANCELED');
-            $history->changeIdOrderState($cancelledStatusId, $order->id, true);
-            $history->id_order_state = $cancelledStatusId;
+        $transactionStatus = $transaction->getStatus();
+        if (in_array($transactionStatus, [
+            Transaction::CANCELLED,
+            Transaction::VOID,
+            Transaction::REFUNDED,
+            Transaction::PARTIAL_REFUNDED,
+            Transaction::SHIPPED,
+        ], true)) {
+            $orderStatusId = $this->getOrderStatusId($transactionStatus);
+            $history->changeIdOrderState($orderStatusId, $order->id, true);
+            $history->id_order_state = $orderStatusId;
             $history->addWithemail();
 
-            // Add a custom message for manual capture cancellation
-            $message = 'Manual capture was successfully cancelled to release the funds back.';
+            $message = 'Manual capture transaction status updated to: ' . $transactionStatus . '.';
             OrderMessageHelper::addMessage($order, $message);
 
             LoggerHelper::log(
                 'info',
-                'Manual capture: Order cancelled. ' . $message,
+                'Manual capture: Order status ID set to ' . $orderStatusId . '. status: '
+                . $transactionStatus . ', Financial status: ' . $financialStatus,
                 true,
                 (string)$order->id ?: null,
                 $order->id_cart ?: null
