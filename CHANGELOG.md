@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [6.5.1] - 2026-10-26
+
+### Fixed
+- PRES-538: Fix operator precedence by parenthesizing PrestaShop version ternary
+- PRES-538: Fix typo in CHANGELOG document
+- PRES-538: Fix typo en log statements
+- PRES-538: Fix duplicate confirm dialog in order status warning
+- PRES-538: Fix visible keyboard focus indicator to image radio options
+- PRES-538: Replace Configuration::get() with Configuration::hasKey() in upgrade 6.4.0 script
+- PRES-538: Fix computation of the refund data in RefundService::processRefund to do it only once
+- PRES-537: Handle webhook notifications for transactions initially authorized via manual capture, including transitions to shipped, refunded, and partially refunded statuses
+- PRES-536: Keep payment method auto-selection retries bounded when checkout repeatedly restores another radio selection
+- PRES-535: Fix cancelling a previously manual capture transaction does not restore the products to stock
+- PRES-531: Fix manual capture request may send one cent less due to truncation
+- PRES-530: Fix payment method cache is shared between shops with different API keys, which might cause methods to disappear
+
+### Changed
+- DAVAMS-1048: Show Apple Pay on unsuported devices, when configured as redirect
+- PRES-532: Move manual capture requirements from the constructor to installation and upgrade 6.6.0
+- PRES-534: Restrict handling of cancellation to Manual Capture transactions only
+
 ## [6.5.0] - 2026-10-07
 
 ### Added
